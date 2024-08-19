@@ -129,11 +129,11 @@ module mac_ants_tb;
 
         for(int i=0; i<numBeams; i++)begin
             for(int j=0; j<ANT*2; j++)begin
-                $fscanf(srcfid, "%d,", code_word_pre[i][j]);
+                $fscanf(cwdfid, "%d,", code_word_pre[i][j]);
                 $display("code_word_pre[i][j] = %d,", code_word_pre[i][j]);
             end
         end
-        $fclose(srcfid);
+        $fclose(cwdfid);
     end
 
 

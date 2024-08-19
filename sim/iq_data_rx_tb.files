@@ -1,0 +1,5 @@
+../../src/iq_data_rx.sv
+../../tb/generator.sv
+../../tb/iq_data_rx_tb.sv
+../../prj/ip/rxdata_dual_ram/sim/rxdata_dual_ram.v
+../../prj/ip/rxdata_dual_ram/ram_2port_2040/sim/rxdata_dual_ram_ram_2port_2040_dd2btwq.v

@@ -1,5 +1,5 @@
 
-set TOP_LEVEL_NAME "mac_beams_tb"
+set TOP_LEVEL_NAME "iq_data_rx_tb"
 
 
 if ![info exists WORK_DIR] { 
@@ -17,8 +17,8 @@ if ![info exists WORK_DIR] {
 }
 
 # 得到当前工作路径
-set QSYS_SIMDIR $CURRENT_DIR/sim_script
-
+#set QSYS_SIMDIR $CURRENT_DIR/sim_script
+set QSYS_SIMDIR $CURRENT_DIR/../prj/ip/rxdata_dual_ram/sim
 
 
 # quartus env
@@ -34,17 +34,20 @@ do $QSYS_SIMDIR/mentor/msim_setup.tcl
 # 建库
 vlib work
 
+dev_com
+com
+
 
 # 编译文件
 # vlog -f bf_tb.sv -incr -cover bcestf
 vlog -f $CURRENT_DIR/$TOP_LEVEL_NAME.files
-
+vlog -work work -refresh -force_refresh
 
 
 
 # 仿真
 # vsim -coverage -novopt fifo_asy_tb
-vsim -voptargs=+acc $TOP_LEVEL_NAME 
+vsim -voptargs=+acc  -L altera_lnsim_ver $TOP_LEVEL_NAME 
 
 # elab
 
@@ -60,7 +63,7 @@ if [file exists $CURRENT_DIR/$TOP_LEVEL_NAME\_wave.do] {
 
 
 # 运行仿真
-run 10us
+run 3us
 
 # coverage report -file ../dut_tb_report.txt
 # coverage save ../dut_tb_ucdb

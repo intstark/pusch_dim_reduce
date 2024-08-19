@@ -7,8 +7,9 @@ numPrb = 132;
 numCarriers = numPrb*12;
 numSymbols = 14;
 
-write_file = 0;
+
 ReGenerateData = 0;
+WriteFile = 0;
 ReloadData = 1;
 
 
@@ -41,8 +42,8 @@ sum_data = codeWord_fix * antData_fix;
 
 
 
-if write_file
-    fid=fopen('../sim/ant_data.txt','w');
+if WriteFile
+    fid=fopen('../sim/mac_ants_tb_work/ant_data.txt','w');
     
     antData_fix = antData_fix.';
     for sr= 1:numCarriers
@@ -56,7 +57,7 @@ if write_file
     fclose(fid);
     
     
-    fid=fopen('../sim/code_word.txt','w');
+    fid=fopen('../sim/mac_ants_tb_work/code_word.txt','w');
     
     for sr= 1:numBeam
             fprintf('%d,',real(codeWord_fix(sr,:)),imag(codeWord_fix(sr,:)));
@@ -73,7 +74,7 @@ end
 
 
 if ReloadData
-    des_path='../sim/beam_data.txt';
+    des_path='../sim/mac_ants_tb_work/beam_data.txt';
     
     BITW=36;
     

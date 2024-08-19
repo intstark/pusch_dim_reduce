@@ -1,0 +1,9 @@
+../../src/cpri_package_tx_zyl/package_data_intel.v
+../../src/cpri_package_tx_zyl/cpri_tx_gen.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_sync_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_async_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_SYNC_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_ASYNC_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/Simple_Dual_Port_BRAM_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/ASYNC_Dual_Port_BRAM_XPM_intel.v
+../../tb/cpri_package_tx_tb.sv

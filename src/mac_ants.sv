@@ -21,7 +21,7 @@
 module mac_ants #(
     parameter   ANT =   32,     // number of data streams
     parameter   IW  =   32,     // number of data streams
-    parameter   OW  =   32      // output width
+    parameter   OW  =   48      // output width
 )(
     input                                   i_clk                              ,
 
@@ -30,7 +30,7 @@ module mac_ants #(
 
     input          [ANT*IW-1: 0]            i_code_word                        ,
 
-    output         [OW-1: 0]                o_sum_data                          
+    output         [2*OW-1: 0]              o_sum_data                          
 );
 
 
@@ -40,7 +40,7 @@ module mac_ants #(
 // PARAMETERS
 //--------------------------------------------------------------------------------------
 localparam  MULT_W  =   32;
-localparam  MID_W   =   36;
+localparam  MID_W   =   OW;
 genvar gi;
 
 //--------------------------------------------------------------------------------------
@@ -155,8 +155,8 @@ end
 //  Ouput 
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    dout_re <= add4_re[0][OW-1:0];
-    dout_im <= add4_im[0][OW-1:0];
+    dout_re <= add4_re[0][MID_W-1:MID_W-OW];
+    dout_im <= add4_im[0][MID_W-1:MID_W-OW];
 end
 
 
