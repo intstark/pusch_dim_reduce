@@ -41,7 +41,6 @@ add wave -noupdate /cpri_rxdata_unpack_tb/uut/u_cpri_rx_gen/rd_valid
 add wave -noupdate -color {Dark Orchid} -radix unsigned /cpri_rxdata_unpack_tb/uut/cpri_iq_raddr
 add wave -noupdate /cpri_rxdata_unpack_tb/uut/cpri_iq_data
 add wave -noupdate /cpri_rxdata_unpack_tb/uut/cpri_iq_data_r1
-add wave -noupdate /cpri_rxdata_unpack_tb/uut/iq_rx_ready
 add wave -noupdate -radix unsigned /cpri_rxdata_unpack_tb/uut/re_cnt_cycle
 add wave -noupdate -color {Orange Red} -radix decimal /cpri_rxdata_unpack_tb/uut/qq
 add wave -noupdate -color {Orange Red} -radix decimal -childformat {{(6) -radix decimal} {(5) -radix decimal} {(4) -radix decimal} {(3) -radix decimal} {(2) -radix decimal} {(1) -radix decimal} {(0) -radix decimal}} -subitemconfig {{/cpri_rxdata_unpack_tb/uut/ant_package[0][6]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][5]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][4]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][3]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][2]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][1]} {-color {Orange Red} -radix decimal} {/cpri_rxdata_unpack_tb/uut/ant_package[0][0]} {-color {Orange Red} -radix decimal}} /cpri_rxdata_unpack_tb/uut/ll

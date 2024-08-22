@@ -35,11 +35,12 @@ module ant_data_buffer #(
     input                                           i_reset                 ,
 
     input          [WADDR_WIDTH-1: 0]               i_iq_addr               ,
-    input          [ANT*32-1:0][31: 0]              i_iq_data               ,
+    input          [ANT-1:0][31: 0]                 i_iq_data               ,
     input                                           i_iq_vld                ,
     input                                           i_iq_last               ,
 
-    output         [ANT*32*2-1: 0]                  o_ant_data              ,
+    output         [ANT*32-1: 0]                    o_ant_even              ,
+    output         [ANT*32-1: 0]                    o_ant_odd               ,
     output         [RADDR_WIDTH-1: 0]               o_ant_addr              ,
     output                                          o_tvalid                 
 );
@@ -205,7 +206,8 @@ always @ (posedge i_clk)begin
    tvalid_out[2:0] <= {tvalid_out[1:0], odd_rvld};
 end
 
-assign o_ant_data = {odd_rdata, even_rdata};
+assign o_ant_even = even_rdata;
+assign o_ant_odd  = odd_rdata ;
 assign o_tvalid = tvalid_out[2];
 
 endmodule

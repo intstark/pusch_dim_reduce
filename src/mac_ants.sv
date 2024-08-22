@@ -23,14 +23,15 @@ module mac_ants #(
     parameter   IW  =   32,     // number of data streams
     parameter   OW  =   48      // output width
 )(
-    input                                   i_clk                              ,
+    input                                           i_clk                   ,
 
-    input          [ANT*IW-1: 0]            i_ants_data                        ,
-    input                                   i_rvalid                           ,
+    input          [ANT*IW-1: 0]                    i_ants_data             ,
+    input                                           i_rvalid                ,
 
-    input          [ANT*IW-1: 0]            i_code_word                        ,
+    input          [ANT*IW-1: 0]                    i_code_word             ,
 
-    output         [2*OW-1: 0]              o_sum_data                          
+    output         [2*OW-1: 0]                      o_sum_data              ,
+    output                                          o_tvalid                 
 );
 
 
@@ -46,22 +47,23 @@ genvar gi;
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
-reg            [ANT-1:0][IW-1: 0]       ants_data                        ='{default:0} ;
-reg            [ANT-1:0][IW-1: 0]       code_word                        ='{default:0} ;
-wire           [ANT-1:0][MULT_W-1: 0]   mult_re                                        ;
-wire           [ANT-1:0][MULT_W-1: 0]   mult_im                                        ;
-reg            [ANT/2-1:0][MID_W-1: 0]  add0_re                          ='{default:0} ;
-reg            [ANT/2-1:0][MID_W-1: 0]  add0_im                          ='{default:0} ;
-reg            [ANT/4-1:0][MID_W-1: 0]  add1_re                          ='{default:0} ;
-reg            [ANT/4-1:0][MID_W-1: 0]  add1_im                          ='{default:0} ;
-reg            [ANT/8-1:0][MID_W-1: 0]  add2_re                          ='{default:0} ;
-reg            [ANT/8-1:0][MID_W-1: 0]  add2_im                          ='{default:0} ;
-reg            [ANT/16-1:0][MID_W-1: 0] add3_re                          ='{default:0} ;
-reg            [ANT/16-1:0][MID_W-1: 0] add3_im                          ='{default:0} ;
-reg            [0:0][MID_W-1: 0]        add4_re                          ='{default:0} ;
-reg            [0:0][MID_W-1: 0]        add4_im                          ='{default:0} ;
-reg            [OW-1: 0]                dout_re                          ='{default:0} ;
-reg            [OW-1: 0]                dout_im                          ='{default:0} ;
+reg            [ANT-1:0][IW-1: 0]               ants_data             ='{default:0};
+reg            [ANT-1:0][IW-1: 0]               code_word             ='{default:0};
+wire           [ANT-1:0][MULT_W-1: 0]           mult_re                 ;
+wire           [ANT-1:0][MULT_W-1: 0]           mult_im                 ;
+reg            [ANT/2-1:0][MID_W-1: 0]          add0_re               ='{default:0};
+reg            [ANT/2-1:0][MID_W-1: 0]          add0_im               ='{default:0};
+reg            [ANT/4-1:0][MID_W-1: 0]          add1_re               ='{default:0};
+reg            [ANT/4-1:0][MID_W-1: 0]          add1_im               ='{default:0};
+reg            [ANT/8-1:0][MID_W-1: 0]          add2_re               ='{default:0};
+reg            [ANT/8-1:0][MID_W-1: 0]          add2_im               ='{default:0};
+reg            [ANT/16-1:0][MID_W-1: 0]         add3_re               ='{default:0};
+reg            [ANT/16-1:0][MID_W-1: 0]         add3_im               ='{default:0};
+reg            [0:0][MID_W-1: 0]                add4_re               ='{default:0};
+reg            [0:0][MID_W-1: 0]                add4_im               ='{default:0};
+reg            [OW-1: 0]                        dout_re               ='{default:0};
+reg            [OW-1: 0]                        dout_im               ='{default:0};
+reg            [  15: 0]                        tvalid_buf            =0;
 
 //--------------------------------------------------------------------------------------
 //  input register
@@ -85,16 +87,16 @@ end
 //--------------------------------------------------------------------------------------
 generate for(gi=0; gi<ANT; gi++)
 begin:u_cmpy_mult
-    cmpy_mult_s16xs16                               cmpy_mult_mac
+    cmpy_mult_s16xs16                                       cmpy_mult_mac
     (
-        .clock                                      (i_clk                             ),//   input,   width = 1,       clock.clk
+        .clock                                              (i_clk                  ),//   input,   width = 1,       clock.clk
 
-        .dataa_real                                 (ants_data[gi][31:16]              ),//   input,   width = 8,  dataa_real.dataa_real
-        .dataa_imag                                 (ants_data[gi][15: 0]              ),//   input,   width = 8,  dataa_imag.dataa_imag
-        .datab_real                                 (code_word[gi][31:16]              ),//   input,  width = 16,  datab_real.datab_real
-        .datab_imag                                 (code_word[gi][15: 0]              ),//   input,  width = 16,  datab_imag.datab_imag
-        .result_real                                (mult_re[gi]                       ),//  output,  width = 24, result_real.result_real
-        .result_imag                                (mult_im[gi]                       ) //  output,  width = 24, result_imag.result_imag
+        .dataa_real                                         (ants_data[gi][31:16]   ),//   input,   width = 8,  dataa_real.dataa_real
+        .dataa_imag                                         (ants_data[gi][15: 0]   ),//   input,   width = 8,  dataa_imag.dataa_imag
+        .datab_real                                         (code_word[gi][31:16]   ),//   input,  width = 16,  datab_real.datab_real
+        .datab_imag                                         (code_word[gi][15: 0]   ),//   input,  width = 16,  datab_imag.datab_imag
+        .result_real                                        (mult_re[gi]            ),//  output,  width = 24, result_real.result_real
+        .result_imag                                        (mult_im[gi]            ) //  output,  width = 24, result_imag.result_imag
     );
 end
 endgenerate
@@ -159,8 +161,12 @@ always @(posedge i_clk) begin
     dout_im <= add4_im[0][MID_W-1:MID_W-OW];
 end
 
+always @(posedge i_clk) begin
+    tvalid_buf <= {tvalid_buf[14:0], i_rvalid};
+end
 
-assign o_sum_data={dout_re, dout_im};
+assign o_sum_data   = {dout_re, dout_im};
+assign o_tvalid     = tvalid_buf[10]; 
 
 
 

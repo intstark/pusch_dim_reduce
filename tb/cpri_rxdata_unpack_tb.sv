@@ -63,8 +63,10 @@ module cpri_rxdata_unpack_tb;
     wire           [  63: 0]                        cm_mask                 ;
 
     // Outputs
-    wire           [ANT-1:0][DW-1: 0]               o_iq_data               ;
-    wire           [ANT-1:0][DW-1: 0]               o_cm_data               ;
+    wire           [  10: 0]                        unpack_iq_addr          ;
+    wire           [4*32-1:0][31: 0]                unpack_iq_data          ;
+    wire                                            unpack_iq_vld           ;
+    wire                                            unpack_iq_last          ;
 
     reg            [numPRB*12-1:0][6: 0]            data_i                  ;
     reg            [numPRB*12-1:0][6: 0]            data_q                  ;
@@ -79,15 +81,16 @@ module cpri_rxdata_unpack_tb;
     // Instantiate the Unit Under Test (UUT)
     cpri_rxdata_unpack #(
         .DW                                                 (DW                     ),
-        .ANT                                                (ANT                    ),
-        .numRE                                              (numRE                  ) 
+        .ANT                                                (ANT                    )
     ) uut (
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (reset                  ),
         .i_cpri_rx_data                                     (tx_data                ),
         .i_cpri_rx_seq                                      (tx_seq                 ),
-        .o_iq_data                                          (o_iq_data              ),
-        .o_cm_data                                          (o_cm_data              ) 
+        .o_iq_addr                                          (unpack_iq_addr         ),
+        .o_iq_data                                          (unpack_iq_data         ),
+        .o_iq_vld                                           (unpack_iq_vld          ),
+        .o_iq_last                                          (unpack_iq_last         ) 
     );
 
 

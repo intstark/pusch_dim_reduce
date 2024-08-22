@@ -130,7 +130,7 @@ add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/even_rvld
 add wave -noupdate -expand -group ant_data_buffer -radix unsigned /cpri_package_loop_tb/ant_data_buffer/sync_raddr
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/sync_rd_rdy
-add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_ant_data
+add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_ant_even
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/odd_rvld
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_tvalid
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_ant_addr

@@ -35,7 +35,8 @@ module mac_beams #(
 
     output         [BEAM-1:0][2*OW-1: 0]              o_sum_data_even          ,
     output         [BEAM-1:0][2*OW-1: 0]              o_sum_data_odd           ,
-    output         [BEAM-1:0][2*OW-1: 0]              o_sum_data                
+    output         [BEAM-1:0][2*OW-1: 0]              o_sum_data               ,   
+    output                                            o_tvalid                
 );
 
 //--------------------------------------------------------------------------------------
@@ -47,16 +48,18 @@ genvar bi;
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
-reg            [BEAM-1:0][ANT*IW-1: 0]            code_word_even         ='{default:0};
-reg            [BEAM-1:0][ANT*IW-1: 0]            code_word_odd          ='{default:0};
-wire           [BEAM-1:0][2*OW-1: 0]              even_sum_data            ;
-wire           [BEAM-1:0][2*OW-1: 0]              odd_sum_data             ;
-reg            [BEAM-1:0][OW-1: 0]                ants_sum_re              ;
-reg            [BEAM-1:0][OW-1: 0]                ants_sum_im              ;
-reg            [BEAM-1:0][2*OW-1: 0]              ants_sum_even            ;
-reg            [BEAM-1:0][2*OW-1: 0]              ants_sum_odd             ;
-reg            [BEAM-1:0][2*OW-1: 0]              ants_sum                 ;
-
+reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_even        ='{default:0};
+reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_odd         ='{default:0};
+wire           [BEAM-1:0][2*OW-1: 0]            even_sum_data           ;
+wire           [BEAM-1:0][2*OW-1: 0]            odd_sum_data            ;
+reg            [BEAM-1:0][OW-1: 0]              ants_sum_re             ;
+reg            [BEAM-1:0][OW-1: 0]              ants_sum_im             ;
+reg            [BEAM-1:0][2*OW-1: 0]            ants_sum_even           ;
+reg            [BEAM-1:0][2*OW-1: 0]            ants_sum_odd            ;
+reg            [BEAM-1:0][2*OW-1: 0]            ants_sum                ;
+wire           [BEAM-1: 0]                      even_tvalid             ;
+wire           [BEAM-1: 0]                      odd_tvalid              ;
+reg            [   7: 0]                        tvalid_buf            =0;
 
 
 //-----------------------------------------------------------------
@@ -75,15 +78,16 @@ end
 generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
     // Instantiate the DUT
     mac_ants #(
-        .ANT                                (ANT                               ),
-        .IW                                 (IW                                ),
-        .OW                                 (OW                                ) 
+        .ANT                                                (ANT                    ),
+        .IW                                                 (IW                     ),
+        .OW                                                 (OW                     ) 
     ) mac_ants_even (
-        .i_clk                              (i_clk                             ),
-        .i_ants_data                        (i_ants_data_even                  ),
-        .i_rvalid                           (i_rvalid                          ),
-        .i_code_word                        (code_word_even[bi]                ),
-        .o_sum_data                         (even_sum_data [bi]                ) 
+        .i_clk                                              (i_clk                  ),
+        .i_ants_data                                        (i_ants_data_even       ),
+        .i_rvalid                                           (i_rvalid               ),
+        .i_code_word                                        (code_word_even[bi]     ),
+        .o_sum_data                                         (even_sum_data [bi]     ),
+        .o_tvalid                                           (even_tvalid   [bi]     ) 
     );
 end
 endgenerate
@@ -94,15 +98,16 @@ endgenerate
 generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
     // Instantiate the DUT
     mac_ants #(
-        .ANT                                (ANT                               ),
-        .IW                                 (IW                                ),
-        .OW                                 (OW                                ) 
+        .ANT                                                (ANT                    ),
+        .IW                                                 (IW                     ),
+        .OW                                                 (OW                     ) 
     ) mac_ants_odd (
-        .i_clk                              (i_clk                             ),
-        .i_ants_data                        (i_ants_data_odd                   ),
-        .i_rvalid                           (i_rvalid                          ),
-        .i_code_word                        (code_word_odd[bi]                 ),
-        .o_sum_data                         (odd_sum_data [bi]                 ) 
+        .i_clk                                              (i_clk                  ),
+        .i_ants_data                                        (i_ants_data_odd        ),
+        .i_rvalid                                           (i_rvalid               ),
+        .i_code_word                                        (code_word_odd[bi]      ),
+        .o_sum_data                                         (odd_sum_data [bi]      ),
+        .o_tvalid                                           (odd_tvalid   [bi]      ) 
     );
 end
 endgenerate
@@ -150,10 +155,14 @@ always @(posedge i_clk) begin
     end
 end
 
+always @(posedge i_clk) begin
+    tvalid_buf <= {tvalid_buf[6:0], even_tvalid[0]};
+end
 
 assign o_sum_data_even = ants_sum_even;
 assign o_sum_data_odd  = ants_sum_odd;
 assign o_sum_data      = ants_sum;
+assign o_tvalid        = tvalid_buf[0];
 
 
 endmodule

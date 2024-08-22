@@ -170,7 +170,7 @@ always @(posedge i_clk) begin
 end
 
 wire           [  10: 0]                        unpack_iq_addr          ;
-wire           [4*32-1:0][31: 0]                unpack_iq_data          ;
+wire           [4-1:0][31: 0]                   unpack_iq_data          ;
 wire                                            unpack_iq_vld           ;
 wire                                            unpack_iq_last          ;
 
@@ -207,7 +207,8 @@ ant_data_buffer #(
     .i_iq_data                                          (unpack_iq_data         ),
     .i_iq_vld                                           (unpack_iq_vld          ),
     .i_iq_last                                          (unpack_iq_last         ),
-    .o_ant_data                                         (                       ),
+    .o_ant_even                                         (                       ),
+    .o_ant_odd                                          (                       ),
     .o_ant_addr                                         (                       ),
     .o_tvalid                                           (                       ) 
 );
@@ -319,14 +320,14 @@ initial begin
     always @(posedge i_clk)begin
         if(ant_data_buffer.o_tvalid)
             $fwrite(fid_ant_data, "%d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d\n", 
-                ant_data_buffer.o_ant_data[32*0+16 +:16], ant_data_buffer.o_ant_data[32*0 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*1+16 +:16], ant_data_buffer.o_ant_data[32*1 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*2+16 +:16], ant_data_buffer.o_ant_data[32*2 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*3+16 +:16], ant_data_buffer.o_ant_data[32*3 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*4+16 +:16], ant_data_buffer.o_ant_data[32*4 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*5+16 +:16], ant_data_buffer.o_ant_data[32*5 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*6+16 +:16], ant_data_buffer.o_ant_data[32*6 + 0 +: 16],
-                ant_data_buffer.o_ant_data[32*7+16 +:16], ant_data_buffer.o_ant_data[32*7 + 0 +: 16]
+                ant_data_buffer.o_ant_even[32*0+16 +:16], ant_data_buffer.o_ant_odd[32*0 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*1+16 +:16], ant_data_buffer.o_ant_odd[32*1 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*2+16 +:16], ant_data_buffer.o_ant_odd[32*2 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*3+16 +:16], ant_data_buffer.o_ant_odd[32*3 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*4+16 +:16], ant_data_buffer.o_ant_odd[32*4 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*5+16 +:16], ant_data_buffer.o_ant_odd[32*5 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*6+16 +:16], ant_data_buffer.o_ant_odd[32*6 + 0 +: 16],
+                ant_data_buffer.o_ant_even[32*7+16 +:16], ant_data_buffer.o_ant_odd[32*7 + 0 +: 16]
             );
     end
 
