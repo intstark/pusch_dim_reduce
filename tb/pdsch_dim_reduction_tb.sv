@@ -22,29 +22,42 @@
 
 `timescale 1ns/1ps
 `define CLOCK_PERIOD 10.0
-`define SIM_ENDS_TIME 60000
+`define SIM_ENDS_TIME 100000
 
 `include "params_list_pkg.sv"
 
 
-module cpri_package_loop_tb;
+module pdsch_dim_reduction_tb;
 
 
-parameter FILE_IQDATA  = "./iq_data.txt" ;
-parameter FILE_ANTDATA  = "./ant_data.txt" ;
+
+parameter                                           FILE_IQDATA            = "./iq_data.txt";
+parameter                                           FILE_ANTDATA           = "./ant_data.txt";
+parameter                                           FILE_CWD_ODD           = "./code_word_odd.txt";
+parameter                                           FILE_CWD_EVEN          = "./code_word_even.txt";
+parameter                                           FILE_BEAM_ODD          = "./beam_data_odd.txt";
+parameter                                           FILE_BEAM_EVEN         = "./beam_data_even.txt";
+parameter                                           FILE_BEAM_ALL          = "./beam_data.txt";
 
 // Parameters
 parameter                                           DW                     = 8     ;
-parameter                                           ANT                    = 8     ;
 parameter                                           numBeams               = 16    ;
 parameter                                           numPRB                 = 132   ;
 parameter                                           numSYM                 = 14    ;
 parameter                                           numRE                  = 12    ;
 parameter                                           numDL                  = 2*numPRB*numSYM*numRE;
+parameter                                           numTDL                 = 4*numPRB*numRE;
+
+// Parameters
+parameter                                           ANT                    = 32    ;
+parameter                                           IW                     = 32    ;
+parameter                                           OW                     = 48    ;
+
 
 // Signals
 genvar gi,gj;
-integer fid_iq_data, fid_ant_data;
+integer fid_iq_data, fid_ant_data, fid_cwd_odd, fid_cwd_even;
+integer fid_beam_odd, fid_beam_even, fid_beam_all;
 
 // Inputs
 reg                                             i_clk                 =1'b0;
@@ -72,12 +85,12 @@ wire           [  63: 0]                        cm_mask                 ;
 wire           [ANT-1:0][DW-1: 0]               o_iq_data               ;
 wire           [ANT-1:0][DW-1: 0]               o_cm_data               ;
 
-reg            [numPRB*12-1:0][6: 0]            data_i                  ;
-reg            [numPRB*12-1:0][6: 0]            data_q                  ;
+reg            [numTDL-1:0][6: 0]               data_i                  ;
+reg            [numTDL-1:0][6: 0]               data_q                  ;
 
 reg            [   8: 0]                        prb_num               =0;
 reg            [   7: 0]                        re_per_prb            =0;
-reg            [  10: 0]                        re_num                =0;
+reg            [  15: 0]                        re_num                =0;
 reg            [  13: 0]                        pkg_data              =0;
 reg            [   3: 0]                        sym_num               =0;
 
@@ -90,7 +103,14 @@ wire                                            m_cpri_wen              ;
 wire           [   6: 0]                        m_cpri_waddr            ;
 wire           [  63: 0]                        m_cpri_wdata            ;
 wire                                            m_cpri_wlast            ;
+wire           [numBeams-1:0][ANT*IW-1: 0]      i_code_word_odd         ;
+wire           [numBeams-1:0][ANT*IW-1: 0]      i_code_word_even        ;
 
+reg            [numBeams-1:0][ANT*2-1:0][15: 0] code_word_odd_pre     ='{default:0};
+reg            [numBeams-1:0][ANT*2-1:0][15: 0] code_word_even_pre    ='{default:0};
+reg            [numBeams-1:0][ANT-1:0][31: 0]   code_word_odd           ;
+reg            [numBeams-1:0][ANT-1:0][31: 0]   code_word_even          ;
+reg            [   1: 0]                        rbg_size              =0;
 
 
 
@@ -173,44 +193,18 @@ always @(posedge i_clk) begin
         rx_seq <= 0;
 end
 
-wire           [  10: 0]                        unpack_iq_addr          ;
-wire           [4-1:0][31: 0]                   unpack_iq_data          ;
-wire                                            unpack_iq_vld           ;
-wire                                            unpack_iq_last          ;
+
 
 // Instantiate the Unit Under Test (UUT)
-cpri_rxdata_unpack                                      uut
-(
+pdsch_dim_reduction                                     pdsch_dim_reduction(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (reset                  ),
     .i_cpri_rx_data                                     (iq_rx_data             ),
     .i_cpri_rx_seq                                      (rx_seq                 ),
     .i_cpri_rx_vld                                      (iq_rx_valid            ),
-    .o_iq_addr                                          (unpack_iq_addr         ),
-    .o_iq_data                                          (unpack_iq_data         ),
-    .o_iq_vld                                           (unpack_iq_vld          ),
-    .o_iq_last                                          (unpack_iq_last         ) 
-);
-
-ant_data_buffer #(
-    .ANT                                                (4                      ),
-    .WDATA_WIDTH                                        (128                    ),
-    .WADDR_WIDTH                                        (11                     ),
-    .RDATA_WIDTH                                        (128                    ),
-    .RADDR_WIDTH                                        (11                     ),
-    .READ_LATENCY                                       (3                      ),
-    .FIFO_DEPTH                                         (16                     ),
-    .FIFO_WIDTH                                         (1                      ),
-    .LOOP_WIDTH                                         (12                     ),
-    .INFO_WIDTH                                         (1                      ),
-    .RAM_TYPE                                           (1                      ) 
-)ant_data_buffer(
-    .i_clk                                              (i_clk                  ),
-    .i_reset                                            (reset                  ),
-    .i_iq_addr                                          (unpack_iq_addr         ),
-    .i_iq_data                                          (unpack_iq_data         ),
-    .i_iq_vld                                           (unpack_iq_vld          ),
-    .i_iq_last                                          (unpack_iq_last         ),
+    .i_code_word_even                                   (i_code_word_even       ),
+    .i_code_word_odd                                    (i_code_word_odd        ),
+    .i_rbg_size                                         (rbg_size               ),
     .o_ant_even                                         (                       ),
     .o_ant_odd                                          (                       ),
     .o_ant_addr                                         (                       ),
@@ -231,19 +225,56 @@ initial begin
     if(fid_iq_data)
     $display("succeed open file %s",FILE_IQDATA);
 
-    for(int i=0;i<numPRB*12;i++)begin
+    for(int i=0;i<numTDL;i++)begin
         $fscanf(fid_iq_data, "%d,%d,", data_i[i],data_q[i]);
     end
     $fclose(fid_iq_data);
 end
 
+// re_num 
 always @(posedge i_clk) begin
     if(reset || tx_hfp)
         re_num <= 0;
-    else if(re_num == numPRB*12-1)
+    else if(re_num == numTDL-1)
         re_num <= 0;
     else 
         re_num <= re_num + 1;
+    
+end
+
+always @(posedge i_clk) begin
+    if(reset || tx_hfp)
+        pkg_data <= 0;
+    else
+        pkg_data <= {data_i[re_num], data_q[re_num]};
+end
+
+// Reset generation
+initial begin
+    #(`CLOCK_PERIOD*10) reset = 1'b0;
+    tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD) tx_hfp = 1'b0;
+end
+
+
+always @(posedge i_clk) begin
+    if(reset)
+        tx_vld <= 0;
+    else if(tx_hfp)
+        tx_vld <= 1;
+end
+
+assign tx_sop = (re_per_prb ==0 ) ? 1'b1 : 1'b0;
+assign tx_eop = (re_per_prb ==11) ? 1'b1 : 1'b0;
+
+// cpri sequence number 0-95
+always @(posedge i_clk) begin
+    if(reset || tx_hfp)
+        tx_seq <= 0;
+    else if(tx_seq==95)
+        tx_seq <= 0;
+    else
+        tx_seq <= tx_seq + 1;
 end
 
 // re number per prb 0-11
@@ -277,40 +308,6 @@ always @(posedge i_clk) begin
 end
 
 
-always @(posedge i_clk) begin
-    if(reset || tx_hfp)
-        pkg_data <= 0;
-    else
-        pkg_data <= {data_i[re_num], data_q[re_num]};
-end
-
-
-// Reset generation
-initial begin
-    #(`CLOCK_PERIOD*10) reset = 1'b0;
-    tx_hfp = 1'b1;
-    #(`CLOCK_PERIOD) tx_hfp = 1'b0;
-end
-
-
-always @(posedge i_clk) begin
-    if(reset)
-        tx_vld <= 0;
-    else if(tx_hfp)
-        tx_vld <= 1;
-end
-
-assign tx_sop = (re_per_prb ==0 ) ? 1'b1 : 1'b0;
-assign tx_eop = (re_per_prb ==11) ? 1'b1 : 1'b0;
-
-always @(posedge i_clk) begin
-    if(reset || tx_hfp)
-        tx_seq <= 0;
-    else if(tx_seq==95)
-        tx_seq <= 0;
-    else
-        tx_seq <= tx_seq + 1;
-end
 
 
 always @(posedge i_clk) begin
@@ -325,28 +322,108 @@ always @(posedge i_clk) begin
     end
 end
 
+
 initial begin
-        fid_ant_data= $fopen(FILE_ANTDATA,"w");
-        if(fid_ant_data)
-            $display("succeed open file %s",FILE_ANTDATA);
+    fid_cwd_odd = $fopen(FILE_CWD_ODD,"r");
+    if(fid_cwd_odd)
+        $display("succeed open file %s",FILE_CWD_ODD);
 
-        #(`SIM_ENDS_TIME);
-        $fclose(fid_ant_data);
-        $stop;
-    end
 
-    always @(posedge i_clk)begin
-        if(ant_data_buffer.o_tvalid)
-            $fwrite(fid_ant_data, "%d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d\n", 
-                ant_data_buffer.o_ant_even[32*0+16 +:16], ant_data_buffer.o_ant_odd[32*0 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*1+16 +:16], ant_data_buffer.o_ant_odd[32*1 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*2+16 +:16], ant_data_buffer.o_ant_odd[32*2 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*3+16 +:16], ant_data_buffer.o_ant_odd[32*3 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*4+16 +:16], ant_data_buffer.o_ant_odd[32*4 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*5+16 +:16], ant_data_buffer.o_ant_odd[32*5 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*6+16 +:16], ant_data_buffer.o_ant_odd[32*6 + 0 +: 16],
-                ant_data_buffer.o_ant_even[32*7+16 +:16], ant_data_buffer.o_ant_odd[32*7 + 0 +: 16]
-            );
+    for(int i=0; i<numBeams; i++)begin
+        for(int j=0; j<ANT*2; j++)begin
+            $fscanf(fid_cwd_odd, "%d,", code_word_odd_pre[i][j]);
+            $display("code_word_odd_pre[i][j] = %d,", code_word_odd_pre[i][j]);
+        end
     end
+    $fclose(fid_cwd_odd);
+end
+
+initial begin
+    fid_cwd_even = $fopen(FILE_CWD_EVEN,"r");
+    if(fid_cwd_even)
+        $display("succeed open file %s",FILE_CWD_EVEN);
+
+
+    for(int i=0; i<numBeams; i++)begin
+        for(int j=0; j<ANT*2; j++)begin
+            $fscanf(fid_cwd_even, "%d,", code_word_even_pre[i][j]);
+            $display("code_word_even_pre[i][j] = %d,", code_word_even_pre[i][j]);
+        end
+    end
+    $fclose(fid_cwd_even);
+end
+
+generate 
+for( gi=0; gi<numBeams; gi++)begin:repack_code_word_odd
+    for(gj=0; gj<ANT; gj++)begin
+        assign code_word_odd[gi][gj] = {code_word_odd_pre[gi][gj],code_word_odd_pre[gi][gj+ANT]};
+        assign i_code_word_odd[gi][IW*gj+:IW] = code_word_odd[gi][gj];
+    end
+end
+endgenerate 
+
+generate 
+for( gi=0; gi<numBeams; gi++)begin:repack_code_word_even
+    for(gj=0; gj<ANT; gj++)begin
+        assign code_word_even[gi][gj] = {code_word_even_pre[gi][gj],code_word_even_pre[gi][gj+ANT]};
+        assign i_code_word_even[gi][IW*gj+:IW] = code_word_even[gi][gj];
+    end
+end
+endgenerate 
+
+
+
+
+initial begin
+    fid_beam_odd= $fopen(FILE_BEAM_ODD,"w");
+    fid_beam_even= $fopen(FILE_BEAM_EVEN,"w");
+    fid_beam_all = $fopen(FILE_BEAM_ALL,"w");
+    if(fid_beam_odd)
+        $display("succeed open file %s",FILE_BEAM_ODD);
+    if(fid_beam_even)
+        $display("succeed open file %s",FILE_BEAM_EVEN);
+    if(fid_beam_all)
+        $display("succeed open file %s",FILE_BEAM_ALL);
+
+    #(`SIM_ENDS_TIME);
+    $fclose(fid_beam_odd);
+    $fclose(fid_beam_even);
+    $fclose(fid_beam_all);
+    $stop;
+end
+
+task write_data2file;
+    input i_clk;
+    input valid;
+    input integer desfid;
+    input [15:0][95:0] iq_data;
+
+
+    if(valid)
+        $fwrite(desfid, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", 
+            iq_data[ 0][95:48], iq_data[ 0][47:0],
+            iq_data[ 1][95:48], iq_data[ 1][47:0],
+            iq_data[ 2][95:48], iq_data[ 2][47:0],
+            iq_data[ 3][95:48], iq_data[ 3][47:0],
+            iq_data[ 4][95:48], iq_data[ 4][47:0],
+            iq_data[ 5][95:48], iq_data[ 5][47:0],
+            iq_data[ 6][95:48], iq_data[ 6][47:0],
+            iq_data[ 7][95:48], iq_data[ 7][47:0],
+            iq_data[ 8][95:48], iq_data[ 8][47:0],
+            iq_data[ 9][95:48], iq_data[ 9][47:0],
+            iq_data[10][95:48], iq_data[10][47:0],
+            iq_data[11][95:48], iq_data[11][47:0],
+            iq_data[12][95:48], iq_data[12][47:0],
+            iq_data[13][95:48], iq_data[13][47:0],
+            iq_data[14][95:48], iq_data[14][47:0],
+            iq_data[15][95:48], iq_data[15][47:0]
+        );
+endtask
+
+//always @(posedge i_clk) write_data2file(i_clk, ovalid, fid_beam_even, dut_mac_beams.even_sum_data);
+//always @(posedge i_clk) write_data2file(i_clk, ovalid, fid_beam_odd , dut_mac_beams.odd_sum_data );
+//always @(posedge i_clk) write_data2file(i_clk, ovalid, fid_beam_all , dut_mac_beams.ants_sum     );
+
+
 
 endmodule

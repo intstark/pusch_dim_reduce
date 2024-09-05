@@ -29,8 +29,6 @@ module cpri_rxdata_unpack # (
     input          [   6: 0]                        i_cpri_rx_seq           ,
     input                                           i_cpri_rx_vld           ,
 
-    input                                           i_sym1_done             ,
-
     output         [  10: 0]                        o_iq_addr               ,
     output         [ANT-1:0][31: 0]                 o_iq_data               ,
     output                                          o_iq_vld                ,
@@ -91,14 +89,13 @@ wire                                            cpri_buf_last           ;
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer
 //--------------------------------------------------------------------------------------
-cpri_rxdata_buffer                                      cpri_rxdata_buffer(
+cpri_rxdata_fifo                                        cpri_rxdata_buffer(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
     .i_rx_data                                          (i_cpri_rx_data         ),
     .i_rx_seq                                           (i_cpri_rx_seq          ),
     .i_rvalid                                           (i_cpri_rx_vld          ),
     .i_rready                                           (cpri_rx_ready          ),
-    .i_sym1_done                                        (i_sym1_done            ),
     .o_tx_data                                          (cpri_data_buf          ),
     .o_tx_addr                                          (cpri_addr_buf          ),
     .o_tx_last                                          (cpri_buf_last          ),

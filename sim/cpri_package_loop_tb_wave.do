@@ -16,9 +16,14 @@ add wave -noupdate /cpri_package_loop_tb/i_clk
 add wave -noupdate /cpri_package_loop_tb/reset
 add wave -noupdate /cpri_package_loop_tb/tx_hfp
 add wave -noupdate -radix unsigned /cpri_package_loop_tb/tx_seq
-add wave -noupdate /cpri_package_loop_tb/package_data/i_eop
-add wave -noupdate /cpri_package_loop_tb/package_data/i_sop
 add wave -noupdate /cpri_package_loop_tb/package_data/i_vld
+add wave -noupdate /cpri_package_loop_tb/package_data/i_sop
+add wave -noupdate /cpri_package_loop_tb/package_data/i_eop
+add wave -noupdate /cpri_package_loop_tb/sym_num
+add wave -noupdate -color {Orange Red} -radix decimal -childformat {{(6) -radix decimal} {(5) -radix decimal} {(4) -radix decimal} {(3) -radix decimal} {(2) -radix decimal} {(1) -radix decimal} {(0) -radix decimal}} -subitemconfig {{/cpri_package_loop_tb/pkg_data[13]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[12]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[11]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[10]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[9]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[8]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/pkg_data[7]} {-color {Orange Red} -radix decimal}} /cpri_package_loop_tb/i1
+add wave -noupdate -color {Orange Red} -radix decimal /cpri_package_loop_tb/q1
+add wave -noupdate /cpri_package_loop_tb/pkg_data
+add wave -noupdate -radix unsigned /cpri_package_loop_tb/re_num
 add wave -noupdate -group package_tx /cpri_package_loop_tb/package_data/i_pkg0_data
 add wave -noupdate -group package_tx /cpri_package_loop_tb/package_data/i_pkg0_shift
 add wave -noupdate -group package_tx /cpri_package_loop_tb/package_data/u_pkg_ram/free_size
@@ -66,10 +71,6 @@ add wave -noupdate -expand -group cpri_rx_buffer /cpri_package_loop_tb/uut/cpri_
 add wave -noupdate -expand -group cpri_rx_buffer -radix unsigned /cpri_package_loop_tb/uut/cpri_rxdata_buffer/o_tx_addr
 add wave -noupdate -expand -group cpri_rx_buffer /cpri_package_loop_tb/uut/cpri_rxdata_buffer/o_tx_last
 add wave -noupdate -expand -group cpri_rx_buffer /cpri_package_loop_tb/uut/cpri_rxdata_buffer/o_tx_data
-add wave -noupdate -color {Orange Red} -radix decimal /cpri_package_loop_tb/i1
-add wave -noupdate -color {Orange Red} -radix decimal /cpri_package_loop_tb/q1
-add wave -noupdate /cpri_package_loop_tb/pkg_data
-add wave -noupdate -radix unsigned /cpri_package_loop_tb/re_num
 add wave -noupdate /cpri_package_loop_tb/uut/i_cpri_rx_data
 add wave -noupdate -radix unsigned /cpri_package_loop_tb/uut/i_cpri_rx_seq
 add wave -noupdate /cpri_package_loop_tb/uut/cpri_iq_vld
@@ -78,9 +79,10 @@ add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/cpri_rdy
 add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/cpri_rvld
 add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/rd_valid
 add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/o_tready
+add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/wr_wen
 add wave -noupdate -color Pink -radix unsigned /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/wbadr
 add wave -noupdate -radix unsigned /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/wr_addr
-add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/wr_wen
+add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/wr_data
 add wave -noupdate -color Pink -radix unsigned /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/rbadr
 add wave -noupdate -radix unsigned /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/rd_addr
 add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/rd_data
@@ -92,10 +94,10 @@ add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/u_fifo_
 add wave -noupdate /cpri_package_loop_tb/uut/u_cpri_rx_gen/u_cpri_rx_ram/u_fifo_buffer_64w_16d_0/rd_en
 add wave -noupdate -radix decimal -childformat {{{/cpri_package_loop_tb/uut/i0[13]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[12]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[11]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[10]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[9]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[8]} -radix decimal} {{/cpri_package_loop_tb/uut/i0[7]} -radix decimal}} -subitemconfig {{/cpri_package_loop_tb/uut/cpri_iq_data[13]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[12]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[11]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[10]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[9]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[8]} {-radix decimal} {/cpri_package_loop_tb/uut/cpri_iq_data[7]} {-radix decimal}} /cpri_package_loop_tb/uut/i0
 add wave -noupdate -radix decimal /cpri_package_loop_tb/uut/q0
-add wave -noupdate -color Gold /cpri_package_loop_tb/uut/cpri_iq_data
+add wave -noupdate -color Gold -subitemconfig {{/cpri_package_loop_tb/uut/cpri_iq_data[63]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[62]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[61]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[60]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[59]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[58]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[57]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[56]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[55]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[54]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[53]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[52]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[51]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[50]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[49]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[48]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[47]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[46]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[45]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[44]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[43]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[42]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[41]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[40]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[39]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[38]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[37]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[36]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[35]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[34]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[33]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[32]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[31]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[30]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[29]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[28]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[27]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[26]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[25]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[24]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[23]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[22]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[21]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[20]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[19]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[18]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[17]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[16]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[15]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[14]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[13]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[12]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[11]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[10]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[9]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[8]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[7]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[6]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[5]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[4]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[3]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[2]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[1]} {-color Gold} {/cpri_package_loop_tb/uut/cpri_iq_data[0]} {-color Gold}} /cpri_package_loop_tb/uut/cpri_iq_data
 add wave -noupdate -color Gold -radix unsigned /cpri_package_loop_tb/uut/cpri_iq_raddr
 add wave -noupdate -color {Medium Orchid} -radix unsigned /cpri_package_loop_tb/uut/re_cnt_cycle
-add wave -noupdate -color {Orange Red} -radix decimal /cpri_package_loop_tb/uut/ii
+add wave -noupdate -color {Orange Red} -radix decimal -childformat {{(6) -radix decimal} {(5) -radix decimal} {(4) -radix decimal} {(3) -radix decimal} {(2) -radix decimal} {(1) -radix decimal} {(0) -radix decimal}} -subitemconfig {{/cpri_package_loop_tb/uut/ant_package[0][13]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][12]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][11]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][10]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][9]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][8]} {-color {Orange Red} -radix decimal} {/cpri_package_loop_tb/uut/ant_package[0][7]} {-color {Orange Red} -radix decimal}} /cpri_package_loop_tb/uut/ii
 add wave -noupdate -color {Orange Red} -radix decimal /cpri_package_loop_tb/uut/qq
 add wave -noupdate /cpri_package_loop_tb/uut/rb_agc
 add wave -noupdate /cpri_package_loop_tb/uut/ant_package_valid
@@ -135,8 +137,8 @@ add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_tvalid
 add wave -noupdate -expand -group ant_data_buffer /cpri_package_loop_tb/ant_data_buffer/o_ant_addr
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {3230555 ps} 0} {{Cursor 2} {55125000 ps} 0} {{Cursor 3} {21164910 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {3230555 ps} 0} {{Cursor 2} {55125000 ps} 0} {{Cursor 3} {21125000 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 351
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -151,4 +153,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ps
 update
-WaveRestoreZoom {0 ps} {66150 ns}
+WaveRestoreZoom {21083867 ps} {21176659 ps}
