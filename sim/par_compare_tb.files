@@ -1,0 +1,3 @@
+../../tb/par_compare_tb.sv
+../../src/par_compare.sv
+../../src/beam_sort.sv

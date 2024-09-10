@@ -25,8 +25,6 @@ module cpri_rxdata_unpack # (
     input                                           i_clk                   ,
     input                                           i_reset                 ,
 
-    input                                           i_cpri_clk              ,
-    input                                           i_cpri_rst              ,
     input          [  63: 0]                        i_cpri_rx_data          ,
     input          [   6: 0]                        i_cpri_rx_seq           ,
     input                                           i_cpri_rx_vld           ,
@@ -94,8 +92,8 @@ wire                                            cpri_buf_last           ;
 // cpri rx data buffer
 //--------------------------------------------------------------------------------------
 cpri_rxdata_buffer                                      cpri_rxdata_buffer(
-    .i_clk                                              (i_cpri_clk             ),
-    .i_reset                                            (i_cpri_rst             ),
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
     .i_rx_data                                          (i_cpri_rx_data         ),
     .i_rx_seq                                           (i_cpri_rx_seq          ),
     .i_rvalid                                           (i_cpri_rx_vld          ),
@@ -114,8 +112,8 @@ cpri_rxdata_buffer                                      cpri_rxdata_buffer(
 //--------------------------------------------------------------------------------------
 cpri_rx_gen                                             u_cpri_rx_gen
 (
-    .wr_clk                                             (i_cpri_clk             ),
-    .wr_rst                                             (i_cpri_rst             ),
+    .wr_clk                                             (i_clk                  ),
+    .wr_rst                                             (i_reset                ),
     .rd_clk                                             (i_clk                  ),
     .rd_rst                                             (i_reset                ),
     .i_cpri_wen                                         (cpri_buf_vld           ),

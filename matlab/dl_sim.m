@@ -78,6 +78,32 @@ err4_sum=sum(abs(err4));
 fprintf("解压后与发送前(16bit):\t err4_sum = %d\n",err4_sum);
 
 
+%% 读取码子
+cw_even = importdata('code_word_even.txt',',');
+cw_odd  = importdata('code_word_odd.txt' ,',');
+
+ant_even = sim_tx_data(1:LEN/2);
+ant_odd  = sim_tx_data(LEN/2+1:LEN);
+
+
+%% rbG能量和计算
+rbGSize=16;
+numRE_rbG = rbGSize*12;
+rbGMaxNum = LEN/numRE_rbG;
+
+for ii=1:1:ceil(rbGMaxNum)
+    if(ii==ceil(rbGMaxNum))
+        rbG_sum(ii) = sum(sim_tx_data((ii-1)*numRE_rbG+1:LEN));
+    else
+        rbG_sum(ii) = sum(sim_tx_data((ii-1)*numRE_rbG+1:ii*numRE_rbG));
+    end
+end
+
+
+
+
+
+
 
 %% 相关函数
 

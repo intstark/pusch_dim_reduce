@@ -30,19 +30,15 @@ module pdsch_dim_reduction #(
     parameter integer INFO_WIDTH         =  1    ,    
     parameter integer RAM_TYPE           =  1
 )(
-    input                                           i_clk                   ,   // data clock
-    input                                           i_reset                 ,   // reset
+    input                                           i_clk                   ,
+    input                                           i_reset                 ,
 
-    input          [LANE-1: 0]                      i_cpri_clk              ,   // cpri clkout
-    input          [LANE-1: 0]                      i_cpri_rst              ,   // cpri reset
-    input          [LANE-1:0][63: 0]                i_cpri_rx_data          ,   // cpri data
-    input          [LANE-1:0][6: 0]                 i_cpri_rx_seq           ,   // cpri seq
-    input          [LANE-1: 0]                      i_cpri_rx_vld           ,   // cpri valid
-
+    input          [  63: 0]                        i_cpri_rx_data          ,
+    input          [   6: 0]                        i_cpri_rx_seq           ,
+    input                                           i_cpri_rx_vld           ,
+    input                                           i_sym1_done             ,
     input          [15:0][32*32-1: 0]               i_code_word_even        ,
     input          [15:0][32*32-1: 0]               i_code_word_odd         ,
-
-    input                                           i_sym1_done             ,    
     input          [   1: 0]                        i_rbg_size              ,
 
     output         [LANE*4*32-1: 0]                 o_ant_even              ,
@@ -89,14 +85,11 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
     // Instantiate the Unit Under Test (UUT)
     cpri_rxdata_unpack                                      cpri_rxdata_unpack_4ant
     (
-
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
-        .i_cpri_clk                                         (i_cpri_clk    [gi]     ),
-        .i_cpri_rst                                         (i_cpri_rst    [gi]     ),
-        .i_cpri_rx_data                                     (i_cpri_rx_data[gi]     ),
-        .i_cpri_rx_seq                                      (i_cpri_rx_seq [gi]     ),
-        .i_cpri_rx_vld                                      (i_cpri_rx_vld [gi]     ),
+        .i_cpri_rx_data                                     (i_cpri_rx_data         ),
+        .i_cpri_rx_seq                                      (i_cpri_rx_seq          ),
+        .i_cpri_rx_vld                                      (i_cpri_rx_vld          ),
         .i_sym1_done                                        (sym1_done              ),
         .o_iq_addr                                          (unpack_iq_addr[gi]     ),
         .o_iq_data                                          (unpack_iq_data[gi]     ),

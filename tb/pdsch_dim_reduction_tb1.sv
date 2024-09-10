@@ -194,39 +194,17 @@ always @(posedge i_clk) begin
 end
 
 
-wire           [   7: 0]                        cpri_clk                ;
-wire           [   7: 0]                        cpri_rst                ;
-wire           [7:0][63: 0]                     cpri_rx_data            ;
-wire           [7:0][6: 0]                      cpri_rx_seq             ;
-wire           [   7: 0]                        cpri_rx_vld             ;
 
-
-assign cpri_clk     = {8{i_clk}};
-assign cpri_rst     = {8{reset}};
-assign cpri_rx_data = '{8{iq_rx_data}};
-assign cpri_rx_seq  = '{8{rx_seq}};
-assign cpri_rx_vld  = {8{iq_rx_valid}};
-
-
-
-//------------------------------------------------------------------------------------------
-// UL -- dut
-//------------------------------------------------------------------------------------------
+// Instantiate the Unit Under Test (UUT)
 pdsch_dim_reduction                                     pdsch_dim_reduction(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (reset                  ),
-
-    .i_cpri_clk                                         (cpri_clk               ),
-    .i_cpri_rst                                         (cpri_rst               ),
-    .i_cpri_rx_data                                     (cpri_rx_data           ),
-    .i_cpri_rx_seq                                      (cpri_rx_seq            ),
-    .i_cpri_rx_vld                                      (cpri_rx_vld            ),
-    
+    .i_cpri_rx_data                                     (iq_rx_data             ),
+    .i_cpri_rx_seq                                      (rx_seq                 ),
+    .i_cpri_rx_vld                                      (iq_rx_valid            ),
     .i_code_word_even                                   (i_code_word_even       ),
     .i_code_word_odd                                    (i_code_word_odd        ),
-    
     .i_rbg_size                                         (rbg_size               ),
-    
     .o_ant_even                                         (                       ),
     .o_ant_odd                                          (                       ),
     .o_ant_addr                                         (                       ),
