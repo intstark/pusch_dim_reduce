@@ -39,8 +39,8 @@ module pdsch_dim_reduction #(
     input          [LANE-1:0][6: 0]                 i_cpri_rx_seq           ,   // cpri seq
     input          [LANE-1: 0]                      i_cpri_rx_vld           ,   // cpri valid
 
-    input          [15:0][32*32-1: 0]               i_code_word_even        ,
-    input          [15:0][32*32-1: 0]               i_code_word_odd         ,
+    input          [63:0][32*32-1: 0]               i_code_word_even        ,
+    input          [63:0][32*32-1: 0]               i_code_word_odd         ,
 
     input                                           i_sym1_done             ,    
     input          [   1: 0]                        i_rbg_size              ,
@@ -77,9 +77,9 @@ wire           [LANE-1: 0]                      ant_tvalid              ;
 wire           [LANE*4*32-1: 0]                 ant_data_even           ;
 wire           [LANE*4*32-1: 0]                 ant_data_odd            ;
 
-wire           [BEAM-1:0][2*OW-1: 0]            beams_sum_even          ;
-wire           [BEAM-1:0][2*OW-1: 0]            beams_sum_odd           ;
-wire           [BEAM-1:0][2*OW-1: 0]            beams_sum_ants          ;
+wire           [BEAM-1:0][OW-1: 0]              beams_sum_even          ;
+wire           [BEAM-1:0][OW-1: 0]              beams_sum_odd           ;
+wire           [BEAM-1:0][OW-1: 0]              beams_sum_ants          ;
 wire                                            beams_tvalid            ;
 reg                                             sym1_done             =0;
 
@@ -136,20 +136,70 @@ end
 endgenerate
 
 //------------------------------------------------------------------------------------------
-// BEAMS MAC BLOCK
+// code word 
+//------------------------------------------------------------------------------------------
+reg                                             ant_tvalid_r          =0;
+wire                                            ant_tvld_pos            ;
+reg            [   7: 0]                        ant_buffer_sym        =0;
+reg            [15:0][ANT*IW-1: 0]              code_word_even        ='{default:0};
+reg            [15:0][ANT*IW-1: 0]              code_word_odd         ='{default:0};
+
+
+always @ (posedge i_clk) begin
+    ant_tvalid_r <= ant_tvalid[0];
+end
+
+assign ant_tvld_pos = ~ant_tvalid[0] & (ant_tvalid_r);
+
+always @(posedge i_clk) begin
+    if(i_reset)
+        ant_buffer_sym <= 'd0;
+    else if(ant_tvld_pos)
+        ant_buffer_sym <= ant_buffer_sym + 'd1;
+end
+
+
+always @(posedge i_clk) begin
+    case(ant_buffer_sym)
+        8'd0: begin
+                code_word_even <= i_code_word_even[15:0];
+                code_word_odd  <= i_code_word_odd [15:0];
+            end
+        8'd1: begin
+                code_word_even <= i_code_word_even[31:16];
+                code_word_odd  <= i_code_word_odd [31:16];
+            end
+        8'd2: begin
+                code_word_even <= i_code_word_even[47:32];
+                code_word_odd  <= i_code_word_odd [47:32];
+            end
+        8'd3: begin
+                code_word_even <= i_code_word_even[63:48];
+                code_word_odd  <= i_code_word_odd [63:48];
+            end
+        default: begin
+                code_word_even <= i_code_word_even[63:48];
+                code_word_odd  <= i_code_word_odd [63:48];
+            end
+    endcase
+end
+
+
+//------------------------------------------------------------------------------------------
+// BEAMS MAC BLOCK FOR 16 BEAMS
 //------------------------------------------------------------------------------------------
 mac_beams #(
     .BEAM                                               (BEAM                   ),
     .ANT                                                (ANT                    ),
     .IW                                                 (IW                     ),
     .OW                                                 (OW                     ) 
-) dut_mac_beams (
+)mac_beams(
     .i_clk                                              (i_clk                  ),
     .i_ants_data_even                                   (ant_data_even          ),
     .i_ants_data_odd                                    (ant_data_odd           ),
     .i_rvalid                                           (ant_tvalid[0]          ),
-    .i_code_word_even                                   (i_code_word_even       ),
-    .i_code_word_odd                                    (i_code_word_odd        ),
+    .i_code_word_even                                   (code_word_even         ),
+    .i_code_word_odd                                    (code_word_odd          ),
     .o_sum_data_even                                    (beams_sum_even         ),
     .o_sum_data_odd                                     (beams_sum_odd          ),
     .o_sum_data                                         (beams_sum_ants         ),
@@ -166,24 +216,18 @@ assign o_tvalid   = ant_tvalid[0] ;
 // beams process counter
 //------------------------------------------------------------------------------------------
 reg                                             beams_tvalid_r        =0;
-reg                                             beams_tvld_pos        =0;
-reg                                             beams_tvld_neg        =0;
+wire                                            beams_tvld_pos          ;
+wire                                            beams_tvld_neg          ;
 reg            [   7: 0]                        beams_blk_num         =0;
 
 always @ (posedge i_clk) begin
     beams_tvalid_r <= beams_tvalid;
-
-    if(beams_tvalid & (~beams_tvalid_r))
-        beams_tvld_pos <= 1'b1;
-    else
-        beams_tvld_pos <= 1'b0;
-
-    if(~beams_tvalid & (beams_tvalid_r))
-        beams_tvld_neg <= 1'b1;
-    else
-        beams_tvld_neg <= 1'b0;
-
 end
+
+
+assign beams_tvld_pos = beams_tvalid & (~beams_tvalid_r);
+assign beams_tvld_neg = ~beams_tvalid & (beams_tvalid_r);
+
 
 always @ (posedge i_clk) begin
     if(i_reset)
@@ -208,18 +252,24 @@ reg            [  15: 0]                        re_num_per_rbg        =0;
 reg            [  15: 0]                        re_num                =0;
 reg            [   7: 0]                        rbg_num               =0;
 reg            [BEAM-1:0][OW-1: 0]              rbg_acc_re            ='{default:0};
-reg            [BEAM-1:0][OW-1: 0]              rbg_acc_im            ='{default:0};
-reg            [BEAM-1:0][OW-1: 0]              rbg_sum_re            ='{default:0};
-reg            [BEAM-1:0][OW-1: 0]              rbg_sum_im            ='{default:0};
+reg            [BEAM-1:0][OW-1: 0]              rbg_sum_abs           ='{default:0};
+reg                                             aiu_idx               =1;
 
 
-
+// re number per rbG based on rbg size
 always @ (posedge i_clk) begin
     case(i_rbg_size)
-        2'b00:   re_num_per_rbg <= 'd48;
-        2'b01:   re_num_per_rbg <= 'd96;  
-        2'b10:   re_num_per_rbg <= 'd192;
-        default: re_num_per_rbg <= 'd48;
+        2'b00:  re_num_per_rbg <= 'd48;    // rbG=4 PRRs
+        2'b01:  re_num_per_rbg <= 'd96;    // rbG=8 PRRs
+        2'b10:  begin
+                    if(aiu_idx==0 && rbg_num==0)
+                        re_num_per_rbg <= 'd48;     // rbG=4 PRRs
+                    else if(aiu_idx==1 && rbg_num==8)
+                        re_num_per_rbg <= 'd48;     // rbG=4 PRRs
+                    else
+                        re_num_per_rbg <= 'd192;    // rbG=16 PRRs
+                end
+        default:re_num_per_rbg <= 'd48;
     endcase
 end
 
@@ -227,93 +277,131 @@ end
 always @ (posedge i_clk)begin
     if(re_num == re_num_per_rbg-1)
         re_num <= 'd0;
-    else if(beams_tvalid_r)
+    else if(beams_tvalid)
         re_num <= re_num + 1'b1;
 end
 
 assign rbg_slip = (re_num==re_num_per_rbg-1) ? 1'b1 : 1'b0;
 assign rbg_load = (re_num==0) ? 1'b1 : 1'b0;
 
+// rbG number
 always @ (posedge i_clk)begin
-    if(beams_tvalid_r==0)
+    if(i_reset || beams_tvld_pos)
         rbg_num <= 'd0;
     else if(rbg_slip)
         rbg_num <= rbg_num + 'd1;
 end
 
 
-
+// re accumulator
 generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_acc
     always @(posedge i_clk) begin
-        if(beams_tvalid_r==0)
+        if(beams_tvalid==0)
             rbg_acc_re[gi] <= 'd0;
         else if(rbg_load)
-            rbg_acc_re[gi] <= signed'(beams_sum_ants[gi][2*OW-1:OW]);
+            rbg_acc_re[gi] <= signed'(beams_sum_ants[gi]);
         else
-            rbg_acc_re[gi] <= signed'(rbg_acc_re[gi]) + signed'(beams_sum_ants[gi][2*OW-1:OW]);
-    end
-
-    always @(posedge i_clk) begin
-        if(beams_tvalid_r==0)
-            rbg_acc_im[gi] <= 'd0;
-        else if(rbg_load)
-            rbg_acc_im[gi] <= signed'(beams_sum_ants[gi][OW-1:0]);
-        else
-            rbg_acc_im[gi] <= signed'(rbg_acc_im[gi]) + signed'(beams_sum_ants[gi][OW-1:0]);
+            rbg_acc_re[gi] <= signed'(rbg_acc_re[gi]) + signed'(beams_sum_ants[gi]);
     end
 end
 endgenerate
-
+wire [BEAM*OW-1:0] rbg_sum_all;
 generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_sum
     always @(posedge i_clk) begin
-        if((beams_tvalid_r && rbg_load) || beams_tvld_neg)begin
-            rbg_sum_re[gi] <= rbg_acc_re[gi];
-            rbg_sum_im[gi] <= rbg_acc_im[gi];
+        if((beams_tvalid && rbg_load) || beams_tvld_neg)begin
+            rbg_sum_abs[gi] <= rbg_acc_re[gi];
         end
     end
+
+    assign rbg_sum_all[gi*OW +: OW] = rbg_sum_abs[gi];    
 end
 endgenerate
 
 //------------------------------------------------------------------------------------------
 // abs
 //------------------------------------------------------------------------------------------
+reg            [   4: 0]                        beam_tvalid_buf       =0;
+reg            [   2: 0]                        rbg_load_buf          =0;
+reg                                             rbg_sum_load          =0;
+reg                                             rbg_sum_vld           =0;
+reg            [1:0][7: 0]                      rbg_num_buf           =0;
+reg            [   7: 0]                        rbg_abs_addr          =0;
+wire           [63:0][OW-1: 0]                  rbg_buffer_out          ;
+wire                                            rbg_buffer_vld          ;
 
-reg            [BEAM-1:0][OW-1: 0]              rbg_sum_re_abs        ='{default:0};
-reg            [BEAM-1:0][OW-1: 0]              rbg_sum_im_abs        ='{default:0};
-reg            [BEAM-1:0][OW-1: 0]              rbg_sum_abs           ='{default:0};
 
-
-
-generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_sum_abs_re
-    always @(posedge i_clk) begin
-        if(rbg_sum_re[gi][OW-1] == 1'b0)
-            rbg_sum_re_abs[gi] <= rbg_sum_re[gi];
-        else
-            rbg_sum_re_abs[gi] <= ~rbg_sum_re[gi] + 'd1;
-    end
+always @(posedge i_clk) begin
+    beam_tvalid_buf <= {beam_tvalid_buf[3:0], beams_tvalid};
+    rbg_load_buf    <= {rbg_load_buf[1:0], rbg_load};
 end
-endgenerate
 
-generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_sum_abs_im
-    always @(posedge i_clk) begin
-        if(rbg_sum_im[gi][OW-1] == 1'b0)
-            rbg_sum_im_abs[gi] <= rbg_sum_im[gi];
-        else
-            rbg_sum_im_abs[gi] <= ~rbg_sum_im[gi] + 'd1;
-    end
+always @(posedge i_clk) begin
+    if(i_reset)
+        rbg_sum_vld <= 1'b0;
+    else if(beam_tvalid_buf[3] && rbg_load_buf[2])
+        rbg_sum_vld <= 1'b1;
+    else if(beam_tvalid_buf[3]==0)
+        rbg_sum_vld <= 1'b0;
 end
-endgenerate
+
+always @ (posedge i_clk) begin
+    if(beam_tvalid_buf[3])
+        rbg_sum_load <= rbg_load_buf[2];
+    else
+        rbg_sum_load <= 0;
+end
+
+always @ (posedge i_clk) begin
+    rbg_num_buf[0] <= rbg_num;
+    for(int i=0; i<1; i++) begin
+        rbg_num_buf[i+1] <= rbg_num_buf[i];
+    end
+    rbg_abs_addr <= rbg_num_buf[1];
+end
+
+
+beam_buffer #(
+    .WDATA_WIDTH                                        (16*OW                  ),
+    .WADDR_WIDTH                                        (8                      ),
+    .RDATA_WIDTH                                        (16*OW                  ),
+    .RADDR_WIDTH                                        (8                      ),
+    .RAM_TYPE                                           (1                      ) 
+)beam_buffer (
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+    .i_rvalid                                           (rbg_sum_vld            ),
+    .i_wr_wen                                           (rbg_sum_load           ),
+    .i_wr_data                                          (rbg_sum_all            ),
+    .i_wr_addr                                          (rbg_abs_addr           ),
+    .o_rd_data                                          (rbg_buffer_out         ),
+    .o_rd_addr                                          (                       ),
+    .o_tvalid                                           (rbg_buffer_vld         ) 
+);
+
+
+
+
+
 
 
 //------------------------------------------------------------------------------------------
-// abs sum 
+// beam sort
 //------------------------------------------------------------------------------------------
-generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_sum_abs
-    always @(posedge i_clk) begin
-        rbg_sum_abs[gi] <= rbg_sum_re_abs[gi] + rbg_sum_im_abs[gi];
-    end
-end
-endgenerate
+beam_sort # (
+    .IW                                                 (OW                     ),
+    .COL                                                (64                     ) 
+)beam_sort(
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+    .i_data                                             (rbg_buffer_out         ),
+    .i_rready                                           (1'b1                   ),
+    .i_rvalid                                           (rbg_buffer_vld         ),
+    .o_data                                             (                       ),
+    .o_score                                            (                       ),
+    .o_tvalid                                           (                       ),
+    .o_tready                                           (                       ) 
+);
+
 
 
 

@@ -22,21 +22,21 @@ module mac_beams #(
     parameter   BEAM =   16,     // number of data streams
     parameter   ANT  =   32,     // number of data streams
     parameter   IW   =   32,     // number of data streams
-    parameter   OW   =   48      // output width
+    parameter   OW   =   32      // output width
 )(
-    input                                             i_clk                    ,
+    input                                           i_clk                   ,
 
-    input          [ANT*IW-1: 0]                      i_ants_data_even         ,
-    input          [ANT*IW-1: 0]                      i_ants_data_odd          ,
-    input                                             i_rvalid                 ,
+    input          [ANT*IW-1: 0]                    i_ants_data_even        ,
+    input          [ANT*IW-1: 0]                    i_ants_data_odd         ,
+    input                                           i_rvalid                ,
 
-    input          [BEAM-1:0][ANT*IW-1: 0]            i_code_word_even         ,
-    input          [BEAM-1:0][ANT*IW-1: 0]            i_code_word_odd          ,
+    input          [BEAM-1:0][ANT*IW-1: 0]          i_code_word_even        ,
+    input          [BEAM-1:0][ANT*IW-1: 0]          i_code_word_odd         ,
 
-    output         [BEAM-1:0][2*OW-1: 0]              o_sum_data_even          ,
-    output         [BEAM-1:0][2*OW-1: 0]              o_sum_data_odd           ,
-    output         [BEAM-1:0][2*OW-1: 0]              o_sum_data               ,   
-    output                                            o_tvalid                
+    output         [BEAM-1:0][OW-1: 0]              o_sum_data_even         ,
+    output         [BEAM-1:0][OW-1: 0]              o_sum_data_odd          ,
+    output         [BEAM-1:0][OW-1: 0]              o_sum_data              ,
+    output                                          o_tvalid                 
 );
 
 //--------------------------------------------------------------------------------------
@@ -50,13 +50,11 @@ genvar bi;
 //--------------------------------------------------------------------------------------
 reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_even        ='{default:0};
 reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_odd         ='{default:0};
-wire           [BEAM-1:0][2*OW-1: 0]            even_sum_data           ;
-wire           [BEAM-1:0][2*OW-1: 0]            odd_sum_data            ;
-reg            [BEAM-1:0][OW-1: 0]              ants_sum_re             ;
-reg            [BEAM-1:0][OW-1: 0]              ants_sum_im             ;
-reg            [BEAM-1:0][2*OW-1: 0]            ants_sum_even           ;
-reg            [BEAM-1:0][2*OW-1: 0]            ants_sum_odd            ;
-reg            [BEAM-1:0][2*OW-1: 0]            ants_sum                ;
+wire           [BEAM-1:0][OW-1: 0]              even_sum_data           ;
+wire           [BEAM-1:0][OW-1: 0]              odd_sum_data            ;
+reg            [BEAM-1:0][OW-1: 0]              ants_sum_even         =0;
+reg            [BEAM-1:0][OW-1: 0]              ants_sum_odd          =0;
+reg            [BEAM-1:0][OW-1: 0]              ants_sum              =0;
 wire           [BEAM-1: 0]                      even_tvalid             ;
 wire           [BEAM-1: 0]                      odd_tvalid              ;
 reg            [   7: 0]                        tvalid_buf            =0;
@@ -118,21 +116,10 @@ endgenerate
 // EVEN + ODD ANTS REAL PART
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    for(int k=0; k<BEAM; k++)begin:even_odd_real
-        ants_sum_re[k] <= signed'(even_sum_data[k][2*OW-1:OW]) + signed'(odd_sum_data[k][2*OW-1:OW]);
+    for(int k=0; k<BEAM; k++)begin:output_sum_data
+        ants_sum[k] <= signed'(even_sum_data[k]) + signed'(odd_sum_data[k]);
     end   
 end
-
-
-//--------------------------------------------------------------------------------------
-// EVEN + ODD ANTS IMAG PART
-//--------------------------------------------------------------------------------------
-always @(posedge i_clk) begin
-    for(int k=0; k<BEAM; k++)begin:even_odd_imag
-        ants_sum_im[k] <= signed'(even_sum_data[k][OW-1:0]) + signed'(odd_sum_data[k][OW-1:0]);
-    end   
-end
-
 
 //--------------------------------------------------------------------------------------
 // OUTPUT 
@@ -149,11 +136,6 @@ always @(posedge i_clk) begin
     end
 end
 
-always @(posedge i_clk) begin
-    for(int k=0; k<BEAM; k++)begin:output_sum_data
-        ants_sum[k] <= {ants_sum_re[k], ants_sum_im[k]};
-    end
-end
 
 always @(posedge i_clk) begin
     tvalid_buf <= {tvalid_buf[6:0], even_tvalid[0]};

@@ -30,7 +30,7 @@ module mac_ants #(
 
     input          [ANT*IW-1: 0]                    i_code_word             ,
 
-    output         [2*OW-1: 0]                      o_sum_data              ,
+    output         [OW-1: 0]                        o_sum_data              ,
     output                                          o_tvalid                 
 );
 
@@ -51,19 +51,20 @@ reg            [ANT-1:0][IW-1: 0]               ants_data             ='{default
 reg            [ANT-1:0][IW-1: 0]               code_word             ='{default:0};
 wire           [ANT-1:0][MULT_W-1: 0]           mult_re                 ;
 wire           [ANT-1:0][MULT_W-1: 0]           mult_im                 ;
-reg            [ANT/2-1:0][MID_W-1: 0]          add0_re               ='{default:0};
-reg            [ANT/2-1:0][MID_W-1: 0]          add0_im               ='{default:0};
-reg            [ANT/4-1:0][MID_W-1: 0]          add1_re               ='{default:0};
-reg            [ANT/4-1:0][MID_W-1: 0]          add1_im               ='{default:0};
-reg            [ANT/8-1:0][MID_W-1: 0]          add2_re               ='{default:0};
-reg            [ANT/8-1:0][MID_W-1: 0]          add2_im               ='{default:0};
-reg            [ANT/16-1:0][MID_W-1: 0]         add3_re               ='{default:0};
-reg            [ANT/16-1:0][MID_W-1: 0]         add3_im               ='{default:0};
-reg            [0:0][MID_W-1: 0]                add4_re               ='{default:0};
-reg            [0:0][MID_W-1: 0]                add4_im               ='{default:0};
-reg            [OW-1: 0]                        dout_re               ='{default:0};
-reg            [OW-1: 0]                        dout_im               ='{default:0};
-reg            [  15: 0]                        tvalid_buf            =0;
+reg            [ANT/2-1:0][MID_W-1: 0]          add0_abs               ='{default:0};
+reg            [ANT/4-1:0][MID_W-1: 0]          add1_abs               ='{default:0};
+reg            [ANT/8-1:0][MID_W-1: 0]          add2_abs               ='{default:0};
+reg            [ANT/16-1:0][MID_W-1: 0]         add3_abs               ='{default:0};
+reg            [0:0][MID_W-1: 0]                add4_abs               ='{default:0};
+reg            [OW-1: 0]                        dout_abs               ='{default:0};
+reg            [   4: 0]                        mult_valid            =0;
+reg            [   7: 0]                        tvalid_buf            =0;
+
+reg            [ANT-1:0][MULT_W-1: 0]           mult_re_abs           =0;
+reg            [ANT-1:0][MULT_W-1: 0]           mult_im_abs           =0;
+reg            [ANT-1:0][MULT_W-1: 0]           mult_abs              =0;
+
+
 
 //--------------------------------------------------------------------------------------
 //  input register
@@ -83,7 +84,7 @@ end
 
 
 //--------------------------------------------------------------------------------------
-//  complex mult 
+//  complex mult Latency=4
 //--------------------------------------------------------------------------------------
 generate for(gi=0; gi<ANT; gi++)
 begin:u_cmpy_mult
@@ -101,14 +102,42 @@ begin:u_cmpy_mult
 end
 endgenerate
 
+always @(posedge i_clk) begin
+    mult_valid[4:0] <= {mult_valid[3:0], i_rvalid};
+end
+
+
+
+always @(posedge i_clk) begin
+    for(int k=0; k<ANT; k++)begin: calc_re_abs
+        if(mult_re[k][MULT_W-1] == 1'b0)
+            mult_re_abs[k] <= mult_re[k];
+        else
+            mult_re_abs[k] <= ~mult_re[k] + 'd1;
+    end
+end
+
+always @(posedge i_clk) begin
+    for(int k=0; k<ANT; k++)begin: calc_im_abs
+        if(mult_im[k][MULT_W-1] == 1'b0)
+            mult_im_abs[k] <= mult_im[k];
+        else
+            mult_im_abs[k] <= ~mult_im[k] + 'd1;
+    end
+end
+
+always @(posedge i_clk) begin
+    for(int k=0; k<ANT; k++)begin: calc_abs
+        mult_abs[k] <= signed'(mult_re_abs[k]) + signed'(mult_im_abs[k]);
+    end   
+end
 
 //--------------------------------------------------------------------------------------
 //  ADD Pipeline 0
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<ANT/2; k++)begin:add_pipe_0
-        add0_re[k] <= signed'(mult_re[2*k]) + signed'(mult_re[2*k+1]);
-        add0_im[k] <= signed'(mult_im[2*k]) + signed'(mult_im[2*k+1]);
+        add0_abs[k] <= signed'(mult_abs[2*k]) + signed'(mult_abs[2*k+1]);
     end   
 end
 
@@ -117,8 +146,7 @@ end
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<ANT/4; k++)begin:add_pipe_1
-        add1_re[k] <= signed'(add0_re[2*k]) + signed'(add0_re[2*k+1]);
-        add1_im[k] <= signed'(add0_im[2*k]) + signed'(add0_im[2*k+1]);
+        add1_abs[k] <= signed'(add0_abs[2*k]) + signed'(add0_abs[2*k+1]);
     end   
 end
 
@@ -128,8 +156,7 @@ end
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<ANT/8; k++)begin:add_pipe_2
-        add2_re[k] <= signed'(add1_re[2*k]) + signed'(add1_re[2*k+1]);
-        add2_im[k] <= signed'(add1_im[2*k]) + signed'(add1_im[2*k+1]);
+        add2_abs[k] <= signed'(add1_abs[2*k]) + signed'(add1_abs[2*k+1]);
     end   
 end
 
@@ -138,8 +165,7 @@ end
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<ANT/16; k++)begin:add_pipe_3
-        add3_re[k] <= signed'(add2_re[2*k]) + signed'(add2_re[2*k+1]);
-        add3_im[k] <= signed'(add2_im[2*k]) + signed'(add2_im[2*k+1]);
+        add3_abs[k] <= signed'(add2_abs[2*k]) + signed'(add2_abs[2*k+1]);
     end   
 end
 
@@ -148,8 +174,7 @@ end
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<ANT/32; k++)begin:add_pipe_4
-        add4_re[k] <= signed'(add3_re[2*k]) + signed'(add3_re[2*k+1]);
-        add4_im[k] <= signed'(add3_im[2*k]) + signed'(add3_im[2*k+1]);
+        add4_abs[k] <= signed'(add3_abs[2*k]) + signed'(add3_abs[2*k+1]);
     end   
 end
 
@@ -157,16 +182,16 @@ end
 //  Ouput 
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    dout_re <= add4_re[0][MID_W-1:MID_W-OW];
-    dout_im <= add4_im[0][MID_W-1:MID_W-OW];
+    dout_abs <= add4_abs[0][MID_W-1:MID_W-OW];
 end
 
 always @(posedge i_clk) begin
-    tvalid_buf <= {tvalid_buf[14:0], i_rvalid};
+    tvalid_buf[7:0] <= {tvalid_buf[6:0], mult_valid[4]};
 end
 
-assign o_sum_data   = {dout_re, dout_im};
-assign o_tvalid     = tvalid_buf[10]; 
+// ouput Latency=1+4+6=11
+assign o_sum_data   = dout_abs;
+assign o_tvalid     = tvalid_buf[7]; 
 
 
 

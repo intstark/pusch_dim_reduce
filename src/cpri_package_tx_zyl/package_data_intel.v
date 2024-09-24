@@ -229,24 +229,13 @@ always @ (posedge clk)
 //always @ (posedge clk)
 //    begin
 //        case({pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
-//            {1'd0,2'd0}    : ant1_shift[3:0]   <= i_pkg1_shift;
-//            {1'd0,2'd1}    : ant1_shift[7:4]   <= i_pkg1_shift;
-//            {1'd0,2'd2}    : ant1_shift[11:8]  <= i_pkg1_shift;
-//            {1'd0,2'd3}    : ant1_shift[15:12] <= i_pkg1_shift;           
-//            default        : ant1_shift[15:0]  <= 16'd0;
+//            {1'd1,2'd0}    : ant1_shift[19:16] <= i_pkg1_shift;
+//            {1'd1,2'd1}    : ant1_shift[23:20] <= i_pkg1_shift;
+//            {1'd1,2'd2}    : ant1_shift[27:24] <= i_pkg1_shift;
+//            {1'd1,2'd3}    : ant1_shift[31:28] <= i_pkg1_shift;
+//            default        : ant1_shift[31:16] <= 16'd0;
 //        endcase
 //    end
-
-always @ (posedge clk)
-    begin
-        case({pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
-            {1'd1,2'd0}    : ant1_shift[19:16] <= i_pkg1_shift;
-            {1'd1,2'd1}    : ant1_shift[23:20] <= i_pkg1_shift;
-            {1'd1,2'd2}    : ant1_shift[27:24] <= i_pkg1_shift;
-            {1'd1,2'd3}    : ant1_shift[31:28] <= i_pkg1_shift;
-            default        : ant1_shift[31:16] <= 16'd0;
-        endcase
-    end
 
 //--2
 always @ (posedge clk)
@@ -256,20 +245,24 @@ always @ (posedge clk)
             {1'd0,2'd1}    : ant2_shift[7:4]   <= i_pkg2_shift;
             {1'd0,2'd2}    : ant2_shift[11:8]  <= i_pkg2_shift;
             {1'd0,2'd3}    : ant2_shift[15:12] <= i_pkg2_shift;           
-            default        : ant2_shift[15:0]  <= 16'd0;
-        endcase
-    end
-
-always @ (posedge clk)
-    begin
-        case({pkg_sel_1[2] , i_pkg2_prb_idx[1:0]})
             {1'd1,2'd0}    : ant2_shift[19:16] <= i_pkg2_shift;
             {1'd1,2'd1}    : ant2_shift[23:20] <= i_pkg2_shift;
             {1'd1,2'd2}    : ant2_shift[27:24] <= i_pkg2_shift;
             {1'd1,2'd3}    : ant2_shift[31:28] <= i_pkg2_shift;
-            default        : ant2_shift[31:16] <= 16'd0;
+            default        : ant2_shift[15:0]  <= 16'd0;
         endcase
     end
+
+//always @ (posedge clk)
+//    begin
+//        case({pkg_sel_1[2] , i_pkg2_prb_idx[1:0]})
+//            {1'd1,2'd0}    : ant2_shift[19:16] <= i_pkg2_shift;
+//            {1'd1,2'd1}    : ant2_shift[23:20] <= i_pkg2_shift;
+//            {1'd1,2'd2}    : ant2_shift[27:24] <= i_pkg2_shift;
+//            {1'd1,2'd3}    : ant2_shift[31:28] <= i_pkg2_shift;
+//            default        : ant2_shift[31:16] <= 16'd0;
+//        endcase
+//    end
 
 //--3
 always @ (posedge clk)
@@ -279,20 +272,24 @@ always @ (posedge clk)
             {1'd0,2'd1}    : ant3_shift[7:4]   <= i_pkg3_shift;
             {1'd0,2'd2}    : ant3_shift[11:8]  <= i_pkg3_shift;
             {1'd0,2'd3}    : ant3_shift[15:12] <= i_pkg3_shift;           
-            default        : ant3_shift[15:0]  <= 16'd0;
-        endcase
-    end
-
-always @ (posedge clk)
-    begin
-        case({pkg_sel_1[2] , i_pkg3_prb_idx[1:0]})
             {1'd1,2'd0}    : ant3_shift[19:16] <= i_pkg3_shift;
             {1'd1,2'd1}    : ant3_shift[23:20] <= i_pkg3_shift;
             {1'd1,2'd2}    : ant3_shift[27:24] <= i_pkg3_shift;
             {1'd1,2'd3}    : ant3_shift[31:28] <= i_pkg3_shift;
-            default        : ant3_shift[31:16] <= 16'd0;
+            default        : ant3_shift[15:0]  <= 16'd0;
         endcase
     end
+
+//always @ (posedge clk)
+//    begin
+//        case({pkg_sel_1[2] , i_pkg3_prb_idx[1:0]})
+//            {1'd1,2'd0}    : ant3_shift[19:16] <= i_pkg3_shift;
+//            {1'd1,2'd1}    : ant3_shift[23:20] <= i_pkg3_shift;
+//            {1'd1,2'd2}    : ant3_shift[27:24] <= i_pkg3_shift;
+//            {1'd1,2'd3}    : ant3_shift[31:28] <= i_pkg3_shift;
+//            default        : ant3_shift[31:16] <= 16'd0;
+//        endcase
+//    end
 
 
 //-----------------------------------------------------------------------------

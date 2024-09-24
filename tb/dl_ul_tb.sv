@@ -40,8 +40,7 @@ parameter                                           FILE_RX_DATA           = "./
 parameter                                           FILE_UNZIP_DATA        = "./des_unzip_data.txt";
 
 // Parameters
-parameter                                           DW                     = 8     ;
-parameter                                           numBeams               = 16    ;
+parameter                                           numBeams               = 64    ;
 parameter                                           numPRB                 = 132   ;
 parameter                                           numSYM                 = 14    ;
 parameter                                           numRE                  = 12    ;
