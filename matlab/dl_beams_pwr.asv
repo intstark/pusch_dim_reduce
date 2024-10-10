@@ -8,7 +8,7 @@ numCarriers = numPrb*12;
 numSymbols = 14;
 
 ReGenerateData = 0;
-WriteFile = 1;
+WriteFile = 0;
 ReloadData = 1;
 
 
@@ -70,12 +70,14 @@ if ReloadData
     datafile3='../sim/dl_ul_beams_tb_work/des_unzip_data.txt';
     datafile4='../sim/dl_ul_beams_tb_work/des_beams_data.txt';
     datafile5='../sim/dl_ul_beams_tb_work/des_beams_pwr.txt';
+    datafile6='../sim/dl_ul_beams_tb_work/des_beams_sort.txt';
     
     [sim_tx_data,tx_cmpy,tx_agc] = ReadZipData(datafile1,0);
     [sim_rx_data,rx_cmpy,rx_agc]  = ReadZipData(datafile2,0);
     sim_unzip_data = ReadData(datafile3,16,0,'IQ');
     sim_beams_data = ReadData(datafile4,48,0);
     sim_beams_pwr  = ReadData(datafile5,48,0);
+    sim_beams_sort  = ReadData(datafile6,48,0);
 end
 
 
@@ -91,20 +93,20 @@ LEN=length(sim_tx_data);
 LEN=3168;
 
 err1 = sim_tx_data(1:LEN,:) - sim_rx_data(1:LEN,:);
-err1_sum=sum(abs(err1));
+err1_sum=sum(abs(err1),[1,2]);
 fprintf("发送与接收数据+AGC:\t err1_sum = %d\n",err1_sum);
 
 
 err2 = tx_cmpy(1:LEN,:) - rx_cmpy(1:LEN,:);
-err2_sum=sum(abs(err2));
+err2_sum=sum(abs(err2),[1,2]);
 fprintf("发送与接收数据(7bit):\t err2_sum = %d\n",err2_sum);
 
 err3 = tx_agc(1:LEN,:) - rx_agc(1:LEN,:);
-err3_sum=sum(abs(err3));
+err3_sum=sum(abs(err3),[1,2]);
 fprintf("发送与接收AGC(4bit):\t err3_sum = %d\n",err3_sum);
 
 err4 = sim_unzip_data(1:LEN,:) - sim_tx_data(1:LEN,:);
-err4_sum=sum(abs(err4));
+err4_sum=sum(abs(err4),[1,2]);
 fprintf("解压后与发送前(16bit):\t err4_sum = %d\n",err4_sum);
 
 
@@ -137,7 +139,7 @@ beams_sum = beams_eve_sum + beams_odd_sum;
 
 SIM_BEAMS = length(sim_beams_data(:,1));
 
-numBeamBlk = floor(SIM_BEAMS/numCarriers);
+numBeamBlk = 4; %floor(SIM_BEAMS/numCarriers);
 
 for ii=1:numBeamBlk
     sim_beams_eve(:,(ii-1)*16+1:ii*16) = sim_beams_data((ii-1)*numCarriers+1:ii*numCarriers,1:2:end);
@@ -147,12 +149,12 @@ end
 
 err_beam_eve = beams_eve_sum(:,1:16*numBeamBlk) - sim_beams_eve;
 err_beam_odd = beams_odd_sum(:,1:16*numBeamBlk) - sim_beams_odd;
-err_beam_eve_sum=sum(abs(err_beam_eve));
-err_beam_odd_sum=sum(abs(err_beam_odd));
+err_beam_eve_sum=sum(abs(err_beam_eve),[1,2]);
+err_beam_odd_sum=sum(abs(err_beam_odd),[1,2]);
 
 
-fprintf("波束计算(48bit):\t err_beam_eve_sum = %d\n",err_beam_eve_sum);
-fprintf("波束计算(48bit):\t err_beam_odd_sum = %d\n",err_beam_odd_sum);
+fprintf("波束计算偶天线(48bit):\t err_beam_eve_sum = %d\n",err_beam_eve_sum);
+fprintf("波束计算奇天线(48bit):\t err_beam_odd_sum = %d\n",err_beam_odd_sum);
 
 
 %% rbG能量和计算
@@ -181,10 +183,122 @@ for bb= 1:64
     end
 end
 
-err_beam_pwr = sim_beams_pwr(1:rbGMaxNum,:) - rbG_sum;
+err_beam_pwr = sum(sim_beams_pwr(1:rbGMaxNum,:) - rbG_sum,[1,2]);
+fprintf("rbG总能量(48bit):\t err_beam_pwr = %d\n",err_beam_pwr);
 
 
-fprintf("计算(48bit):\t err_beam_pwr = %d\n",err_beam_pwr);
+%% rbG能量排序
+%  对SYMBOL1的64 Beam能能在一个rbG内的所有能量从大到小排序
+
+[rbG_sort_sum, rbG_sort_addr] = sort(rbG_sum,2,'descend');
+rbG_sort_addr = rbG_sort_addr - 1;
+
+err_beam_sort = sum(sim_beams_sort(1:rbGMaxNum,:) - rbG_sort_sum,[1,2]);
+fprintf("rbG总能量排序(48bit):\t err_beam_sort = %d\n",err_beam_sort);
+
+
+%% 后续符号运算
+%  采用对SYMBOL1筛选出来的最大16beam序号的码本与天线数据相乘降维，每个rbG不同
+clear beams_eve_re;
+clear beams_odd_re;
+clear beams_eve_abs;
+clear beams_odd_abs;
+clear beams_eve_sum;
+clear beams_odd_sum;
+clear sim_beams_eve;
+clear sim_beams_odd;
+clear err_beam_eve;
+clear err_beam_odd;
+
+
+% 分离出发送端的奇偶天线数据（单Lane 8天线）
+ant4_tx_eve = sim_tx_data(2*numCarriers+1:3*numCarriers,:);
+ant4_tx_odd = sim_tx_data(3*numCarriers+1:4*numCarriers,:);
+
+% 复制扩展成8 Lane 64天线数据
+ant32_tx_eve = repmat(ant4_tx_eve,1,8);
+ant32_tx_odd = repmat(ant4_tx_odd,1,8);
+
+
+pwt = 0;
+for jj=1:rbGMaxNum
+    for ii=1:16
+        codeWord16_fix(ii,:) = codeWord_fix(rbG_sort_addr(jj,ii)+1,:);
+    end
+
+    % 
+    cw_eve = codeWord16_fix(:,1:2:end);
+    cw_odd = codeWord16_fix(:,2:2:end);
+
+
+    % 前132PRB 不完整的rbG放在开头
+    if(jj==1 && aiu_idx==0)
+        % Debug: 波束1中，各个天线与码本乘积（未求和）
+        for kk= pwt+1:rbGMaxMod*12
+            beams_eve_re(kk,:,:) = ant32_tx_eve(kk,:) .* cw_eve;
+            beams_odd_re(kk,:,:) = ant32_tx_odd(kk,:) .* cw_odd;
+        end
+        pwt = rbGMaxMod*12;
+
+    % 后132PRB 不完整的rbG放在末尾
+    elseif(jj==rbGMaxNum && aiu_idx==1)
+        % Debug: 波束1中，各个天线与码本乘积（未求和）
+        for kk= pwt+1:pwt+rbGMaxMod*12
+            beams_eve_re(kk,:,:) = ant32_tx_eve(kk,:) .* cw_eve;
+            beams_odd_re(kk,:,:) = ant32_tx_odd(kk,:) .* cw_odd;
+        end
+        pwt = rbGMaxMod*12;
+    else
+        % Debug: 波束1中，各个天线与码本乘积（未求和）
+        for kk= pwt+1:pwt+numRE_rbG
+            beams_eve_re(kk,:,:) = ant32_tx_eve(kk,:) .* cw_eve;
+            beams_odd_re(kk,:,:) = ant32_tx_odd(kk,:) .* cw_odd;
+        end
+        pwt = pwt + numRE_rbG;
+    end
+end
+
+
+
+
+
+
+
+beams_eve_abs = abs(real(beams_eve_re)) + abs(imag(beams_eve_re));
+beams_odd_abs = abs(real(beams_odd_re)) + abs(imag(beams_odd_re));
+
+
+for ii= 1:numCarriers
+    beams_eve_sum(ii,:)=sum(beams_eve_abs(ii,:,:),3);
+    beams_odd_sum(ii,:)=sum(beams_odd_abs(ii,:,:),3);
+end
+beams_sum = beams_eve_sum + beams_odd_sum;
+
+
+SIM_BEAMS = length(sim_beams_data(:,1));
+
+numBeamBlk = 1;
+
+for ii=1:numBeamBlk
+    sim_beams_eve(:,(ii-1)*16+1:ii*16) = sim_beams_data((ii-1+4)*numCarriers+1:(ii+4)*numCarriers,1:2:end);
+    sim_beams_odd(:,(ii-1)*16+1:ii*16) = sim_beams_data((ii-1+4)*numCarriers+1:(ii+4)*numCarriers,2:2:end);
+end
+
+
+err_beam_eve = beams_eve_sum(:,1:16*numBeamBlk) - sim_beams_eve;
+err_beam_odd = beams_odd_sum(:,1:16*numBeamBlk) - sim_beams_odd;
+err_beam_eve_sum=sum(abs(err_beam_eve),[1,2]);
+err_beam_odd_sum=sum(abs(err_beam_odd),[1,2]);
+
+
+fprintf("第2个符号，波束能量(48bit):\t err_beam_eve_sum = %d\n",err_beam_eve_sum);
+fprintf("第2个符号，波束能量(48bit):\t err_beam_odd_sum = %d\n",err_beam_odd_sum);
+
+
+%% 分析完毕
+fprintf("#----------------------------------------------------------\n");
+fprintf("# 分析完毕！\n");
+fprintf("#----------------------------------------------------------\n");
 
 
 
@@ -206,6 +320,8 @@ function write2file_fcn(desfile,WrData)
     fclose(fid);
 
 end
+
+
 
 % 读取压缩IQ数据及AGC，格式COL=I|Q|AGC
 function [sint_unzip_cmpy,sint_cmpy,agc_data]=ReadZipData(datafile,headLines)

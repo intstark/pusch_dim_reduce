@@ -22,7 +22,7 @@
 
 `timescale 1ns/1ps
 `define CLOCK_PERIOD 10.0
-`define SIM_ENDS_TIME 200000
+`define SIM_ENDS_TIME 250000
 
 `include "params_list_pkg.sv"
 
@@ -40,6 +40,7 @@ parameter                                           FILE_RX_DATA           = "./
 parameter                                           FILE_UNZIP_DATA        = "./des_unzip_data.txt";
 parameter                                           FILE_BEAMS_DATA        = "./des_beams_data.txt";
 parameter                                           FILE_BEAMS_PWR         = "./des_beams_pwr.txt";
+parameter                                           FILE_BEAMS_SORT         = "./des_beams_sort.txt";
 
 // Parameters
 parameter                                           numBeams               = 64    ;
@@ -60,7 +61,7 @@ genvar gi,gj;
 integer fid_iq_data, fid_ant_data, fid_cwd_odd, fid_cwd_even;
 integer fid_tx_data, fid_rx_data, fid_unzip_data, fid_beams_data;
 integer fid_rb_agc;
-integer fid_beams_pwr;
+integer fid_beams_pwr, fid_beams_sort;
 
 // Inputs
 reg                                             i_clk                 =1'b0;
@@ -240,6 +241,7 @@ initial begin
     fid_unzip_data  = $fopen(FILE_UNZIP_DATA,"w");
     fid_beams_data  = $fopen(FILE_BEAMS_DATA,"w");
     fid_beams_pwr   = $fopen(FILE_BEAMS_PWR,"w");
+    fid_beams_sort  = $fopen(FILE_BEAMS_SORT,"w");
     
     if(fid_tx_data)
         $display("succeed open file %s",FILE_TX_DATA);
@@ -251,6 +253,8 @@ initial begin
         $display("succeed open file %s",FILE_BEAMS_DATA);
     if(fid_beams_pwr)
         $display("succeed open file %s",FILE_BEAMS_PWR);
+    if(fid_beams_sort)
+        $display("succeed open file %s",FILE_BEAMS_SORT);
 
     #(`SIM_ENDS_TIME);
     $fclose(fid_tx_data );
@@ -258,6 +262,7 @@ initial begin
     $fclose(fid_unzip_data );
     $fclose(fid_beams_data );
     $fclose(fid_beams_pwr  );
+    $fclose(fid_beams_sort );
     $stop;
 end
 
@@ -575,6 +580,28 @@ always @(posedge i_clk) begin
         );
 end
 
-
+// tx data before package
+always @(posedge i_clk) begin
+    if(pdsch_dim_reduction.beam_sort_vld)
+        $fwrite(fid_beams_sort, "%d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d,\
+                                %d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d, %d,%d,%d,%d,%d,%d,%d,%d\n", 
+            pdsch_dim_reduction.beam_sort_out[ 0] , pdsch_dim_reduction.beam_sort_out[ 1] , pdsch_dim_reduction.beam_sort_out[ 2] , pdsch_dim_reduction.beam_sort_out[ 3] ,
+            pdsch_dim_reduction.beam_sort_out[ 4] , pdsch_dim_reduction.beam_sort_out[ 5] , pdsch_dim_reduction.beam_sort_out[ 6] , pdsch_dim_reduction.beam_sort_out[ 7] ,
+            pdsch_dim_reduction.beam_sort_out[ 8] , pdsch_dim_reduction.beam_sort_out[ 9] , pdsch_dim_reduction.beam_sort_out[10] , pdsch_dim_reduction.beam_sort_out[11] ,
+            pdsch_dim_reduction.beam_sort_out[12] , pdsch_dim_reduction.beam_sort_out[13] , pdsch_dim_reduction.beam_sort_out[14] , pdsch_dim_reduction.beam_sort_out[15] ,
+            pdsch_dim_reduction.beam_sort_out[16] , pdsch_dim_reduction.beam_sort_out[17] , pdsch_dim_reduction.beam_sort_out[18] , pdsch_dim_reduction.beam_sort_out[19] ,
+            pdsch_dim_reduction.beam_sort_out[20] , pdsch_dim_reduction.beam_sort_out[21] , pdsch_dim_reduction.beam_sort_out[22] , pdsch_dim_reduction.beam_sort_out[23] ,
+            pdsch_dim_reduction.beam_sort_out[24] , pdsch_dim_reduction.beam_sort_out[25] , pdsch_dim_reduction.beam_sort_out[26] , pdsch_dim_reduction.beam_sort_out[27] ,
+            pdsch_dim_reduction.beam_sort_out[28] , pdsch_dim_reduction.beam_sort_out[29] , pdsch_dim_reduction.beam_sort_out[30] , pdsch_dim_reduction.beam_sort_out[31] ,
+            pdsch_dim_reduction.beam_sort_out[32] , pdsch_dim_reduction.beam_sort_out[33] , pdsch_dim_reduction.beam_sort_out[34] , pdsch_dim_reduction.beam_sort_out[35] ,
+            pdsch_dim_reduction.beam_sort_out[36] , pdsch_dim_reduction.beam_sort_out[37] , pdsch_dim_reduction.beam_sort_out[38] , pdsch_dim_reduction.beam_sort_out[39] ,
+            pdsch_dim_reduction.beam_sort_out[40] , pdsch_dim_reduction.beam_sort_out[41] , pdsch_dim_reduction.beam_sort_out[42] , pdsch_dim_reduction.beam_sort_out[43] ,
+            pdsch_dim_reduction.beam_sort_out[44] , pdsch_dim_reduction.beam_sort_out[45] , pdsch_dim_reduction.beam_sort_out[46] , pdsch_dim_reduction.beam_sort_out[47] ,
+            pdsch_dim_reduction.beam_sort_out[48] , pdsch_dim_reduction.beam_sort_out[49] , pdsch_dim_reduction.beam_sort_out[50] , pdsch_dim_reduction.beam_sort_out[51] ,
+            pdsch_dim_reduction.beam_sort_out[52] , pdsch_dim_reduction.beam_sort_out[53] , pdsch_dim_reduction.beam_sort_out[54] , pdsch_dim_reduction.beam_sort_out[55] ,
+            pdsch_dim_reduction.beam_sort_out[56] , pdsch_dim_reduction.beam_sort_out[57] , pdsch_dim_reduction.beam_sort_out[58] , pdsch_dim_reduction.beam_sort_out[59] ,
+            pdsch_dim_reduction.beam_sort_out[60] , pdsch_dim_reduction.beam_sort_out[61] , pdsch_dim_reduction.beam_sort_out[62] , pdsch_dim_reduction.beam_sort_out[63] 
+        );
+end
 
 endmodule

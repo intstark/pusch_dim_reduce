@@ -33,9 +33,10 @@ module beam_buffer # (
     input          [WDATA_WIDTH-1: 0]               i_wr_data               ,
     input          [WADDR_WIDTH-1: 0]               i_wr_addr               ,
 
-    input          [4*RDATA_WIDTH-1: 0]             o_rd_data               ,
-    input          [RADDR_WIDTH-1: 0]               o_rd_addr               ,
-    input                                           o_tvalid                 
+    output         [4*RDATA_WIDTH-1: 0]             o_rd_data               ,
+    output         [RADDR_WIDTH-1: 0]               o_rd_addr               ,
+    output                                          o_rd_vld                ,                 
+    output                                          o_tvalid                 
 );
 
 //--------------------------------------------------------------------------------------
@@ -58,7 +59,7 @@ wire           [3:0][RDATA_WIDTH-1: 0]          rd_data                 ;
 
 
 reg            [   2: 0]                        num_blocks            =0;
-reg                                             rvalid_r              =0;
+reg            [   2: 0]                        rvalid_r              =0;
 wire                                            rvld_neg                ;
 
 
@@ -67,10 +68,10 @@ wire                                            rvld_neg                ;
 // generate data block number due to cutting data into 4 blocks 
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk) begin
-    rvalid_r <= i_rvalid;
+    rvalid_r <= {rvalid_r[1:0],i_rvalid};
 end
 
-assign rvld_neg = ~i_rvalid & (rvalid_r);
+assign rvld_neg = ~i_rvalid & (rvalid_r[0]);
 
 always @(posedge i_clk) begin
     if(i_reset)
@@ -178,7 +179,8 @@ always @(posedge i_clk) begin
         tvalid <= 0;
 end
 
-assign o_tvalid = tvalid;
+assign o_tvalid = rvalid_r[2];
+assign o_rd_vld = tvalid;
 
 
 

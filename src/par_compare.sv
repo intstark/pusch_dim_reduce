@@ -54,6 +54,7 @@ reg            [COL-1:0][7: 0]                  smaller_score         ='{default
 reg            [   7: 0]                        idx                   =0;
 reg            [COL/4-1:0][7: 0]                score_sum_0           ='{default:0};
 reg            [   7: 0]                        score_sum_all         =0;
+reg            [   7: 0]                        tvalid_buf            =0;
 
 //--------------------------------------------------------------------------------------
 // data buffer 
@@ -75,7 +76,7 @@ generate
             if(comp_data[idx] < comp_data[gi])
                 smaller_score[gi] <= 1;
             else if(comp_data[idx] == comp_data[gi])
-                if(idx > gi)
+                if(unsigned'(idx) > unsigned'(gi))
                     smaller_score[gi] <= 1;
                 else
                     smaller_score[gi] <= 0;
@@ -125,10 +126,13 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // output 
 //--------------------------------------------------------------------------------------
+always @(posedge i_clk) begin
+    tvalid_buf[7:0] <= {tvalid_buf[6:0],i_rvalid};
+end
+
+
 assign o_score = score_sum_all;
-
-
-
+assign o_tvalid= tvalid_buf[4];
 
 
 endmodule

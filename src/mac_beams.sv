@@ -63,7 +63,7 @@ reg            [   7: 0]                        tvalid_buf            =0;
 //-----------------------------------------------------------------
 //  input register
 //-----------------------------------------------------------------
-always @(posedge i_clk) begin
+always @(*) begin
     for(int k=0; k<BEAM; k++)begin:data_re_pipe
         code_word_even[k] <= i_code_word_even[k];
         code_word_odd [k] <= i_code_word_odd [k];
@@ -83,9 +83,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (i_ants_data_even       ),
         .i_rvalid                                           (i_rvalid               ),
-        .i_code_word                                        (code_word_even[bi]     ),
-        .o_sum_data                                         (even_sum_data [bi]     ),
-        .o_tvalid                                           (even_tvalid   [bi]     ) 
+        .i_code_word                                        (i_code_word_even[bi]   ),
+        .o_sum_data                                         (even_sum_data   [bi]   ),
+        .o_tvalid                                           (even_tvalid     [bi]   ) 
     );
 end
 endgenerate
@@ -103,9 +103,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (i_ants_data_odd        ),
         .i_rvalid                                           (i_rvalid               ),
-        .i_code_word                                        (code_word_odd[bi]      ),
-        .o_sum_data                                         (odd_sum_data [bi]      ),
-        .o_tvalid                                           (odd_tvalid   [bi]      ) 
+        .i_code_word                                        (i_code_word_odd[bi]    ),
+        .o_sum_data                                         (odd_sum_data   [bi]    ),
+        .o_tvalid                                           (odd_tvalid     [bi]    ) 
     );
 end
 endgenerate
