@@ -22,7 +22,7 @@
 
 `timescale 1ns/1ps
 `define CLOCK_PERIOD 10.0
-`define SIM_ENDS_TIME 250000
+`define SIM_ENDS_TIME 500000
 
 `include "params_list_pkg.sv"
 
@@ -68,8 +68,7 @@ reg                                             i_clk                 =1'b0;
 reg                                             reset                 =1'b1;
 wire                                            iq_rx_valid             ;
 wire           [  63: 0]                        iq_rx_data              ;
-reg            [  63: 0]                        rx_data               =0;
-reg            [   6: 0]                        rx_seq                =0;
+reg            [   6: 0]                        iq_rx_seq             =0;
 wire           [  63: 0]                        rx_mask                 ;
 wire           [   7: 0]                        rx_crtl                 ;
 
@@ -89,6 +88,7 @@ reg            [numBeams-1:0][ANT-1:0][31: 0]   code_word_odd           ;
 reg            [numBeams-1:0][ANT-1:0][31: 0]   code_word_even          ;
 reg            [   1: 0]                        rbg_size              =2;
 
+wire                                            cpri_fst_word           ;
 
 
 
@@ -114,13 +114,15 @@ assign iq_rx_valid = dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
 
 
 always @(posedge i_clk) begin
-    if(rx_seq==95)
-        rx_seq <= 0;
+    if(iq_rx_seq==95)
+        iq_rx_seq <= 0;
     else if(iq_rx_valid)
-        rx_seq <= rx_seq + 1;
+        iq_rx_seq <= iq_rx_seq + 1;
     else
-        rx_seq <= 0;
+        iq_rx_seq <= 0;
 end
+
+assign cpri_fst_word = (iq_rx_valid && (iq_rx_seq==0)) ? 1'b1 : 1'b0;
 
 wire           [   7: 0]                        cpri_clk                ;
 wire           [   7: 0]                        cpri_rst                ;
@@ -132,8 +134,8 @@ wire           [   7: 0]                        cpri_rx_vld             ;
 assign cpri_clk     = {8{i_clk}};
 assign cpri_rst     = {8{reset}};
 assign cpri_rx_data = '{8{iq_rx_data}};
-assign cpri_rx_seq  = '{8{rx_seq}};
-assign cpri_rx_vld  = {8{iq_rx_valid}};
+assign cpri_rx_seq  = '{8{iq_rx_seq}};
+assign cpri_rx_vld  = {8{cpri_fst_word}};
 
 
 
@@ -143,22 +145,51 @@ assign cpri_rx_vld  = {8{iq_rx_valid}};
 pdsch_dim_reduction                                     pdsch_dim_reduction(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (reset                  ),
-
-    .i_cpri_clk                                         (cpri_clk               ),
-    .i_cpri_rst                                         (cpri_rst               ),
-    .i_cpri_rx_data                                     (cpri_rx_data           ),
-    .i_cpri_rx_seq                                      (cpri_rx_seq            ),
-    .i_cpri_rx_vld                                      (cpri_rx_vld            ),
-    
-    .i_code_word_even                                   (i_code_word_even       ),
-    .i_code_word_odd                                    (i_code_word_odd        ),
     
     .i_rbg_size                                         (rbg_size               ),
+
+    .i_l0_cpri_clk                                      (cpri_clk    [0]        ),// lane0 cpri rx clock
+    .i_l0_cpri_rst                                      (cpri_rst               ),// lane0 cpri rx reset
+    .i_l0_cpri_rx_data                                  (cpri_rx_data[0]        ),// lane0 cpri rx data
+    .i_l0_cpri_rx_vld                                   (cpri_rx_vld            ),
     
-    .o_ant_even                                         (                       ),
-    .o_ant_odd                                          (                       ),
-    .o_ant_addr                                         (                       ),
-    .o_tvalid                                           (                       ) 
+    .i_l1_cpri_clk                                      (cpri_clk    [1]        ),
+    .i_l1_cpri_rst                                      (cpri_rst               ),
+    .i_l1_cpri_rx_data                                  (cpri_rx_data[1]        ),
+    .i_l1_cpri_rx_vld                                   (cpri_rx_vld            ),
+
+    .i_l2_cpri_clk                                      (cpri_clk    [2]        ),
+    .i_l2_cpri_rst                                      (cpri_rst               ),
+    .i_l2_cpri_rx_data                                  (cpri_rx_data[2]        ),
+    .i_l2_cpri_rx_vld                                   (cpri_rx_vld            ),
+    
+    .i_l3_cpri_clk                                      (cpri_clk    [3]        ),
+    .i_l3_cpri_rst                                      (cpri_rst               ),
+    .i_l3_cpri_rx_data                                  (cpri_rx_data[3]        ),
+    .i_l3_cpri_rx_vld                                   (cpri_rx_vld            ),
+
+    .i_l4_cpri_clk                                      (cpri_clk    [4]        ),
+    .i_l4_cpri_rst                                      (cpri_rst               ),
+    .i_l4_cpri_rx_data                                  (cpri_rx_data[4]        ),
+    .i_l4_cpri_rx_vld                                   (cpri_rx_vld            ),
+    
+    .i_l5_cpri_clk                                      (cpri_clk    [5]        ),
+    .i_l5_cpri_rst                                      (cpri_rst               ),
+    .i_l5_cpri_rx_data                                  (cpri_rx_data[5]        ),
+    .i_l5_cpri_rx_vld                                   (cpri_rx_vld            ),
+
+    .i_l6_cpri_clk                                      (cpri_clk    [6]        ),
+    .i_l6_cpri_rst                                      (cpri_rst               ),
+    .i_l6_cpri_rx_data                                  (cpri_rx_data[6]        ),
+    .i_l6_cpri_rx_vld                                   (cpri_rx_vld            ),
+    
+    .i_l7_cpri_clk                                      (cpri_clk    [7]        ),
+    .i_l7_cpri_rst                                      (cpri_rst               ),
+    .i_l7_cpri_rx_data                                  (cpri_rx_data[7]        ),
+    .i_l7_cpri_rx_vld                                   (cpri_rx_vld            ),
+	 
+    .o_cpri_tx_data                                     (                       ),
+    .o_cpri_tx_vld                                      (                       ) 
 );
 
 
@@ -533,27 +564,26 @@ end
 
 // rx data after uncompress
 always @(posedge i_clk) begin
-    write2file_48bit(    
-                            fid_beams_data, 
-                            i_clk, 
-                            pdsch_dim_reduction.beams_tvalid      , 
-                            pdsch_dim_reduction.beams_sum_even[ 0] , pdsch_dim_reduction.beams_sum_odd[ 0]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 1] , pdsch_dim_reduction.beams_sum_odd[ 1]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 2] , pdsch_dim_reduction.beams_sum_odd[ 2]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 3] , pdsch_dim_reduction.beams_sum_odd[ 3]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 4] , pdsch_dim_reduction.beams_sum_odd[ 4]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 5] , pdsch_dim_reduction.beams_sum_odd[ 5]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 6] , pdsch_dim_reduction.beams_sum_odd[ 6]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 7] , pdsch_dim_reduction.beams_sum_odd[ 7]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 8] , pdsch_dim_reduction.beams_sum_odd[ 8]  ,
-                            pdsch_dim_reduction.beams_sum_even[ 9] , pdsch_dim_reduction.beams_sum_odd[ 9]  ,
-                            pdsch_dim_reduction.beams_sum_even[10] , pdsch_dim_reduction.beams_sum_odd[10]  ,
-                            pdsch_dim_reduction.beams_sum_even[11] , pdsch_dim_reduction.beams_sum_odd[11]  ,
-                            pdsch_dim_reduction.beams_sum_even[12] , pdsch_dim_reduction.beams_sum_odd[12]  ,
-                            pdsch_dim_reduction.beams_sum_even[13] , pdsch_dim_reduction.beams_sum_odd[13]  ,
-                            pdsch_dim_reduction.beams_sum_even[14] , pdsch_dim_reduction.beams_sum_odd[14]  ,
-                            pdsch_dim_reduction.beams_sum_even[15] , pdsch_dim_reduction.beams_sum_odd[15]  
-                        );
+    if(pdsch_dim_reduction.beams_tvalid)
+        $fwrite(fid_beams_data, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,\
+                         %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", 
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 0] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 0] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 0] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 0] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 1] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 1] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 1] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 1] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 2] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 2] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 2] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 2] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 3] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 3] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 3] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 3] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 4] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 4] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 4] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 4] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 5] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 5] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 5] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 5] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 6] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 6] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 6] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 6] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 7] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 7] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 7] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 7] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 8] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 8] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 8] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 8] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[ 9] ,pdsch_dim_reduction.mac_beams.o_data_even_q[ 9] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[ 9] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[ 9] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[10] ,pdsch_dim_reduction.mac_beams.o_data_even_q[10] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[10] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[10] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[11] ,pdsch_dim_reduction.mac_beams.o_data_even_q[11] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[11] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[11] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[12] ,pdsch_dim_reduction.mac_beams.o_data_even_q[12] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[12] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[12] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[13] ,pdsch_dim_reduction.mac_beams.o_data_even_q[13] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[13] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[13] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[14] ,pdsch_dim_reduction.mac_beams.o_data_even_q[14] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[14] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[14] ,
+                            pdsch_dim_reduction.mac_beams.o_data_even_i[15] ,pdsch_dim_reduction.mac_beams.o_data_even_q[15] ,  pdsch_dim_reduction.mac_beams.o_data_odd_i[15] ,  pdsch_dim_reduction.mac_beams.o_data_odd_q[15] 
+        );
 end
 
 // tx data before package

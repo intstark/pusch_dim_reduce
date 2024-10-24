@@ -11,6 +11,7 @@ ReGenerateData = 0;
 WriteFile = 0;
 ReloadData = 1;
 
+MAC_DW = 40;
 
 
 data_ii = repmat([63:-1:0 0:-1:-63 -62:1:-59], 1, 12);
@@ -75,9 +76,9 @@ if ReloadData
     [sim_tx_data,tx_cmpy,tx_agc] = ReadZipData(datafile1,0);
     [sim_rx_data,rx_cmpy,rx_agc]  = ReadZipData(datafile2,0);
     sim_unzip_data = ReadData(datafile3,16,0,'IQ');
-    sim_beams_data = ReadData(datafile4,48,0);
-    sim_beams_pwr  = ReadData(datafile5,48,0);
-    sim_beams_sort  = ReadData(datafile6,48,0);
+    sim_beams_data = ReadData(datafile4,MAC_DW,0);
+    sim_beams_pwr  = ReadData(datafile5,MAC_DW,0);
+    sim_beams_sort = ReadData(datafile6,MAC_DW,0);
 end
 
 

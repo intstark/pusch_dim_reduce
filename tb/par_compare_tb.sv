@@ -13,7 +13,8 @@ reg                                             i_reset                 ;
 reg            [COL-1:0][IW-1: 0]               i_data                  ;
 reg            [   7: 0]                        i_index                 ;
 reg                                             i_rready                ;
-reg                                             i_rvalid                ;
+wire                                            i_enable                ;
+wire                                            i_rvalid                ;
 
 // Outputs
 wire           [COL-1:0][IW-1: 0]               data                    ;
@@ -54,12 +55,30 @@ beam_sort # (
     .i_reset                                            (i_reset                ),
     .i_data                                             (i_data                 ),
     .i_rready                                           (i_rready               ),
+    .i_enable                                           (i_enable               ),
     .i_rvalid                                           (i_rvalid               ),
     .o_data                                             (                       ),
     .o_score                                            (                       ),
     .o_tvalid                                           (                       ),
     .o_tready                                           (                       ) 
 );
+
+beam_sort1 # (
+    .IW                                                 (32                     ),
+    .COL                                                (64                     ) 
+)beam_sort1(
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+    .i_data                                             (i_data                 ),
+    .i_rready                                           (i_rready               ),
+    .i_enable                                           (i_enable               ),
+    .i_rvalid                                           (i_rvalid               ),
+    .o_data                                             (                       ),
+    .o_score                                            (                       ),
+    .o_tvalid                                           (                       ),
+    .o_tready                                           (                       ) 
+);
+
 
 //--------------------------------------------------------------------------------------
 // sort the data by score, smallest score first
@@ -90,10 +109,9 @@ initial begin
     i_data = 0;
     i_index = 0;
     i_rready = 0;
-    i_rvalid = 0;
 
     // Wait for global reset to finish
-    #10;
+    #15;
     i_reset = 0;
 
     // Test Case 1: Happy Path
@@ -120,7 +138,37 @@ initial begin
             };
     i_index = 8'd0;
     i_rready = 1;
-    i_rvalid = 1;
+end
+
+reg [7:0] re_num =0;
+reg [7:0] rbg_num =0;
+reg data_tvld = 0;  
+always @ (posedge i_clk)begin
+    if(i_reset)
+        data_tvld <= 0;
+    else
+        data_tvld <= 1;
+end
+
+always @ (posedge i_clk)begin
+    if(i_reset)
+        re_num <= 0;
+    else if(re_num==191)
+        re_num <= 0;
+    else if(data_tvld)
+        re_num <= re_num + 1;
+end
+
+assign i_rvalid = (data_tvld && re_num==0 && rbg_num<=8) ? 1'b1 : 1'b0;
+assign i_enable = (data_tvld && re_num<=191 && rbg_num<=8) ? 1'b1 : 1'b0;
+
+always @ (posedge i_clk)begin
+    if(i_reset)
+        rbg_num <= 0;
+    else if(rbg_num==15 && i_rvalid)
+        rbg_num <= 0;
+    else if(i_rvalid)
+        rbg_num <= rbg_num + 1;
 end
 
 endmodule

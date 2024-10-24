@@ -33,7 +33,6 @@ module cpri_rxdata_buffer#(
     input                                           i_reset                 ,
 
     input          [WDATA_WIDTH-1: 0]               i_rx_data               ,
-    input          [   6: 0]                        i_rx_seq                ,
     input                                           i_rvalid                ,
     input                                           i_rready                ,
     input                                           i_sym1_done             ,
@@ -55,10 +54,10 @@ localparam [6: 0]             CHIP_DW    = 95;
 //--------------------------------------------------------------------------------------
 reg                                             rd_rdy                  ;
 reg                                             wr_wlast                ;
-wire                                            wr_wen                  ;
+reg                                             wr_wen                =0;
 wire                                            rd_ren                  ;
 reg            [WADDR_WIDTH-1: 0]               wr_addr               =0;
-wire           [WDATA_WIDTH-1: 0]               wr_data                 ;
+reg            [WDATA_WIDTH-1: 0]               wr_data               =0;
 reg            [RADDR_WIDTH-1: 0]               rd_addr               =0;
 wire           [RDATA_WIDTH-1: 0]               rd_data                 ;
 wire                                            rd_en                   ;
@@ -79,25 +78,34 @@ wire                                            raddr_almost_full       ;
 //--------------------------------------------------------------------------------------
 // Write logic
 //--------------------------------------------------------------------------------------
-assign wr_wen  = i_rvalid;
-assign wr_data = i_rx_data;
+always @ (posedge i_clk)begin
+    if(i_reset)
+        wr_wen <= 1'b0;
+    else if(i_rvalid)
+        wr_wen <= 1'b1;
+end
+
+always @ (posedge i_clk)begin
+    wr_data <= i_rx_data;
+end
+
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        wr_addr <= 0;
+        wr_addr <= 'd0;
     else if(wr_addr==DATA_DEPTH)
-        wr_addr <= 0;
+        wr_addr <= 'd0;
     else if(wr_wen)
-        wr_addr <= wr_addr + 1;    
+        wr_addr <= wr_addr + 'd1;    
 end
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        wr_wlast <= 0;
+        wr_wlast <= 1'b0;
     else if(wr_addr==DATA_DEPTH-1)
         wr_wlast <= 1'b1;
     else
-        wr_wlast <= 0;
+        wr_wlast <= 1'b0;
 end
 
 assign wr_info = (wr_addr==1) ? 1'b1 : 1'b0;
@@ -113,38 +121,38 @@ assign raddr_least_2 = (rd_addr == DATA_DEPTH-2) ? 1'b1 : 1'b0;
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        rd_sym_num <=0;
+        rd_sym_num <= 8'd0;
     else if(i_rready && rd_rlast)
-        rd_sym_num <= rd_sym_num + 1;
+        rd_sym_num <= rd_sym_num + 8'd1;
 end
 
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        sym1_done <= 0;
+        sym1_done <= 1'b0;
     else if(rd_sym_num==3 && raddr_least_2)
-        sym1_done <= 1;
+        sym1_done <= 1'b1;
 end
 
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        rd_addr<= 0;
+        rd_addr<= 'd0;
     else if(rd_rlast)
-        rd_addr <= 0;
+        rd_addr <= 'd0;
     else if(rd_en)
-        rd_addr <= rd_addr + 1;
+        rd_addr <= rd_addr + 'd1;
 end
 
 
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        rd_rlast <= 0;
+        rd_rlast <= 1'b0;
     else if(i_rready && raddr_almost_full)
         rd_rlast <= 1'b1;
     else
-        rd_rlast <= 0;
+        rd_rlast <= 1'b0;
 end
 
 always @ (posedge i_clk)begin
@@ -156,18 +164,18 @@ always @ (posedge i_clk)begin
     if(i_rready && sym1_done && raddr_almost_full)
         rd_rdy <= 1'b1;
     else
-        rd_rdy <= 0;
+        rd_rdy <= 1'b0;
 end
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        seq_num <= 0;
+        seq_num <= 'd0;
     else if(~sym1_done && (rd_rlast_buf[2] || rd_rlast_buf[1]))
-        seq_num <= 0;
+        seq_num <= 'd0;
     else if(seq_num==CHIP_DW)
-        seq_num <= 0;
+        seq_num <= 'd0;
     else if(data_vld_buf[2] && rd_en_buf[2])
-        seq_num <= seq_num + 1;
+        seq_num <= seq_num + 'd1;
 end
 
 always @ (posedge i_clk)begin
@@ -176,11 +184,11 @@ end
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        data_last <= 0;
+        data_last <= 1'b0;
     else if(seq_num == CHIP_DW-1)
-        data_last <= 1;
+        data_last <= 1'b1;
     else
-        data_last <= 0;
+        data_last <= 1'b0;
 end
 
 //------------------------------------------------------------------------------------------
@@ -245,13 +253,13 @@ reg [3:0] symbol_num = 0;
 
 always @ (posedge i_clk)begin
     if(i_reset)begin
-        prb_num <= 0;
-        symbol_num <= 0;
+        prb_num <= 'd0;
+        symbol_num <= 'd0;
     end else if(prb_num == 131)begin
-        prb_num <= 0;
-        symbol_num <= symbol_num + 1;
+        prb_num <= 'd0;
+        symbol_num <= symbol_num + 'd1;
     end else if(wr_wen) begin
-        prb_num <= prb_num + 1;
+        prb_num <= prb_num + 'd1;
     end
     
     $display("NO %d Symbol", symbol_num);

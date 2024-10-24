@@ -42,6 +42,8 @@ module ant_data_buffer #(
     output         [ANT*32-1: 0]                    o_ant_even              ,
     output         [ANT*32-1: 0]                    o_ant_odd               ,
     output         [RADDR_WIDTH-1: 0]               o_ant_addr              ,
+    output                                          o_ant_sop               ,
+    output                                          o_ant_eop               ,
     output                                          o_tvalid                 
 );
 
@@ -65,6 +67,8 @@ wire           [INFO_WIDTH-1: 0]                even_rinfo              ;
 wire           [INFO_WIDTH-1: 0]                odd_rinfo               ;
 wire                                            even_rdy                ;
 wire                                            sync_rd_rdy             ;
+wire                                            sync_rd_sop             ;
+wire                                            sync_rd_eop             ;
 
 reg            [ANT*32-1: 0]                    wr_data               =0;
 reg                                             wr_wen_even           =0;
@@ -75,6 +79,8 @@ reg            [WADDR_WIDTH-1: 0]               wr_addr               =0;
 
 reg                                             ant_sel               =0;
 reg            [   2: 0]                        tvalid_out            =0;
+reg            [   2: 0]                        tsop_out              =0;
+reg            [   2: 0]                        teop_out              =0;
 
 //------------------------------------------------------------------------------------------
 // ant_sel=0: even antenna, ant_sel=1: odd antenna
@@ -135,6 +141,8 @@ always @ (posedge i_clk)begin
 end
 
 assign sync_rd_rdy = (odd_rvld && (sync_raddr == RE_DEPTH))? 1'd1 : 1'd0;
+assign sync_rd_sop = (sync_raddr == 1)? 1'd1 : 1'd0;
+assign sync_rd_eop = (sync_raddr == RE_DEPTH)? 1'd1 : 1'd0;
 
 //------------------------------------------------------------------------------------------
 // EVEN ANT MEM BLOCK 
@@ -204,10 +212,14 @@ loop_buffer_sync_intel #
 
 always @ (posedge i_clk)begin
    tvalid_out[2:0] <= {tvalid_out[1:0], odd_rvld};
+   tsop_out[2:0]  <= {tsop_out[1:0], sync_rd_sop};
+   teop_out[2:0]  <= {teop_out[1:0], sync_rd_eop};
 end
 
 assign o_ant_even = even_rdata;
 assign o_ant_odd  = odd_rdata ;
 assign o_tvalid = tvalid_out[2];
+assign o_ant_sop  = tsop_out[1];
+assign o_ant_eop  = teop_out[2];
 
 endmodule

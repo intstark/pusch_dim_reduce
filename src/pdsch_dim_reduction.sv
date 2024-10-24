@@ -18,46 +18,68 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 module pdsch_dim_reduction #(
-    parameter integer LANE               =  8    ,
-    parameter integer WDATA_WIDTH        =  64   ,
-    parameter integer WADDR_WIDTH        =  12   ,
-    parameter integer RDATA_WIDTH        =  64   ,
-    parameter integer RADDR_WIDTH        =  12   ,
-    parameter integer FIFO_DEPTH         =  8    ,
-    parameter integer FIFO_WIDTH         =  1    ,
-    parameter integer READ_LATENCY       =  3    ,
-    parameter integer LOOP_WIDTH         =  15   ,    
-    parameter integer INFO_WIDTH         =  1    ,    
-    parameter integer RAM_TYPE           =  1
+    parameter integer LANE  =   8 
 )(
-    input                                           i_clk                   ,   // data clock
-    input                                           i_reset                 ,   // reset
+    input                                           i_clk                   ,// data clock
+    input                                           i_reset                 ,// reset
 
-    input          [LANE-1: 0]                      i_cpri_clk              ,   // cpri clkout
-    input          [LANE-1: 0]                      i_cpri_rst              ,   // cpri reset
-    input          [LANE-1:0][63: 0]                i_cpri_rx_data          ,   // cpri data
-    input          [LANE-1:0][6: 0]                 i_cpri_rx_seq           ,   // cpri seq
-    input          [LANE-1: 0]                      i_cpri_rx_vld           ,   // cpri valid
+    input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
 
-    input          [63:0][32*32-1: 0]               i_code_word_even        ,
-    input          [63:0][32*32-1: 0]               i_code_word_odd         ,
+    // cpri rxdata
+    input                                           i_l0_cpri_clk           ,// cpri clkout
+    input                                           i_l0_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l0_cpri_rx_data       ,// cpri data
+    input                                           i_l0_cpri_rx_vld        ,// cpri valid
 
-    input                                           i_sym1_done             ,    
-    input          [   1: 0]                        i_rbg_size              ,
+    input                                           i_l1_cpri_clk           ,// cpri clkout
+    input                                           i_l1_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l1_cpri_rx_data       ,// cpri data
+    input                                           i_l1_cpri_rx_vld        ,// cpri valid
 
-    output         [LANE*4*32-1: 0]                 o_ant_even              ,
-    output         [LANE*4*32-1: 0]                 o_ant_odd               ,
-    output         [RADDR_WIDTH-1: 0]               o_ant_addr              ,
-    output                                          o_tvalid                 
+    input                                           i_l2_cpri_clk           ,// cpri clkout
+    input                                           i_l2_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l2_cpri_rx_data       ,// cpri data
+    input                                           i_l2_cpri_rx_vld        ,// cpri valid
+
+    input                                           i_l3_cpri_clk           ,// cpri clkout
+    input                                           i_l3_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l3_cpri_rx_data       ,// cpri data
+    input                                           i_l3_cpri_rx_vld        ,// cpri valid
+
+    input                                           i_l4_cpri_clk           ,// cpri clkout
+    input                                           i_l4_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l4_cpri_rx_data       ,// cpri data
+    input                                           i_l4_cpri_rx_vld        ,// cpri valid
+
+    input                                           i_l5_cpri_clk           ,// cpri clkout
+    input                                           i_l5_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l5_cpri_rx_data       ,// cpri data
+    input                                           i_l5_cpri_rx_vld        ,// cpri valid
+
+    input                                           i_l6_cpri_clk           ,// cpri clkout
+    input                                           i_l6_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l6_cpri_rx_data       ,// cpri data
+    input                                           i_l6_cpri_rx_vld        ,// cpri valid
+
+    input                                           i_l7_cpri_clk           ,// cpri clkout
+    input                                           i_l7_cpri_rst           ,// cpri reset
+    input          [  63: 0]                        i_l7_cpri_rx_data       ,// cpri data
+    input                                           i_l7_cpri_rx_vld        ,// cpri valid
+
+
+    // cpri txdata
+    output         [  63: 0]                        o_cpri_tx_data          ,// cpri data
+    output                                          o_cpri_tx_vld            // cpri valid
+
 );
 
 //--------------------------------------------------------------------------------------
 // PARAMETER
 //--------------------------------------------------------------------------------------
-localparam   BEAM =   16;     // number of data streams
-localparam   ANT  =   32;     // number of data streams
-localparam   IW   =   32;     // number of data streams
-localparam   OW   =   48;     // output width
+localparam   BEAM =   16;     // number of beams 
+localparam   ANT  =   32;     // number of antenas 
+localparam   IW   =   32;     // input width
+localparam   OW   =   40;     // output width
 genvar gi;
 
 
@@ -77,11 +99,41 @@ wire           [LANE-1: 0]                      ant_tvalid              ;
 reg            [LANE*4*32-1: 0]                 ant_data_even         =0;
 reg            [LANE*4*32-1: 0]                 ant_data_odd          =0;
 
-wire           [BEAM-1:0][OW-1: 0]              beams_sum_even          ;
-wire           [BEAM-1:0][OW-1: 0]              beams_sum_odd           ;
-wire           [BEAM-1:0][OW-1: 0]              beams_sum_ants          ;
+wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_i            ;
+wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_q            ;
 wire                                            beams_tvalid            ;
 reg                                             sym1_done             =0;
+
+wire           [LANE-1: 0]                      w_cpri_clk              ;
+wire           [LANE-1: 0]                      w_cpri_rst              ;
+wire           [LANE-1:0][63: 0]                w_cpri_rx_data          ;
+wire           [LANE-1: 0]                      w_cpri_rx_vld           ;
+
+
+
+//------------------------------------------------------------------------------------------
+// arrange cpri data for 8 lanes
+//------------------------------------------------------------------------------------------
+assign w_cpri_clk       = { i_l7_cpri_clk, i_l6_cpri_clk, i_l5_cpri_clk, i_l4_cpri_clk,
+                            i_l3_cpri_clk, i_l2_cpri_clk, i_l1_cpri_clk, i_l0_cpri_clk};
+
+assign w_cpri_rst       = { i_l7_cpri_rst, i_l6_cpri_rst, i_l5_cpri_rst, i_l4_cpri_rst,
+                            i_l3_cpri_rst, i_l2_cpri_rst, i_l1_cpri_rst, i_l0_cpri_rst};
+
+assign w_cpri_rx_vld    = { i_l7_cpri_rx_vld, i_l6_cpri_rx_vld, i_l5_cpri_rx_vld, i_l4_cpri_rx_vld,
+                            i_l3_cpri_rx_vld, i_l2_cpri_rx_vld, i_l1_cpri_rx_vld, i_l0_cpri_rx_vld};
+
+assign w_cpri_rx_data[0] = i_l0_cpri_rx_data;
+assign w_cpri_rx_data[1] = i_l1_cpri_rx_data;
+assign w_cpri_rx_data[2] = i_l2_cpri_rx_data;
+assign w_cpri_rx_data[3] = i_l3_cpri_rx_data;
+assign w_cpri_rx_data[4] = i_l4_cpri_rx_data;
+assign w_cpri_rx_data[5] = i_l5_cpri_rx_data;
+assign w_cpri_rx_data[6] = i_l6_cpri_rx_data;
+assign w_cpri_rx_data[7] = i_l7_cpri_rx_data;
+
+
+
 
 //------------------------------------------------------------------------------------------
 // unpack cpri data for 8 lanes
@@ -93,11 +145,10 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
 
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
-        .i_cpri_clk                                         (i_cpri_clk    [gi]     ),
-        .i_cpri_rst                                         (i_cpri_rst    [gi]     ),
-        .i_cpri_rx_data                                     (i_cpri_rx_data[gi]     ),
-        .i_cpri_rx_seq                                      (i_cpri_rx_seq [gi]     ),
-        .i_cpri_rx_vld                                      (i_cpri_rx_vld [gi]     ),
+        .i_cpri_clk                                         (w_cpri_clk    [gi]     ),
+        .i_cpri_rst                                         (w_cpri_rst    [gi]     ),
+        .i_cpri_rx_data                                     (w_cpri_rx_data[gi]     ),
+        .i_cpri_rx_vld                                      (w_cpri_rx_vld [gi]     ),
         .i_sym1_done                                        (sym1_done              ),
         .o_iq_addr                                          (unpack_iq_addr[gi]     ),
         .o_iq_data                                          (unpack_iq_data[gi]     ),
@@ -144,6 +195,8 @@ endgenerate
 //------------------------------------------------------------------------------------------
 // code word 
 //------------------------------------------------------------------------------------------
+wire           [63:0][ANT*IW-1: 0]              i_code_word_even        ;
+wire           [63:0][ANT*IW-1: 0]              i_code_word_odd         ;
 reg                                             ant_tvalid_r          =0;
 wire                                            ant_tvld_pos            ;
 reg            [   7: 0]                        ant_buffer_sym        =0;
@@ -156,6 +209,25 @@ reg                                             sym_is_1st            =1;
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
 wire                                            bid_rden                ;
+
+reg                                             aiu_idx               =1;
+reg            [  15: 0]                        re_num                =0;
+reg            [   7: 0]                        rbg_num               =0;
+reg            [  15: 0]                        re_num_per_rbg        =0;
+wire           [   7: 0]                        rbg_num_max             ;
+
+
+
+// code word read
+code_word_rev                   code_word_rev
+(
+    .i_clk                      (i_clk           ),
+    .i_reset                    (i_reset         ),
+    .i_enable                   (1'b1            ),
+    .o_cw_even                  (i_code_word_even),
+    .o_cw_odd                   (i_code_word_odd ),
+    .o_tvalid                   (                ) 
+);
 
 
 
@@ -212,16 +284,10 @@ always @(posedge i_clk) begin
     end
 end
 
-reg                                             aiu_idx               =1;
-reg            [  15: 0]                        re_num                =0;
-reg            [   7: 0]                        rbg_num               =0;
-reg            [  15: 0]                        re_num_per_rbg        =0;
-wire           [   7: 0]                        rbg_num_max             ;
 
 assign rbg_num_max = (i_rbg_size == 2'b00) ? 8'd32  :
                      (i_rbg_size == 2'b01) ? 8'd16  :
                      (i_rbg_size == 2'b10) ? 8'd8   : 8'd8;
-
 
 
 // re number per rbG based on rbg size
@@ -234,7 +300,7 @@ always @ (posedge i_clk) begin
                     else if(aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
-                        re_num_per_rbg <= 'd96;    // rbG=8 PRRs
+                        re_num_per_rbg <= 'd96;     // rbG=8 PRRs
                 end
         2'b10:  begin
                     if(aiu_idx==0 && rbg_num==0)
@@ -283,17 +349,15 @@ mac_beams #(
     .i_rvalid                                           (ant_tvalid_r           ),
     .i_code_word_even                                   (code_word_even         ),
     .i_code_word_odd                                    (code_word_odd          ),
-    .o_sum_data_even                                    (beams_sum_even         ),
-    .o_sum_data_odd                                     (beams_sum_odd          ),
-    .o_sum_data                                         (beams_sum_ants         ),
+    .o_data_even_i                                      (                       ),
+    .o_data_even_q                                      (                       ),
+    .o_data_odd_i                                       (                       ),
+    .o_data_odd_q                                       (                       ),
+    .o_data_i                                           (beams_ants_i           ),
+    .o_data_q                                           (beams_ants_q           ),
     .o_tvalid                                           (beams_tvalid           ) 
 );
 
-
-assign o_ant_even = ant_data_even ;
-assign o_ant_odd  = ant_data_odd  ;
-assign o_ant_addr = ant_addr[0]   ;
-assign o_tvalid   = ant_tvalid[0] ;
 
 //------------------------------------------------------------------------------------------
 // beams process counter
@@ -330,9 +394,69 @@ assign bid_rden = ~sym_is_1st & rbg_load;
 
 
 //------------------------------------------------------------------------------------------
+// ABS |I|+|Q|: 2 clock cycle
+//------------------------------------------------------------------------------------------
+wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_sft_i        ;
+wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_sft_q        ;
+reg            [BEAM-1:0][OW-1: 0]              beams_ants_abs_iq     =0;
+reg            [BEAM-1:0][OW-1: 0]              beams_ants_abs_i      =0;
+reg            [BEAM-1:0][OW-1: 0]              beams_ants_abs_q      =0;
+reg            [   4: 0]                        beam_tvalid_buf       =0;
+reg            [   1: 0]                        beam_tlast_buf        =0;
+wire                                            iq_abs_valid            ;
+wire                                            rbg_acc_valid           ;
+wire                                            rbg_acc_tlast           ;
+
+// right shift 6 bits SQ(40,21)
+generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_sum_shift
+    assign beams_ants_sft_i[gi] = signed'(beams_ants_i[gi])>>>8;
+    assign beams_ants_sft_q[gi] = signed'(beams_ants_q[gi])>>>8;
+end
+endgenerate
+
+// real part abs
+generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_sum_abs_re
+    always @(posedge i_clk) begin
+        if(beams_ants_sft_i[gi][OW-1] == 1'b0)
+            beams_ants_abs_i[gi] <= beams_ants_sft_i[gi];
+        else
+            beams_ants_abs_i[gi] <= ~beams_ants_sft_i[gi] + 'd1;
+    end
+end
+endgenerate
+
+// imaginary part abs
+generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_sum_abs_im
+    always @(posedge i_clk) begin
+        if(beams_ants_sft_q[gi][OW-1] == 1'b0)
+            beams_ants_abs_q[gi] <= beams_ants_sft_q[gi];
+        else
+            beams_ants_abs_q[gi] <= ~beams_ants_sft_q[gi] + 'd1;
+    end
+end
+endgenerate
+
+// |real| + |imaginary|
+generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_sum_re_im
+    always @(posedge i_clk) begin
+        beams_ants_abs_iq[gi] <= beams_ants_abs_i[gi] + beams_ants_abs_q[gi];
+    end
+end
+endgenerate
+
+// delay valid
+always @(posedge i_clk) begin
+    beam_tvalid_buf <= {beam_tvalid_buf[3:0], beams_tvalid};
+    beam_tlast_buf <= {beam_tlast_buf[0], beams_tvld_neg};
+end
+
+assign iq_abs_valid  = beam_tvalid_buf[1];   // 2 clock cycle delay
+assign rbg_acc_valid = beam_tvalid_buf[4];  // 4 clock cycle delay
+assign rbg_acc_tlast = beam_tlast_buf[1];  // 4 clock cycle delay
+
+//------------------------------------------------------------------------------------------
 // rbG sum 
 //------------------------------------------------------------------------------------------
-
 reg            [BEAM-1:0][OW-1: 0]              rbg_acc_re            ='{default:0};
 reg            [BEAM-1:0][OW-1: 0]              rbg_sum_abs           ='{default:0};
 reg            [14:0][7: 0]                     re_num_dly            ='{default:0};
@@ -348,7 +472,7 @@ always @ (posedge i_clk)begin
     rbg_num_dly[0]  <= rbg_num;
     rbg_load_dly    <= {rbg_load_dly[13:0], rbg_load};
 
-    for(int i=0; i<15; i++) begin
+    for(int i=0; i<14; i++) begin
         re_num_dly[i+1] <= re_num_dly[i];
         rbg_num_dly[i+1] <= rbg_num_dly[i];
     end
@@ -361,19 +485,20 @@ assign rbg_load_acc = rbg_load_dly[14];
 // re accumulator
 generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_acc
     always @(posedge i_clk) begin
-        if(beams_tvalid==0)
+        if(iq_abs_valid==0)
             rbg_acc_re[gi] <= 'd0;
         else if(rbg_load_acc)
-            rbg_acc_re[gi] <= signed'(beams_sum_ants[gi]);
+            rbg_acc_re[gi] <= signed'(beams_ants_abs_iq[gi]);
         else
-            rbg_acc_re[gi] <= signed'(rbg_acc_re[gi]) + signed'(beams_sum_ants[gi]);
+            rbg_acc_re[gi] <= signed'(rbg_acc_re[gi]) + signed'(beams_ants_abs_iq[gi]);
     end
 end
 endgenerate
 
+// store sum when rbG ends
 generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_rbg_sum
     always @(posedge i_clk) begin
-        if(rbg_load_acc || beams_tvld_neg) begin
+        if(rbg_load_acc || rbg_acc_tlast) begin
             rbg_sum_abs[gi] <= rbg_acc_re[gi];
         end
     end
@@ -385,7 +510,7 @@ endgenerate
 //------------------------------------------------------------------------------------------
 // buffer valid and load signal
 //------------------------------------------------------------------------------------------
-reg            [   4: 0]                        beam_tvalid_buf       =0;
+
 reg            [   2: 0]                        rbg_load_buf          =0;
 reg                                             rbg_sum_load          =0;
 reg                                             rbg_sum_vld           =0;
@@ -396,23 +521,23 @@ wire                                            rbg_buffer_vld          ;
 wire           [63:0][OW-1: 0]                  beam_sort_out           ;
 wire                                            beam_sort_vld           ;
 
+// delay valid
 always @(posedge i_clk) begin
-    beam_tvalid_buf <= {beam_tvalid_buf[3:0], beams_tvalid};
     rbg_load_buf    <= {rbg_load_buf[1:0], rbg_load_acc || beams_tvld_neg};
 end
 
 always @(posedge i_clk) begin
     if(i_reset)
         rbg_sum_vld <= 1'b0;
-    else if(beam_tvalid_buf[3] && rbg_load_buf[2])
+    else if(rbg_acc_valid && rbg_load_buf[1])
         rbg_sum_vld <= 1'b1;
-    else if(beam_tvalid_buf[3]==0)
+    else if(rbg_acc_valid==0)
         rbg_sum_vld <= 1'b0;
 end
 
 always @ (posedge i_clk) begin
-    if(beam_tvalid_buf[3])
-        rbg_sum_load <= rbg_load_buf[2];
+    if(rbg_acc_valid)
+        rbg_sum_load <= rbg_load_buf[1];
     else
         rbg_sum_load <= 0;
 end
@@ -474,6 +599,22 @@ beam_sort # (
     .o_tvalid                                           (                       ),
     .o_tready                                           (                       ) 
 );
+
+
+
+//------------------------------------------------------------------------------------------
+// dynamical scaler: TODO
+//------------------------------------------------------------------------------------------
+wire     signed[BEAM-1:0][15: 0]                ants_dout_i             ;
+wire     signed[BEAM-1:0][15: 0]                ants_dout_q             ;
+
+
+generate for(gi=0;gi<BEAM;gi=gi+1) begin:gen_ants_dout
+    assign ants_dout_i[gi] = beams_ants_i[gi][39:24];   // demo
+    assign ants_dout_q[gi] = beams_ants_q[gi][39:24];   // demo
+end
+endgenerate
+
 
 
 

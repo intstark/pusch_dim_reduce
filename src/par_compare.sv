@@ -49,10 +49,10 @@ module par_compare # (
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
-reg            [COL-1:0][IW-1: 0]               comp_data             ='{default:0};
-reg            [COL-1:0][7: 0]                  smaller_score         ='{default:0};
+reg            [IW-1: 0]                        comp_data[COL-1:0]    ='{default:0};
 reg            [   7: 0]                        idx                   =0;
-reg            [COL/4-1:0][7: 0]                score_sum_0           ='{default:0};
+reg            [7: 0]                           smaller_score[COL-1:0]='{default:0};
+reg            [7: 0]                           score_sum_0[COL/4-1:0]='{default:0};
 reg            [   7: 0]                        score_sum_all         =0;
 reg            [   7: 0]                        tvalid_buf            =0;
 

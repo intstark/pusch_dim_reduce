@@ -28,13 +28,12 @@ module cpri_rxdata_unpack # (
     input                                           i_cpri_clk              ,
     input                                           i_cpri_rst              ,
     input          [  63: 0]                        i_cpri_rx_data          ,
-    input          [   6: 0]                        i_cpri_rx_seq           ,
     input                                           i_cpri_rx_vld           ,
 
     input                                           i_sym1_done             ,
 
     output         [  10: 0]                        o_iq_addr               ,
-    output         [ANT-1:0][31: 0]                 o_iq_data               ,
+    output         [ANT*32-1: 0]                    o_iq_data               ,
     output                                          o_iq_vld                ,
     output                                          o_iq_last                
 );
@@ -97,7 +96,6 @@ cpri_rxdata_buffer                                      cpri_rxdata_buffer(
     .i_clk                                              (i_cpri_clk             ),
     .i_reset                                            (i_cpri_rst             ),
     .i_rx_data                                          (i_cpri_rx_data         ),
-    .i_rx_seq                                           (i_cpri_rx_seq          ),
     .i_rvalid                                           (i_cpri_rx_vld          ),
     .i_rready                                           (cpri_rx_ready          ),
     .i_sym1_done                                        (i_sym1_done            ),
@@ -283,10 +281,13 @@ end
 // output 
 //--------------------------------------------------------------------------------------
 assign o_iq_addr = iq_addr;
-assign o_iq_data = data_unpack;
 assign o_iq_vld  = data_unpack_vld;
 assign o_iq_last = prb_reached_132;
 
+generate for(ant=0; ant<4; ant++) begin
+    assign o_iq_data[ant*32 +: 32] = data_unpack[ant];
+end
+endgenerate
 
 
 endmodule
