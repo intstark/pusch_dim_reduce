@@ -557,8 +557,7 @@ beam_buffer #(
     .WDATA_WIDTH                                        (16*OW                  ),
     .WADDR_WIDTH                                        (8                      ),
     .RDATA_WIDTH                                        (16*OW                  ),
-    .RADDR_WIDTH                                        (8                      ),
-    .RAM_TYPE                                           (1                      ) 
+    .RADDR_WIDTH                                        (8                      )
 )beam_buffer (
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),

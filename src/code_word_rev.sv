@@ -44,7 +44,7 @@ module code_word_rev # (
 wire           [WIDTH*ANTS-1: 0]                codeword_rdata_even     ;
 wire           [WIDTH*ANTS-1: 0]                codeword_rdata_odd      ;
 reg            [   6: 0]                        codeword_rdnum        =0;
-reg            [   6: 0]                        codeword_raddr        =0;
+reg            [   5: 0]                        codeword_raddr        =0;
 reg                                             codeword_rden         =0;
 reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_0        =0;
 reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_1        =0;
@@ -77,7 +77,7 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    codeword_raddr <= codeword_rdnum;
+    codeword_raddr <= codeword_rdnum[5:0];
 end
 
 always @(posedge i_clk) begin

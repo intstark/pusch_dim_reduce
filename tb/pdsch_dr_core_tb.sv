@@ -141,6 +141,16 @@ wire                                            ant_dout_last           ;
 reg            [   2: 0]                        rd_page               =0;
 wire           [   2: 0]                        dout_page               ;
 
+wire                                            dr_sop                  ;
+wire                                            dr_eop                  ;
+wire                                            dr_vld                  ;
+wire           [15:0][15: 0]                    dr_data_re              ;
+wire           [15:0][15: 0]                    dr_data_im              ;
+
+
+//------------------------------------------------------------------------------------------
+// 8 Lanes data
+//------------------------------------------------------------------------------------------
 assign iq_addr = {8{ant_dout_addr}};
 assign iq_data = {8{ant_dout_data}};
 assign iq_vld  = {8{ant_dout_vld}};
@@ -161,8 +171,11 @@ pdsch_dr_core                                           pdsch_dr_core(
     .i_iq_vld                                           (iq_vld                 ),// 32 ants iq vld
     .i_iq_last                                          (iq_last                ),// 32 ants iq last(132prb ends)
 
-    .o_cpri_tx_data                                     (                       ),
-    .o_cpri_tx_vld                                      (                       ) 
+    .o_dr_sop                                           (dr_sop                 ),
+    .o_dr_eop                                           (dr_eop                 ),
+    .o_dr_vld                                           (dr_vld                 ),
+    .o_dr_data_re                                       (dr_data_re             ),
+    .o_dr_data_im                                       (dr_data_im             ) 
 );
 
 

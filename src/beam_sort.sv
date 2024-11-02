@@ -32,8 +32,9 @@ module beam_sort # (
     input                                           i_rready                ,
     input                                           i_rvalid                ,
 
-    input                                           i_bid_rden              ,
     input          [   7: 0]                        i_rbg_max               ,
+    input                                           i_rbg_load              ,
+    input                                           i_bid_rdinit            ,
 
     output         [COL-1:0][IW-1: 0]               o_data                  ,
     output         [COL-1:0][7: 0]                  o_score                 ,
@@ -70,15 +71,15 @@ wire           [   3: 0]                        w_tready                ;
 reg            [   5: 0]                        rbg_num               =0;
 reg            [  31: 0]                        enable_buf            =0;
 reg                                             sort_done             =0;
-//--------------------------------------------------------------------------------------
-// WIRE AND REGISTER
-//--------------------------------------------------------------------------------------
+
 reg            [COL-1:0][IW-1: 0]               data_in[3:0]          ='{default:0};
 reg                                             rvalid_in             =0;
 reg                                             rready_in             =0;
 reg                                             enable_in             =0;
 reg            [3:0][7: 0]                      data_idx              =0;
 reg            [   7: 0]                        data_num              =0;
+reg                                             sym_1st_done          =0;
+
 
 //--------------------------------------------------------------------------------------
 // data buffer 
@@ -102,7 +103,7 @@ always @ (posedge i_clk)begin
     data_idx[3] <= data_num + 8'd3;
 
     enable_in <= i_enable;
-    rvalid_in <= i_rvalid;
+    rvalid_in <= i_rvalid & (~sym_1st_done);
     rready_in <= i_rready;
     for(int i=0;i<4;i=i+1)begin
         data_in[i] <= i_data;
@@ -269,17 +270,14 @@ assign wr_data = sort_data[wr_num];
 //--------------------------------------------------------------------------------------
 // bram for beams power
 //--------------------------------------------------------------------------------------
-Simple_Dual_Port_BRAM_XPM_intel
-#(
+Simple_Dual_Port_BRAM_XPM_intel #(
     
     .WDATA_WIDTH                                        (IW                     ),
     .NUMWORDS_A                                         (256                    ),
     .RDATA_WIDTH                                        (IW                     ),
     .NUMWORDS_B                                         (256                    ),
     .INI_FILE                                           (                       ) 
-)
-dram_beam_power
-(
+)dram_beam_power(
     .clock                                              (i_clk                  ),
     .wren                                               (wr_wen                 ),
     .wraddress                                          (wr_addr                ),
@@ -299,10 +297,22 @@ wire           [   3: 0]                        bram_idx_waddr          ;
 reg            [   3: 0]                        bram_idx_raddr        =0;
 reg            [   7: 0]                        wr_wen_buf            =0;
 reg                                             rdout_en              =0;
-reg            [   3: 0]                        rd_vld                =0;
-wire                                            rd_init                 ;
+reg                                             rd_vld                =0;
+reg                                             rd_init               =0;
 wire                                            wr_wen_pos              ;
 wire                                            wr_wen_neg              ;
+
+reg            [  10: 0]                        rd_renum              =0;
+wire                                            rd_eop                  ;
+reg            [  39: 0]                        bid_rdinit_buf        =0;
+reg                                             bid_rden_1st          =0;
+wire                                            bid_rden_2nd            ;
+
+wire                                            fifo_rdout              ;
+reg            [   2: 0]                        rdout_en_buf          =0;
+reg                                             rd_init_sop           =0;
+
+
 
 assign bram_idx_wdata = sort_addr[15:0];
 assign bram_idx_waddr = {rbg_num[3:0]};
@@ -319,14 +329,16 @@ end
 assign wr_wen_pos = wr_wen_buf[0] & (~wr_wen_buf[1]);
 assign wr_wen_neg = wr_wen_buf[7] & (~wr_wen_buf[6]);
 
-always @ (posedge i_clk)begin
-    rd_vld <= {rd_vld[2:0], rdout_en};
-end
+
+assign bid_rden_2nd = (sym_1st_done) ? i_rbg_load : rd_init;
+
 
 always @(posedge i_clk) begin
     if(i_reset)
         bram_idx_raddr <= 'd0;
-    else if(i_bid_rden || rd_init)begin
+    else if(rd_eop)
+        bram_idx_raddr <= 'd0;
+    else if(sort_done && bid_rden_2nd)begin
         if(bram_idx_raddr==i_rbg_max)
             bram_idx_raddr <= 'd0;
         else
@@ -334,9 +346,25 @@ always @(posedge i_clk) begin
     end
 end
 
+always @ (posedge i_clk) begin
+    if(rd_vld)begin
+       if(rd_renum == 1583)
+            rd_renum <= 11'd0;
+        else
+            rd_renum <= rd_renum + 11'd1;
+    end else
+        rd_renum <= 11'd0;
+end
+
+assign rd_eop = (rd_renum == 11'd1583) ? 1'b1 : 1'b0;
+
+
+//--------------------------------------------------------------------------------------
 // debug
-reg            [   7: 0]                        renum=0                 ;
-reg            [   7: 0]                        renum2=0                ;
+//--------------------------------------------------------------------------------------
+reg            [   7: 0]                        renum                 =0;
+
+
 always @ (posedge i_clk) begin
     if(sort_done)begin
        if(wr_wen_pos)
@@ -345,16 +373,6 @@ always @ (posedge i_clk) begin
             renum <= renum + 8'd1;
     end else
         renum <= 8'd0;
-end
-
-always @ (posedge i_clk) begin
-    if(sort_done)begin
-       if(rd_init)
-            renum2 <= 8'd0;
-        else
-            renum2 <= renum2 + 8'd1;
-    end else
-        renum2 <= 8'd0;
 end
 
 //--------------------------------------------------------------------------------------
@@ -378,53 +396,98 @@ dram_beam_index
     .q                                                  (bram_idx_rdata         ) 
 );
 
+//--------------------------------------------------------------------------------------
+// the first read out 
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    if(i_reset)
+        sym_1st_done <= 1'b0;
+    else if(rd_init_sop)
+        sym_1st_done <= 1'b0;
+    else if(rd_eop)
+        sym_1st_done <= 1'b1;
+end
+always @ (posedge i_clk)begin
+    bid_rdinit_buf <=  {bid_rdinit_buf[38:0], i_bid_rdinit};
+
+    if(sym_1st_done)
+        bid_rden_1st <= 1'b0;
+    else
+        bid_rden_1st <= bid_rdinit_buf[34];
+end
+
+always @ (posedge i_clk)begin
+    rdout_en_buf[2:0] <=  {rdout_en_buf[1:0], rdout_en};
+
+    if(rdout_en_buf[2])begin
+        rd_init_sop <= 0;   
+        rd_init <= fifo_rdout;
+    end else begin
+        rd_init <= 0;
+        rd_init_sop <= fifo_rdout;
+    end
+end
 
 FIFO_SYNC_XPM_intel #(
     .NUMWORDS                                           (512                    ),
     .DATA_WIDTH                                         (1                      ) 
-)INST_INFO                                            
-(                                                                   
+)fifo_sync_rdinit(                                                                   
     .rst                                                (i_reset                ),
     .clk                                                (i_clk                  ),
     .wr_en                                              (sort_done              ),
-    .din                                                (wr_wen_pos             ),
+    .din                                                (bid_rden_1st           ),
     .rd_en                                              (rdout_en               ),
-    .dout                                               (rd_init                ),
+    .dout                                               (fifo_rdout             ),
     .dout_valid                                         (                       ),
     .empty                                              (                       ),
     .full                                               (                       ),
     .usedw                                              (                       ),
     .almost_full                                        (                       ),
     .almost_empty                                       (                       ) 
-);  
+); 
 
 //--------------------------------------------------------------------------------------
 // output 
 //--------------------------------------------------------------------------------------
 reg                                             rbg_sop               =0;
+reg                                             rbg_sop_out           =0;
+reg            [15:0][7: 0]                     beam_index_out        =0;
+reg            [2:0][5: 0]                      rbg_num_out           =0;
+
+
+always @ (posedge i_clk)begin
+    rbg_sop_out <= rd_init_sop;
+end
 
 always @ (posedge i_clk)begin
     if(i_reset)
-        rbg_sop <= 1'b0;
-    else if(rbg_num==1)
-        rbg_sop <= wr_wen_pos;
+        rd_vld <= 1'b0;
+    else if(rd_init_sop)
+        rd_vld <= 1'b1;
+    else if(rd_eop)
+        rd_vld <= 1'b0;
+end
+
+always @(posedge i_clk) begin
+    for(int i=0; i<16; i=i+1) begin: index_out_vec
+        beam_index_out[i] <= bram_idx_rdata[i*8 +: 8];
+    end
+end
+
+always @(posedge i_clk) begin
+    rbg_num_out[0] <= {2'b00,bram_idx_raddr};
+    for(int i=1; i<3; i=i+1) begin: rbg_num_out_dly
+        rbg_num_out[i] <= rbg_num_out[i-1];
+    end
 end
 
 assign o_data                 = sort_data;
 assign o_score                = score;
 assign o_rbg_load             = data_vld;
-assign o_rbg_num              = rbg_num;
-assign o_tvalid               = rd_vld[3];
-assign o_idx_sop              = rbg_sop;
-
-
-
-generate 
-for(idx=0; idx<16; idx=idx+1) begin: index_out_vec
-    assign o_beam_index[idx] = bram_idx_rdata[idx*8 +: 8];
-end
-endgenerate
-
+assign o_rbg_num              = rbg_num_out[2];
+assign o_tvalid               = rd_vld;
+assign o_idx_sop              = rbg_sop_out;
+assign o_beam_index           = beam_index_out;
 
 
 endmodule

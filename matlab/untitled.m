@@ -33,7 +33,7 @@ compressed_data_max_bit = log2(max(abs(beams_sum_sft),[],[1,2]));
 if WriteFile
     [br,bc] = size(beams16_sorted);
     for ii=1:bc
-        write2hex_fcn(sprintf('ul_datain_%d.txt',ii-1),beams16_sorted(:,ii));
+        write2hex_fcn(sprintf('ul_data/ul_datain_%d.txt',ii-1),beams16_sorted(:,ii));
     end
 end
 

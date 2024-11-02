@@ -50,7 +50,7 @@ genvar idx;
 
 
 reg            [DATA_WIDTH-1: 0]                wr_data1              =0;
-reg            [1:0][DATA_WIDTH-1: 0]           wr_data2              =0;
+reg            [DATA_WIDTH-1: 0]                wr_data2              =0;
 reg            [ADDR_WIDTH-1: 0]                wr_addr               =0;
 reg            [ADDR_WIDTH-1: 0]                rd_addr               =0;
 reg                                             rd_ren                =0;
@@ -70,9 +70,9 @@ end
 
 always @(posedge i_clk)begin
     if(i_reset)
-        wr_addr <= {DATA_DEPTH{1'b0}};
+        wr_addr <= {ADDR_WIDTH{1'b0}};
     else if(i_wr_wen)
-        wr_addr <= wr_addr + 1;
+        wr_addr <= wr_addr + 'd1;
 end
 
 always @(posedge i_clk)begin

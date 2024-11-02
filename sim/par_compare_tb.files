@@ -1,3 +1,8 @@
 ../../tb/par_compare_tb.sv
-../../src/par_compare.sv
+../../src/par_compare1.sv
 ../../src/beam_sort.sv
+../../src/beam_sort1.sv
+../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_SYNC_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_ASYNC_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/Simple_Dual_Port_BRAM_XPM_intel.v
+../../src/cpri_package_tx_zyl/intel_xpm/common/ASYNC_Dual_Port_BRAM_XPM_intel.v

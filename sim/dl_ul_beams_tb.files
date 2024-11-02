@@ -1,6 +1,7 @@
 ../../tb/dl_ul_beams_tb.sv
 ../../tb/params_list_pkg.sv
 ../../src/code_word_rev.sv
+../../src/mem_streams.sv
 ../../src/beam_buffer.sv
 ../../src/beam_sort.sv
 ../../src/par_compare.sv
@@ -17,7 +18,7 @@
 ../../src/cpri_package_tx_zyl/dl_data_gen.v
 ../../src/cpri_package_tx_zyl/compress_bit.v
 ../../src/cpri_package_tx_zyl/compress_data.v
-../../src/cpri_package_tx_zyl/register_shift.v
+../../src/cpri_package_tx_zyl/register_shift.sv
 ../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_sync_intel.v
 ../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer2_sync_intel.v
 ../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_async_intel.v

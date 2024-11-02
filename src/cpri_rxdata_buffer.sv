@@ -72,6 +72,7 @@ reg            [   2: 0]                        rd_en_buf             =0;
 reg            [   7: 0]                        rd_sym_num            =0;
 wire           [LOOP_WIDTH-WADDR_WIDTH: 0]      free_size               ;
 reg                                             sym1_done             =0;
+wire                                            raddr_full              ;
 wire                                            raddr_least_2           ;
 wire                                            raddr_almost_full       ;
 
@@ -228,7 +229,7 @@ loop_buffer_sync_intel #
 // Output 
 //--------------------------------------------------------------------------------------
 reg            [RDATA_WIDTH-1: 0]               rx_data_out           =0;
-reg            [  10: 0]                        tx_addr_out           =0;
+reg            [   6: 0]                        tx_addr_out           =0;
 reg                                             tvalid_out            =0;
 reg                                             txlast_out            =0;
 

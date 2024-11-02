@@ -249,7 +249,7 @@ always @ (posedge clk)
             {1'd1,2'd1}    : ant2_shift[23:20] <= i_pkg2_shift;
             {1'd1,2'd2}    : ant2_shift[27:24] <= i_pkg2_shift;
             {1'd1,2'd3}    : ant2_shift[31:28] <= i_pkg2_shift;
-            default        : ant2_shift[15:0]  <= 16'd0;
+            default        : ant2_shift[31:0]  <= 32'd0;
         endcase
     end
 
@@ -276,7 +276,7 @@ always @ (posedge clk)
             {1'd1,2'd1}    : ant3_shift[23:20] <= i_pkg3_shift;
             {1'd1,2'd2}    : ant3_shift[27:24] <= i_pkg3_shift;
             {1'd1,2'd3}    : ant3_shift[31:28] <= i_pkg3_shift;
-            default        : ant3_shift[15:0]  <= 16'd0;
+            default        : ant3_shift[31:0]  <= 32'd0;
         endcase
     end
 

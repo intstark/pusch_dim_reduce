@@ -192,7 +192,7 @@ always @(posedge i_clk) begin
 end
 
 generate
-    for(ant=0; ant<4; ant++) begin
+    for(ant=0; ant<4; ant++) begin: unpack_ant_data
         always @(posedge i_clk) begin
             case(re_cnt_cycle)
                 3'd0:       ant_package[ant] <=  cpri_iq_data[ant*16 +: 14];
@@ -224,7 +224,7 @@ end
 // unpack rb shift data from agc data 
 //--------------------------------------------------------------------------------------
 generate
-    for(ant=0; ant<4; ant++) begin
+    for(ant=0; ant<4; ant++) begin: unpack_rb_agc
         always @( * ) begin
             case(prb_cnt_cycle)
                 3'd0:       rb_shift[ant] = rb_agc[ant*32 + 4*0 +: 4]; 
@@ -244,7 +244,7 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // data uncompress logic
 //--------------------------------------------------------------------------------------
-generate for(ant=0; ant<4; ant++) begin
+generate for(ant=0; ant<4; ant++) begin: gen_unpack_data
     always @(posedge i_clk) begin
         data_unpack[ant] <= {16'(signed'(ant_package[ant][13:7]) << rb_shift[ant]), 16'(signed'(ant_package[ant][6:0]) << rb_shift[ant])};
     end
@@ -284,7 +284,7 @@ assign o_iq_addr = iq_addr;
 assign o_iq_vld  = data_unpack_vld;
 assign o_iq_last = prb_reached_132;
 
-generate for(ant=0; ant<4; ant++) begin
+generate for(ant=0; ant<4; ant++) begin: comb_dataout 
     assign o_iq_data[ant*32 +: 32] = data_unpack[ant];
 end
 endgenerate

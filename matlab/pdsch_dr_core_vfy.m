@@ -13,6 +13,7 @@ ReloadData = 1;
 
 MAC_DW = 40;
 
+symbol_id = 2;
 
 
 %% 激励数据产生
@@ -56,6 +57,11 @@ if ReloadData
     sim_beams_idx  = ReadData(datafile7,8,0);
 end
 
+
+%% 分析开始
+fprintf("#----------------------------------------------------------\n");
+fprintf("# 第1个符号分析如下：\n");
+fprintf("#----------------------------------------------------------\n");
 
 %% 波束计算
 
@@ -179,7 +185,6 @@ end
 
 
 %% 动态定标比对
-symbol_id =1;
 beams_sum_i = real(beams16_sym1_sort);
 beams_sum_q = imag(beams16_sym1_sort);
 
@@ -208,7 +213,7 @@ datafile1='../vfy/pdsch_dr_core_tb_work/compress_data.txt';
 sim_compress_data = ReadData(datafile1,16,0,'IQ');
 
 
-err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
+err_cprs = sim_compress_data((1-1)*numCarriers+1 : (1)*numCarriers,:)-beams_sum_sft_fix;
 
 err_cprs_sum=sum(err_cprs,[1,2]);
 
@@ -227,8 +232,10 @@ clear sim_beams_odd;
 clear err_beam_eve;
 clear err_beam_odd;
 
-symbol_id = 2;
-
+%% 分析开始
+fprintf("#----------------------------------------------------------\n");
+fprintf("# 第%d个符号分析如下：\n",symbol_id);
+fprintf("#----------------------------------------------------------\n");
 
 % 分离出发送端的奇偶天线数据（单Lane 8天线）
 ant4_tx_eve = ant_datain((2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers, :);

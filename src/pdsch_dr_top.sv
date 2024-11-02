@@ -20,56 +20,57 @@
 module pdsch_dr_top #(
     parameter integer LANE  =   8 
 )(
-    input                                           i_clk                   ,// data clock
-    input                                           i_reset                 ,// reset
+    input                                           i_clk                   , // data clock
+    input                                           i_reset                 , // reset
 
-    input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
+    input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
 
     // cpri rxdata
-    input                                           i_l0_cpri_clk           ,// cpri clkout
-    input                                           i_l0_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l0_cpri_rx_data       ,// cpri data
-    input                                           i_l0_cpri_rx_vld        ,// cpri valid
+    input                                           i_l0_cpri_clk           , // cpri clkout
+    input                                           i_l0_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l0_cpri_rx_data       , // cpri data
+    input                                           i_l0_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l1_cpri_clk           ,// cpri clkout
-    input                                           i_l1_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l1_cpri_rx_data       ,// cpri data
-    input                                           i_l1_cpri_rx_vld        ,// cpri valid
+    input                                           i_l1_cpri_clk           , // cpri clkout
+    input                                           i_l1_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l1_cpri_rx_data       , // cpri data
+    input                                           i_l1_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l2_cpri_clk           ,// cpri clkout
-    input                                           i_l2_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l2_cpri_rx_data       ,// cpri data
-    input                                           i_l2_cpri_rx_vld        ,// cpri valid
+    input                                           i_l2_cpri_clk           , // cpri clkout
+    input                                           i_l2_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l2_cpri_rx_data       , // cpri data
+    input                                           i_l2_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l3_cpri_clk           ,// cpri clkout
-    input                                           i_l3_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l3_cpri_rx_data       ,// cpri data
-    input                                           i_l3_cpri_rx_vld        ,// cpri valid
+    input                                           i_l3_cpri_clk           , // cpri clkout
+    input                                           i_l3_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l3_cpri_rx_data       , // cpri data
+    input                                           i_l3_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l4_cpri_clk           ,// cpri clkout
-    input                                           i_l4_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l4_cpri_rx_data       ,// cpri data
-    input                                           i_l4_cpri_rx_vld        ,// cpri valid
+    input                                           i_l4_cpri_clk           , // cpri clkout
+    input                                           i_l4_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l4_cpri_rx_data       , // cpri data
+    input                                           i_l4_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l5_cpri_clk           ,// cpri clkout
-    input                                           i_l5_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l5_cpri_rx_data       ,// cpri data
-    input                                           i_l5_cpri_rx_vld        ,// cpri valid
+    input                                           i_l5_cpri_clk           , // cpri clkout
+    input                                           i_l5_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l5_cpri_rx_data       , // cpri data
+    input                                           i_l5_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l6_cpri_clk           ,// cpri clkout
-    input                                           i_l6_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l6_cpri_rx_data       ,// cpri data
-    input                                           i_l6_cpri_rx_vld        ,// cpri valid
+    input                                           i_l6_cpri_clk           , // cpri clkout
+    input                                           i_l6_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l6_cpri_rx_data       , // cpri data
+    input                                           i_l6_cpri_rx_vld        , // cpri valid
 
-    input                                           i_l7_cpri_clk           ,// cpri clkout
-    input                                           i_l7_cpri_rst           ,// cpri reset
-    input          [  63: 0]                        i_l7_cpri_rx_data       ,// cpri data
-    input                                           i_l7_cpri_rx_vld        ,// cpri valid
+    input                                           i_l7_cpri_clk           , // cpri clkout
+    input                                           i_l7_cpri_rst           , // cpri reset
+    input          [  63: 0]                        i_l7_cpri_rx_data       , // cpri data
+    input                                           i_l7_cpri_rx_vld        , // cpri valid
 
 
     // cpri txdata
-    output         [  63: 0]                        o_cpri_tx_data          ,// cpri data
-    output                                          o_cpri_tx_vld            // cpri valid
+    input                                           i_iq_tx_enable          , // cpri tx enable
+    output         [  63: 0]                        o_cpri_tx_data          , // cpri data
+    output                                          o_cpri_tx_vld             // cpri valid
 
 );
 
@@ -98,6 +99,12 @@ wire           [LANE-1: 0]                      w_cpri_rst              ;
 wire           [LANE-1:0][63: 0]                w_cpri_rx_data          ;
 wire           [LANE-1: 0]                      w_cpri_rx_vld           ;
 
+wire                                            dr_sop                  ;
+wire                                            dr_eop                  ;
+wire                                            dr_vld                  ;
+wire           [3:0][31: 0]                     dr_data                 ;
+wire           [   8: 0]                        dr_prb_idx              ;
+
 
 
 //------------------------------------------------------------------------------------------
@@ -125,7 +132,7 @@ assign w_cpri_rx_data[7] = i_l7_cpri_rx_data;
 
 
 //------------------------------------------------------------------------------------------
-// unpack cpri data for 8 lanes
+//cpri rxdata & unpack
 //------------------------------------------------------------------------------------------
 generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
     // Instantiate the Unit Under Test (UUT)
@@ -163,13 +170,41 @@ pdsch_dr_core                                           pdsch_dr_core(
     .i_iq_vld                                           (unpack_iq_vld          ),// 32 ants iq vld
     .i_iq_last                                          (unpack_iq_last         ),// 32 ants iq last(132prb ends)
 
-    .o_cpri_tx_data                                     (o_cpri_tx_data         ),
-    .o_cpri_tx_vld                                      (o_cpri_tx_vld          ) 
+    .o_tx_data                                          (dr_data                ),
+    .o_tx_vld                                           (dr_vld                 ),
+    .o_tx_sop                                           (dr_sop                 ),
+    .o_tx_eop                                           (dr_eop                 ),
+    .o_prb_idx                                          (dr_prb_idx             )
 );
 
 
-
-
+//------------------------------------------------------------------------------------------
+// cpri txdata & repack
+// -----------------------------------------------------------------------------------------
+cpri_txdata_top                                         cpri_txdata_top(
+    .sys_clk_491_52                                     (i_clk                  ),
+    .sys_rst_491_52                                     (i_reset                ),
+    .sys_clk_368_64                                     (i_clk                  ),
+    .sys_rst_368_64                                     (i_reset                ),
+    .i_if_re_sel                                        (                       ),
+    .i_if_re_vld                                        ({4{dr_vld}}            ),
+    .i_if_re_sop                                        ({4{dr_sop}}            ),
+    .i_if_re_eop                                        ({4{dr_eop}}            ),
+    .i_if_re_ant0                                       (dr_data[0]             ),
+    .i_if_re_ant1                                       (dr_data[1]             ),
+    .i_if_re_ant2                                       (dr_data[2]             ),
+    .i_if_re_ant3                                       (dr_data[3]             ),
+    .i_if_re_slot_idx                                   (                       ),
+    .i_if_re_sym_idx                                    (                       ),
+    .i_if_re_prb_idx                                    (dr_prb_idx             ),
+    .i_if_re_info0                                      (                       ),
+    .i_if_re_info1                                      (                       ),
+    .i_if_re_info2                                      (                       ),
+    .i_if_re_info3                                      (                       ),
+    .i_iq_tx_enable                                     (i_iq_tx_enable         ),
+    .o_iq_tx_data                                       (o_cpri_tx_data         ),
+    .o_iq_tx_valid                                      (o_cpri_tx_vld          ) 
+);
 
 
 

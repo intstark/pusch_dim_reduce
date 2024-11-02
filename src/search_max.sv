@@ -51,7 +51,7 @@ begin
    	        if(!i_din_re[IW-1])
 	        	abs_i <= i_din_re;
    	        else
-	        	abs_i <= ~i_din_re;
+	        	abs_i <= ~i_din_re + 'd1;
         end
     else
        abs_i <= {IW{1'b0}};
@@ -64,7 +64,7 @@ begin
 	        if(!i_din_im[IW-1])
 	        	abs_q <= i_din_im;
             else
-            abs_q <= ~i_din_im;  
+            abs_q <= ~i_din_im + 'd1; 
         end
     else
         abs_q <= {IW{1'b0}};
