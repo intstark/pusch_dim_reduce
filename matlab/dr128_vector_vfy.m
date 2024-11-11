@@ -15,7 +15,13 @@ symbol_id=2;
 ReadFile = 0;
 MergeFile = 0;
 WriteCodeMif = 0;
-SymbolXCompare = 0;
+SymbolXCompare = 1;
+
+
+vector_dir = '../AlgoVec/ulrxDimRedu20241104';
+fpga_dir   = '../vfy/pusch_dr_128ants_tb_work';
+
+
 
 if ReadFile
     vv=1;
@@ -23,7 +29,7 @@ if ReadFile
         for aiu_idx = 0:1
             % 读取天线数据
             for ii=1:32
-                data_in = sprintf('../../ulrxDimRedu20241028/group%d_data_in/ant%dand%d.txt',(aau_idx*2+aiu_idx+1),2*ii-2+aau_idx*64,2*ii-1+aau_idx*64);
+                data_in = sprintf('%s/group%d_data_in/ant%dand%d.txt',vector_dir,(aau_idx*2+aiu_idx+1),2*ii-2+aau_idx*64,2*ii-1+aau_idx*64);
                 fprintf('读取文件:\t%s\n',data_in);
                 AntDataRead128(vv,ii,:)=ReadHexData(data_in,16);
             end
@@ -33,9 +39,10 @@ if ReadFile
     end
 
     save('AntDataRead128','AntDataRead128');
-else
+else 
     load('AntDataRead128.mat');
 end
+
 
 if ReadFile
     vv=1;
@@ -44,23 +51,25 @@ if ReadFile
     for aau_idx = 0:1
         for aiu_idx = 0:1
             % 读取序号
-            data_in = sprintf('../../ulrxDimRedu20241028/BeamIndex/RUU%dAIU%d.txt',aau_idx+1,aiu_idx+1);
+            data_in = sprintf('%s/BeamIndex/RUU%dAIU%d.txt',vector_dir,aau_idx+1,aiu_idx+1);
             fprintf('读取文件:\t%s\n',data_in);
             BeamIndex_read_0=ReadHexData(data_in,8,'real');
             BN = length(BeamIndex_read_0);
             if(BN>144)
                 BeamIndex_read_0=BeamIndex_read_0(145:end);
             end
-            BeamIndexRead128(vv,:,:) = (reshape(BeamIndex_read_0,length(BeamIndex_read_0)/9,9)).'-1;
+            BeamIndexRead128(vv,:,:) = (reshape(BeamIndex_read_0,length(BeamIndex_read_0)/9,9)).';
+
+            BeamIndexRead128(vv,:,:) = BeamIndexRead128(vv,:,:) -1; % Index序号从0开始
         
             % 读取能量
-            data_in = sprintf('../../ulrxDimRedu20241028/PowSort/RUU%dAIU%d.txt',aau_idx+1,aiu_idx+1);
+            data_in = sprintf('%s/PowSort/RUU%dAIU%d.txt',vector_dir,aau_idx+1,aiu_idx+1);
             fprintf('读取文件:\t%s\n',data_in);
             BeamPwr_read0=ReadHexData(data_in,64,'real');
             if(BN>144)
                 BeamPwr_read0=BeamPwr_read0(145:end);
             end
-            BeamPowerRead128(vv,:,:) = (reshape(BeamPwr_read0,length(BeamPwr_read0)/9,9)).'-1;
+            BeamPowerRead128(vv,:,:) = (reshape(BeamPwr_read0,length(BeamPwr_read0)/9,9)).';
 
             vv = vv+1;
         end
@@ -75,18 +84,18 @@ end
 
 if ReadFile
     % 读取W0
-    data_in = sprintf('../../ulrxDimRedu20241028/ReduMatrix/W_0_after.txt');
+    data_in = sprintf('%s/ReduMatrix/W_0_after.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
     w0_data_read=ReadHexData(data_in,16);
     
     % 读取W1
-    data_in = sprintf('../../ulrxDimRedu20241028/ReduMatrix/W_1_after.txt');
+    data_in = sprintf('%s/ReduMatrix/W_1_after.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
     w1_data_read=ReadHexData(data_in,16);
 
     % 读取天线数据
     for ii=1:16
-        data_in = sprintf('../../ulrxDimRedu20241028/data_out/beam%d.txt',ii-1);
+        data_in = sprintf('%s/data_out/beam%d.txt',vector_dir,ii-1);
         fprintf('读取文件:\t%s\n',data_in);
         dr_data_read(:,ii)=ReadHexData(data_in,16);
     end
@@ -248,26 +257,27 @@ beam_dr_aau2 = [squeeze(beams_sum_sft_fix(3,:,:));squeeze(beams_sum_sft_fix(4,:,
 
 beam_dr_aau = [beam_dr_aau1 beam_dr_aau2];
 
+
+aau128_sort_idx16 = aau128_sort_idx(:,1:16);
+aau128_sort_idx16 = sort(aau128_sort_idx16,2);
+
 aau128_sort_idx_re=[];
 for ii=1:18
     if(ii==1)
-        aau128_sort_idx_re = repmat(aau128_sort_idx(1,:),48,1);
+        aau128_sort_idx_re = repmat(aau128_sort_idx16(1,:),48,1);
     elseif(ii==18)
-        aau128_sort_idx_re = [aau128_sort_idx_re; repmat(aau128_sort_idx(ii,:),48,1)];
+        aau128_sort_idx_re = [aau128_sort_idx_re; repmat(aau128_sort_idx16(ii,:),48,1)];
     else
-        aau128_sort_idx_re = [aau128_sort_idx_re; repmat(aau128_sort_idx(ii,:),192,1)];
+        aau128_sort_idx_re = [aau128_sort_idx_re; repmat(aau128_sort_idx16(ii,:),192,1)];
     end
 end
 
 for ii=1:3168
-    for jj=1:32
-        beam_dr_aau_sorted(ii,jj) = beam_dr_aau(ii,aau128_sort_idx_re(ii,jj));
+    for jj=1:16
+        beam_dr_aau_out(ii,jj) = beam_dr_aau(ii,aau128_sort_idx_re(ii,jj));
     end
 end
 
-
-
-beam_dr_aau_out = [beam_dr_aau1(:,1:9) beam_dr_aau2(:,1:7)];
 
 
 % 向量与本Matlab计算结果比较
@@ -276,28 +286,26 @@ fprintf('向量与本Matlab计算结果比较\n');
 fprintf('---------------------------------------------\n');
 
 err_sort_idx = BeamIndexRead128 - BeamIndex;
-fprintf("rbG能量序号(8bit):\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
+fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
 
 
 err_beam_sort = BeamPowerRead128 - BeamPower;
-fprintf("rbG总能量排序(48bit):\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
+fprintf("rbG波束能量值误差和:\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
 
 err_dr_data = dr_data_read(1:2*numCarriers,:) - beam_dr_aau_out;
-fprintf("压缩后降维数据(16bit):\t err_dr_data = %d\n",sum(err_dr_data,[1,2,3]));
+fprintf("压缩后降维数据误差和:\t err_dr_data = %d\n",sum(err_dr_data,[1,2,3]));
 
 
 %% 读取FPGA仿真数据
 uiwait(msgbox('FPGA仿真运行完毕'));
 
-MAC_DW=40;
-
 for ii=1:4
-    datafile1=sprintf('../vfy/pdsch_dr_128ants_tb_work/compress_data%d.txt',ii-1);
-    datafile6=sprintf('../vfy/pdsch_dr_128ants_tb_work/des_beams_sort%d.txt',ii-1);
-    datafile7=sprintf('../vfy/pdsch_dr_128ants_tb_work/des_beams_idx%d.txt',ii-1);
+    datafile1=sprintf('%s/compress_data%d.txt' ,fpga_dir,ii-1);
+    datafile6=sprintf('%s/des_beams_sort%d.txt',fpga_dir,ii-1);
+    datafile7=sprintf('%s/des_beams_idx%d.txt' ,fpga_dir,ii-1);
     
     
-    sim_beams_sort(ii,:,:) = ReadData(datafile6,MAC_DW,0);
+    sim_beams_sort(ii,:,:) = ReadData(datafile6,32,0);
     sim_beams_idx(ii,:,:)  = ReadData(datafile7,8,0);
     sim_compress_data(ii,:,:) = ReadData(datafile1,16,0,'IQ');
 end
@@ -309,15 +317,15 @@ fprintf('---------------------------------------------\n');
 
 
 err_sort_idx = BeamIndex-sim_beams_idx;
-fprintf("rbG能量序号(8bit):\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
+fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
 
 
-err_beam_sort = BeamPower-sim_beams_sort(:,:,1:16);
-fprintf("rbG总能量排序(48bit):\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
+err_beam_sort = BeamPower-sim_beams_sort(:,1:9,:);
+fprintf("rbG波束能量值误差和:\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
 
 err_cprs = sim_compress_data(:,(1-1)*numCarriers+1 : (1)*numCarriers,:)-beams_sum_sft_fix;
 err_cprs_sum=sum(err_cprs,[1,2,3]);
-fprintf('压缩后降维数据(16bit):\t err_cprs_sum=\t%d\n',err_cprs_sum);
+fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
 
 
 
@@ -327,9 +335,9 @@ fprintf('向量与FPGA计算结果比较\n');
 fprintf('---------------------------------------------\n');
 
 err_sort_idx2 = BeamIndexRead128-sim_beams_idx;
-fprintf("rbG能量序号(8bit):\t err_sort_idx = %d\n",sum(err_sort_idx2,[1,2,3]));
+fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx2,[1,2,3]));
 
-err_beam_pwr2 = BeamPowerRead128-sim_beams_sort(:,:,1:16);
+err_beam_pwr2 = BeamPowerRead128-sim_beams_sort(:,1:9,:);
 fprintf("rbG总能量降序(48bit):\t err_beam_pwr = %d\n",sum(err_beam_pwr2,[1,2,3]));
 pct_err_pwr2 = err_beam_pwr2./BeamPowerRead128;
 fprintf("rbG总能量降序(48bit):\t pct_err_pwr_max = %d\n",max(abs(pct_err_pwr2),[],[1,2,3]));
@@ -338,11 +346,11 @@ fprintf("rbG总能量降序(48bit):\t pct_err_pwr_max = %d\n",max(abs(pct_err_pw
 
 % err_cprs2 = sim_compress_data((1-1)*numCarriers+1 : (1)*numCarriers,:)-dr_data_read((1-1)*numCarriers+1 : (1)*numCarriers,:);
 % err_cprs2_sum=sum(err_cprs2,[1,2]);
-% fprintf('压缩后降维数据(16bit):\t err_cprs2_sum=\t%d\n',err_cprs2_sum);
+% fprintf('压缩后降维数据误差和:\t err_cprs2_sum=\t%d\n',err_cprs2_sum);
 % 
 % err_cprs3 = beams_sum_sft_fix-dr_data_read((1-1)*numCarriers+1 : (1)*numCarriers,:);
 % err_cprs3_sum=sum(err_cprs3,[1,2]);
-% fprintf('压缩后降维数据(16bit):\t err_cprs3_sum=\t%d\n',err_cprs3_sum);
+% fprintf('压缩后降维数据误差和:\t err_cprs3_sum=\t%d\n',err_cprs3_sum);
 
 
 
@@ -369,6 +377,7 @@ clear sim_beams_eve;
 clear sim_beams_odd;
 clear err_beam_eve;
 clear err_beam_odd;
+clear beams_sum_sft_fix;
 
 
 %% 分析开始
@@ -376,58 +385,82 @@ fprintf("#----------------------------------------------------------\n");
 fprintf("# 第%d个符号分析如下：\n",symbol_id);
 fprintf("#----------------------------------------------------------\n");
 
-
-% 分离出发送端的奇偶天线数据（单Lane 8天线）
-ant32_tx_eve = AntDataRead128(:, (2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers);
-ant32_tx_odd = AntDataRead128(:, (2*symbol_id-1)*numCarriers+1 : (2*symbol_id-0)*numCarriers);
-
-
-pwt = 0;
-for jj=1:rbGMaxNum
-    for ii=1:16
-        w0_data_sel(ii,:) = w0_data_read(rbG_sort_addr(jj,ii)+1, :);
-        w1_data_sel(ii,:) = w1_data_read(rbG_sort_addr(jj,ii)+1, :);
-    end
-
-    % 前132PRB 不完整的rbG放在开头
-    if(jj==1 && aiu_idx==0)
-
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:rbGMaxMod*12);
-        beams_odd(:,pwt+1:rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:rbGMaxMod*12);
-
-        pwt = rbGMaxMod*12;
-
-    % 后132PRB 不完整的rbG放在末尾
-    elseif(jj==rbGMaxNum && aiu_idx==1)
-
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:pwt+rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+rbGMaxMod*12);
-        beams_odd(:,pwt+1:pwt+rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+rbGMaxMod*12);
-
-        pwt = rbGMaxMod*12;
-    else
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:pwt+numRE_rbG) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+numRE_rbG);
-        beams_odd(:,pwt+1:pwt+numRE_rbG) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+numRE_rbG);
-
-        pwt = pwt + numRE_rbG;
+vv=1;
+for aau_idx = 0:1
+    for aiu_idx = 0:1
+        % 分离出发送端的奇偶天线数据（单Lane 8天线）
+        ant32_tx_eve =squeeze(AntDataRead128(vv, : , (2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers));
+        ant32_tx_odd =squeeze(AntDataRead128(vv, : , (2*symbol_id-1)*numCarriers+1 : (2*symbol_id-0)*numCarriers));
+        
+        
+        pwt = 0;
+        for jj=1:rbGMaxNum
+            for ii=1:16
+                
+                w0_data_sel(ii,:) = w0_data_read(BeamIndex(vv,jj,ii)+1, :);
+                w1_data_sel(ii,:) = w1_data_read(BeamIndex(vv,jj,ii)+1, :);
+            end
+        
+            % 前132PRB 不完整的rbG放在开头
+            if(jj==1 && aiu_idx==0)
+        
+                % 32奇偶天线数据和码本数据矩阵相乘
+                beams_eve(:,pwt+1:rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:rbGMaxMod*12);
+                beams_odd(:,pwt+1:rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:rbGMaxMod*12);
+        
+                pwt = rbGMaxMod*12;
+        
+            % 后132PRB 不完整的rbG放在末尾
+            elseif(jj==rbGMaxNum && aiu_idx==1)
+        
+                % 32奇偶天线数据和码本数据矩阵相乘
+                beams_eve(:,pwt+1:pwt+rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+rbGMaxMod*12);
+                beams_odd(:,pwt+1:pwt+rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+rbGMaxMod*12);
+        
+                pwt = rbGMaxMod*12;
+            else
+                % 32奇偶天线数据和码本数据矩阵相乘
+                beams_eve(:,pwt+1:pwt+numRE_rbG) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+numRE_rbG);
+                beams_odd(:,pwt+1:pwt+numRE_rbG) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+numRE_rbG);
+        
+                pwt = pwt + numRE_rbG;
+            end
+        end
+        
+        beams_sum = beams_eve + beams_odd;
+        beams_sum = beams_sum.';
+        
+        
+        %% 动态定标
+        beams_sum_sft_fix(vv,:,:)=dynamic_truncation(beams_sum,16,'round');
+        
+        vv = vv+1;
     end
 end
 
-beams_sum = beams_eve + beams_odd;
-beams_sum = beams_sum.';
-
-
-%% 动态定标
-beams_sum_sft_fix=dynamic_truncation(beams_sum,16);
-
 %% 比对结果
-err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
+% Matlab与FPGA计算结果比较
+fprintf('\n---------------------------------------------\n');
+fprintf('Matlab与FPGA计算结果比较\n');
+fprintf('---------------------------------------------\n');
 
-err_cprs_sum=sum(err_cprs,[1,2]);
+err_cprs = sim_compress_data(:,(symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
+err_cprs_sum=sum(err_cprs,[1,2,3]);
+fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
 
-fprintf('降维压缩后数据:\t err_cprs_sum = %d\n',err_cprs_sum);
+
+
+
+% 向量与FPGA计算结果比较，无128最终结果暂不比较
+% fprintf('\n---------------------------------------------\n');
+% fprintf('向量与FPGA计算结果比较\n');
+% fprintf('---------------------------------------------\n');
+% err_dr_data = dr_data_read(1:2*numCarriers,:) - beam_dr_aau_out;
+% fprintf("压缩后降维数据误差和:\t err_dr_data = %d\n",sum(err_dr_data,[1,2,3]));
+
+
+
+
 
 end
 
@@ -538,7 +571,6 @@ function sim_beam=ReadData(datafile,BITW,headLines,varargin)
     else
         sim_beam=sim_signed;
     end
-    save(sprintf("data64ants/%s.mat",fname),"sim_beam");
 end
 
 % 动态定标截断

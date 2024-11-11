@@ -34,7 +34,14 @@ module cpri_txdata_top
     input  wire    [   7: 0]                        i_if_re_info2           ,
     input  wire    [   7: 0]                        i_if_re_info3           ,
                 
-
+    input  wire    [  31: 0]                        i_pkg0_power            ,
+    input  wire    [  31: 0]                        i_pkg1_power            ,
+    input  wire    [  31: 0]                        i_pkg2_power            ,
+    input  wire    [  31: 0]                        i_pkg3_power            ,
+    input  wire    [  31: 0]                        i_pkg4_power            ,
+    input  wire    [  31: 0]                        i_pkg5_power            ,
+    input  wire    [  31: 0]                        i_pkg6_power            ,
+    input  wire    [  31: 0]                        i_pkg7_power            ,
 
     input  wire                                     i_iq_tx_enable          ,
     output wire    [  63: 0]                        o_iq_tx_data            , 
@@ -118,6 +125,8 @@ compress_data                                           u_compress_data
     .o_info2                                            (m_info2                ),
     .o_info3                                            (m_info3                ) 
 );
+
+
 
 //pkg=ant
 package_data                                            u_package_data

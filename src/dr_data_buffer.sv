@@ -42,14 +42,14 @@ module dr_data_buffer#(
     output                                          o_tx_vld                , 
     output                                          o_tx_sop                ,
     output                                          o_tx_eop                ,
-    output         [   8: 0]                        o_prb_idx                
+    output         [   8: 0]                        o_prb_idx               ,
+    output                                          o_tready                 
 );
 
 //--------------------------------------------------------------------------------------
 // PARAMETER
 //--------------------------------------------------------------------------------------
-localparam [WADDR_WIDTH-1: 0] DATA_DEPTH = 1583;
-localparam [10: 0]            HLF_SYMBOLS = 1583;
+localparam [WADDR_WIDTH-1: 0] DATA_DEPTH  = 1583;
 
 //--------------------------------------------------------------------------------------
 // WIRE & REGISTER
@@ -71,7 +71,7 @@ reg            [   3: 0]                        rd_rlast              =0;
 reg            [   2: 0]                        rd_rlast_buf          =0;
 reg            [   2: 0]                        rd_en_buf             =0;
 reg            [   7: 0]                        rd_sym_num            =0;
-wire           [LOOP_WIDTH-WADDR_WIDTH: 0]      free_size               ;
+wire           [3:0][LOOP_WIDTH-WADDR_WIDTH: 0] free_size               ;
 
 
 
@@ -277,8 +277,7 @@ assign re_sop = (rd_dout_vld && dr_renum == 0 && (dr_rbnum == 0)) ? 1'b1 : 1'b0;
 //------------------------------------------------------------------------------------------
 generate
     for(gi=0;gi<4;gi=gi+1) begin: gen_ram_block
-        loop_buffer_sync_intel #
-        (
+        loop_buffer_sync_intel #(
             .WDATA_WIDTH                                        (WDATA_WIDTH            ),
             .WADDR_WIDTH                                        (WADDR_WIDTH            ),
             .RDATA_WIDTH                                        (RDATA_WIDTH            ),
@@ -289,25 +288,40 @@ generate
             .LOOP_WIDTH                                         (LOOP_WIDTH             ),
             .INFO_WIDTH                                         (INFO_WIDTH             ),
             .RAM_TYPE                                           (RAM_TYPE               ) 
-        )loop_buffer_sync
-        (
+        )loop_buffer_sync(
             .syn_rst                                            (i_reset                ),
             .clk                                                (i_clk                  ),
             .wr_wen                                             (wr_wen                 ),
             .wr_addr                                            (wr_addr                ),
-            .wr_data                                            (wr_data[gi]            ),
+            .wr_data                                            (wr_data  [gi]          ),
             .wr_wlast                                           (wr_wlast               ),
             .wr_info                                            (wr_info                ),
-            .free_size                                          (                       ),
-            .rd_addr                                            (rd_addr[gi]            ),
-            .rd_data                                            (rd_data[gi]            ),
-            .rd_vld                                             (rd_vld [gi]            ),
+            .free_size                                          (free_size[gi]          ),
+            .rd_addr                                            (rd_addr  [gi]          ),
+            .rd_data                                            (rd_data  [gi]          ),
+            .rd_vld                                             (rd_vld   [gi]          ),
             .rd_info                                            (                       ),
-            .rd_rdy                                             (rd_rdy [gi]            ) 
+            .rd_rdy                                             (rd_rdy   [gi]          ) 
         );
     end
 endgenerate
 
+//--------------------------------------------------------------------------------------
+// full flag
+//--------------------------------------------------------------------------------------
+reg            [   3: 0]                        rd_full               =0;
+wire                                            ready_out               ;
+
+always @(posedge i_clk) begin
+    for(int i=0;i<4;i=i+1)begin
+        if(free_size[i]==0)
+            rd_full[i] <= 1'b1;
+        else
+            rd_full[i] <= 1'b0;
+    end
+end
+
+assign ready_out = (|rd_full) ? 1'b0 : 1'b1;
 
 //--------------------------------------------------------------------------------------
 // Output 
@@ -321,6 +335,7 @@ assign o_tx_vld     = rd_dout_vld;
 assign o_tx_sop     = re_sop;
 assign o_tx_eop     = re_eop;
 assign o_prb_idx    = dr_prb_idx;
+assign o_tready     = ready_out;
 
 
 

@@ -21,20 +21,25 @@
 
 module code_word_rev # (
     parameter ANTS      = 32,
-    parameter WIDTH     = 32,
-    parameter DEPTH     = 64
+    parameter BEAM      = 16,
+    parameter WIDTH     = 32
 )(
     input                                           i_clk                   ,
     input                                           i_reset                 ,
 
     input                                           i_enable                ,
+    input                                           i_rbg_load              ,
 
-    output         [DEPTH-1:0][WIDTH*ANTS-1: 0]     o_cw_even               ,
-    output         [DEPTH-1:0][WIDTH*ANTS-1: 0]     o_cw_odd                ,
+    input          [BEAM-1:0][7: 0]                 i_beam_idx              ,
+    input          [   7: 0]                        i_symb_idx              ,
+    input                                           i_symb_1st              ,
+    
+    output         [BEAM-1:0][WIDTH*ANTS-1: 0]      o_cw_even               ,
+    output         [BEAM-1:0][WIDTH*ANTS-1: 0]      o_cw_odd                ,
     output                                          o_tvalid                 
 );
 
-
+localparam DEPTH = 64;
 
 
 
@@ -50,7 +55,7 @@ reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_0        =0;
 reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_1        =0;
 reg            [   2:0][6:0]                    ant_num_buf           =0;
 wire           [   6: 0]                        ant_num                 ;
-reg            [   2: 0]                        rom_vld               =0;
+reg            [   3: 0]                        rom_vld               =0;
 reg                                             cwd_valid             =0;
 
 
@@ -88,7 +93,7 @@ always @(posedge i_clk) begin
     else
         cwd_valid <= 1'b0;
 
-    rom_vld <= {rom_vld[1:0], cwd_valid};
+    rom_vld <= {rom_vld[2:0], cwd_valid};
 end
 
 always @(posedge i_clk) begin
@@ -107,9 +112,6 @@ end
 
 
 
-assign o_cw_even = codeword_map_0;
-assign o_cw_odd  = codeword_map_1;
-assign o_tvalid  = rom_vld[2];
 
 //--------------------------------------------------------------------------------------
 // rom for codeword even: 4 clock cycle delay
@@ -130,10 +132,77 @@ rom_codeword_odd     u_rom_codeword_odd
     .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
 );
 
+//--------------------------------------------------------------------------------------
+// select codewrds for each beam
+//--------------------------------------------------------------------------------------
+reg            [   1: 0]                        symb_phx              =0;
+reg            [BEAM-1:0][1: 0]                 symb_phx_vec          =0;
+reg            [BEAM-1: 0]                      symb_1st_vec          ={BEAM{1'b1}};
+
+reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_even        ='{default:0};
+reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_odd         ='{default:0};
+reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_even_select        ='{default:0};
+reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_odd_select         ='{default:0};
 
 
 
+always @(posedge i_clk) begin
+    symb_phx <= i_symb_idx[1:0];
+end
 
+always @(posedge i_clk) begin
+    for(int i=0;i<BEAM;i=i+1) begin
+        symb_1st_vec[i] <= i_symb_1st;
+        symb_phx_vec[i] <= symb_phx;
+    end
+end
+
+always @(posedge i_clk) begin
+    for(int i=0;i<BEAM;i=i+1) begin
+        if(symb_1st_vec[i])begin
+            case(symb_phx_vec[i])
+                2'd0:   begin
+                            code_word_even[i]  <= codeword_map_0[i];
+                            code_word_odd [i]  <= codeword_map_1[i];
+                        end
+                2'd1:   begin
+                            code_word_even[i]  <= codeword_map_0[i+16];
+                            code_word_odd [i]  <= codeword_map_1[i+16];
+                        end
+                2'd2:   begin
+                            code_word_even[i]  <= codeword_map_0[i+32];
+                            code_word_odd [i]  <= codeword_map_1[i+32];
+                        end
+                2'd3:   begin
+                            code_word_even[i]  <= codeword_map_0[i+48];
+                            code_word_odd [i]  <= codeword_map_1[i+48];
+                        end
+                default:begin
+                            code_word_even[i]  <= codeword_map_0[i];
+                            code_word_odd [i]  <= codeword_map_1[i];
+                        end
+            endcase
+        end else begin
+            if(i_rbg_load)begin
+                code_word_even[i]  <= cw_even_select[i];
+                code_word_odd [i]  <= cw_odd_select [i];
+            end
+        end
+    end
+end
+
+
+always @(posedge i_clk) begin
+    for(int i=0;i<BEAM;i=i+1) begin
+        cw_even_select[i] <= codeword_map_0[i_beam_idx[i]];
+        cw_odd_select[i]  <= codeword_map_1[i_beam_idx[i]];
+    end
+end
+
+
+assign o_cw_even = code_word_even;
+assign o_cw_odd  = code_word_odd ;
+assign o_tvalid  = rom_vld[3];
 
 
 endmodule

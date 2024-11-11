@@ -99,7 +99,7 @@ always @(posedge i_clk) begin
     wr_wen <= {CHANNELS{i_wr_wen}};
     
     for(int i=0;i<CHANNELS;i=i+1) begin
-        wr_data[i] <= i_wr_addr;
+        wr_addr[i] <= i_wr_addr;
         wr_data[i] <= i_wr_data[i];
         rd_addr[i] <= rd_addr_syn;
     end

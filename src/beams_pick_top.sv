@@ -30,14 +30,18 @@ module beams_pick_top # (
     input                                           i_eop                   ,
     input          [15:0][WDATA_WIDTH-1: 0]         i_data_re               ,
     input          [15:0][WDATA_WIDTH-1: 0]         i_data_im               ,
-
+    
+    input          [15:0][31: 0]                    i_sort_pwr              ,
     input          [15:0][7: 0]                     i_sort_idx              ,
     input                                           i_sort_sop              ,
+    input                                           i_rbg_load              ,
 
     input                                           i_sym_1st               ,
 
+    output         [15:0][31: 0]                    o_sort_pwr              ,
     output         [15:0][RDATA_WIDTH-1: 0]         o_data_re               ,
     output         [15:0][RDATA_WIDTH-1: 0]         o_data_im               ,
+    output                                          o_rbg_load              ,
     output                                          o_sop                   ,
     output                                          o_eop                   ,
     output                                          o_tvld                   
@@ -97,6 +101,31 @@ beams_mem_pick # (
     .o_tvalid                                           (                       ) 
 );
 
+//------------------------------------------------------------------------------------------
+// beam power delay match 
+//------------------------------------------------------------------------------------------
+register_shift # (
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (4                      ) 
+)dly_rbg_load(
+    .clk                                                (i_clk                  ),
+    .in                                                 (i_rbg_load             ),
+    .out                                                (o_rbg_load             ) 
+);
+
+
+generate
+    for (genvar i = 0; i < 16; i++) begin : delay_match
+        register_shift #(
+            .WIDTH                                              (32                     ),
+            .DEPTH                                              (4                      ) 
+        )dly_sort_pwr(
+            .clk                                                (i_clk                  ),
+            .in                                                 (i_sort_pwr[i]          ),
+            .out                                                (o_sort_pwr[i]          ) 
+        );
+    end
+endgenerate
 
 
 endmodule

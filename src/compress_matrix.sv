@@ -26,6 +26,8 @@ module compress_matrix
     input  wire    [15:0][IW-1: 0]                  i_din_re                ,
     input  wire    [15:0][IW-1: 0]                  i_din_im                ,
 
+    input  wire                                     i_rbg_load              ,
+    input  wire    [15:0][31: 0]                    i_beam_pwr              ,
 
     input  wire    [   6: 0]                        i_slot_idx              ,
     input  wire    [   3: 0]                        i_symb_idx              ,
@@ -39,6 +41,8 @@ module compress_matrix
     output reg     [15:0][OW-1: 0]                  o_dout_re               ,
     output reg     [15:0][OW-1: 0]                  o_dout_im               ,
     output reg     [   4: 0]                        o_shift                 ,
+    output wire                                     o_rbg_load              ,
+    output wire    [15:0][31: 0]                    o_beam_pwr              ,
     output wire    [   6: 0]                        o_slot_idx              ,
     output wire    [   3: 0]                        o_symb_idx              ,
     output wire    [   8: 0]                        o_prb_idx               ,
@@ -235,8 +239,56 @@ u_dly_vld
     .out                                                ({o_sel,o_sop,o_eop,o_vld}) 
 );
 
+register_shift
+#(
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (TOT_CYCLE-1            ) 
+)
+u_rbg_load_dly
+(
+    .clk                                                (clk                    ),
+    .in                                                 (i_rbg_load             ),
+    .out                                                (rbg_load_dly           ) 
+);
 
+//--------------------------------------------------------------------------------------
+// Store 4 blocks of data in memory at different time
+// Read data from memory at the same time
+// Latency is 3 cycles
+//--------------------------------------------------------------------------------------
+wire [15:0][31:0] rd_beam_pwr;
+reg  [15:0][31:0] rd_beam_pwr_out = 0;
+reg rbg_load_out = 0;
 
+mem_streams_ram # (
+    .CHANNELS                                           (16                     ),
+    .WDATA_WIDTH                                        (32                     ),
+    .WADDR_WIDTH                                        (4                      ),
+    .RDATA_WIDTH                                        (32                     ),
+    .RADDR_WIDTH                                        (4                      ),
+    .READ_LATENCY                                       (3                      ),
+    .RAM_TYPE                                           (1                      ) 
+)mem_beam_pwr(
+    .i_clk                                              (clk                    ),
+    .i_reset                                            (rst                    ),
+    .i_rvalid                                           (i_vld                  ),
+    .i_wr_wen                                           (i_rbg_load             ),
+    .i_wr_data                                          (i_beam_pwr             ),
+    .i_rd_ren                                           (rbg_load_dly           ),
+    .o_rd_data                                          (rd_beam_pwr            ),
+    .o_rd_addr                                          (                       ),
+    .o_tvalid                                           (                       ) 
+);
+
+always @(posedge clk) begin
+    rbg_load_out <= rbg_load_dly;
+    if(rbg_load_dly)
+        rd_beam_pwr_out <= rd_beam_pwr;
+    
+end
+
+assign o_rbg_load = rbg_load_out;
+assign o_beam_pwr = rd_beam_pwr_out;
 
 
 endmodule

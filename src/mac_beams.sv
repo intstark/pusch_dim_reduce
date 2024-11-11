@@ -58,6 +58,13 @@ genvar bi;
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
+reg                                             r_rvalid              =0;
+reg                                             r_sop                 =0;
+reg                                             r_eop                 =0;
+
+reg            [ANT*IW-1: 0]                    ants_data_even        =0;
+reg            [ANT*IW-1: 0]                    ants_data_odd         =0;
+
 reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_even        ='{default:0};
 reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_odd         ='{default:0};
 
@@ -87,6 +94,18 @@ reg                                             sop_out               =0;
 //-----------------------------------------------------------------
 //  input register
 //-----------------------------------------------------------------
+
+always @ (posedge i_clk) begin
+    r_rvalid <= i_rvalid;
+    r_sop    <= i_sop   ;
+    r_eop    <= i_eop   ;
+end
+
+always @(posedge i_clk) begin
+    ants_data_even <= i_ants_data_even;       
+    ants_data_odd  <= i_ants_data_odd ;
+end
+
 always @(posedge i_clk) begin
     for(int k=0; k<BEAM; k++)begin:data_re_pipe
         code_word_even[k] <= i_code_word_even[k];
@@ -105,10 +124,10 @@ generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
         .OW                                                 (OW                     ) 
     ) mac_ants_even (
         .i_clk                                              (i_clk                  ),
-        .i_ants_data                                        (i_ants_data_even       ),
-        .i_rvalid                                           (i_rvalid               ),
-        .i_sop                                              (i_sop                  ),
-        .i_eop                                              (i_eop                  ),
+        .i_ants_data                                        (ants_data_even         ),
+        .i_rvalid                                           (r_rvalid               ),
+        .i_sop                                              (r_sop                  ),
+        .i_eop                                              (r_eop                  ),
         .i_code_word                                        (i_code_word_even[bi]   ),
         .o_data_i                                           (even_ants_re    [bi]   ),
         .o_data_q                                           (even_ants_im    [bi]   ),
@@ -130,10 +149,10 @@ generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
         .OW                                                 (OW                     ) 
     ) mac_ants_odd (
         .i_clk                                              (i_clk                  ),
-        .i_ants_data                                        (i_ants_data_odd        ),
-        .i_rvalid                                           (i_rvalid               ),
-        .i_sop                                              (i_sop                  ),
-        .i_eop                                              (i_eop                  ),
+        .i_ants_data                                        (ants_data_odd          ),
+        .i_rvalid                                           (r_rvalid               ),
+        .i_sop                                              (r_sop                  ),
+        .i_eop                                              (r_eop                  ),
         .i_code_word                                        (i_code_word_odd[bi]    ),
         .o_data_i                                           (odd_ants_re    [bi]    ),
         .o_data_q                                           (odd_ants_im    [bi]    ),

@@ -36,8 +36,8 @@ module beam_sort # (
     input                                           i_rbg_load              ,
     input                                           i_bid_rdinit            ,
 
-    output         [COL-1:0][IW-1: 0]               o_data                  ,
     output         [COL-1:0][7: 0]                  o_score                 ,
+    output         [15:0][31: 0]                    o_data                  ,
     output         [15:0][7: 0]                     o_beam_index            ,
     output         [   5: 0]                        o_rbg_num               ,
     output                                          o_rbg_load              ,
@@ -241,56 +241,12 @@ end
 //--------------------------------------------------------------------------------------
 wire           [   7: 0]                        wr_addr                 ;
 reg            [   3: 0]                        wr_num                =0;
-reg            [   7: 0]                        rd_addr               =0;
+wire           [   7: 0]                        rd_addr                 ;
 
 reg                                             wr_wen                =0;
-wire           [IW-1: 0]                        wr_data                 ;
-wire           [IW-1: 0]                        rd_data                 ;
+wire           [511: 0]                         wr_data                 ;
+wire           [511: 0]                         rd_data                 ;
 
-
-always @(posedge i_clk) begin
-    if(sort_vld)
-        wr_wen <= 1'b1;
-    else if(wr_num == 'd15)
-        wr_wen <= 1'b0;
-end
-
-always @ (posedge i_clk)begin
-    if(wr_wen)
-        wr_num <= wr_num + 'd1;
-    else
-        wr_num <= 'd0;
-end
-
-
-assign wr_addr = {rbg_num[3:0], wr_num[3:0]};
-assign wr_data = sort_data[wr_num];
-
-  
-//--------------------------------------------------------------------------------------
-// bram for beams power
-//--------------------------------------------------------------------------------------
-Simple_Dual_Port_BRAM_XPM_intel #(
-    
-    .WDATA_WIDTH                                        (IW                     ),
-    .NUMWORDS_A                                         (256                    ),
-    .RDATA_WIDTH                                        (IW                     ),
-    .NUMWORDS_B                                         (256                    ),
-    .INI_FILE                                           (                       ) 
-)dram_beam_power(
-    .clock                                              (i_clk                  ),
-    .wren                                               (wr_wen                 ),
-    .wraddress                                          (wr_addr                ),
-    .data                                               (wr_data                ),
-    .rdaddress                                          (rd_addr                ),
-    .q                                                  (rd_data                ) 
-);
-
-
-
-//--------------------------------------------------------------------------------------
-// Store the index of sorted beams to BRAM
-//--------------------------------------------------------------------------------------
 wire           [ 127: 0]                        bram_idx_rdata          ;
 wire           [ 127: 0]                        bram_idx_wdata          ;
 wire           [   3: 0]                        bram_idx_waddr          ;
@@ -312,8 +268,85 @@ wire                                            fifo_rdout              ;
 reg            [   2: 0]                        rdout_en_buf          =0;
 reg                                             rd_init_sop           =0;
 
+reg            [   3: 0]                        bram_pwr_raddr        =0;
+reg            [   3: 0]                        bram_pwr_rdnum        =0;
+reg                                             pwr_rden              =0;
+reg            [15:0][31: 0]                    pwr_rdout             =0;
+reg bram_pwr_rden =0;
+
+always @(posedge i_clk) begin
+    if(sort_vld)
+        wr_wen <= 1'b1;
+    else if(wr_num == 'd15)
+        wr_wen <= 1'b0;
+end
+
+always @ (posedge i_clk)begin
+    if(wr_wen)
+        wr_num <= wr_num + 'd1;
+    else
+        wr_num <= 'd0;
+end
 
 
+assign wr_addr = {4'd0,rbg_num[3:0]};
+
+for(genvar i=0; i<16; i=i+1)begin
+    assign wr_data[i*32 +: 32] = sort_data[i][31:0];
+end
+
+
+always @(posedge i_clk) begin
+    if(i_reset)
+        pwr_rden <= 1'b0;
+    else if(rd_init_sop)
+        pwr_rden <= 1'b1;
+    else if(sort_done && bram_pwr_rden)
+        pwr_rden <= 1'b1;
+    else if(bram_pwr_rdnum == 15)
+        pwr_rden <= 1'b0;
+end 
+
+always @(posedge i_clk) begin
+    if(i_reset)
+        bram_pwr_raddr <= 'd0;
+    else if(sort_done && bram_pwr_rden)begin
+        if(bram_pwr_raddr==i_rbg_max)
+            bram_pwr_raddr <= 'd0;
+        else
+            bram_pwr_raddr <= bram_pwr_raddr + 'd1;
+    end
+end
+
+
+assign rd_addr = {4'd0,bram_pwr_raddr[3:0]};
+
+
+
+//--------------------------------------------------------------------------------------
+// bram for beams power
+//--------------------------------------------------------------------------------------
+Simple_Dual_Port_BRAM_XPM_intel #(
+    
+    .WDATA_WIDTH                                        (512                    ),
+    .NUMWORDS_A                                         (16                     ),
+    .RDATA_WIDTH                                        (512                    ),
+    .NUMWORDS_B                                         (16                     ),
+    .INI_FILE                                           (                       ) 
+)dram_beam_power(
+    .clock                                              (i_clk                  ),
+    .wren                                               (wr_wen                 ),
+    .wraddress                                          (wr_addr                ),
+    .data                                               (wr_data                ),
+    .rdaddress                                          (rd_addr                ),
+    .q                                                  (rd_data                ) 
+);
+
+
+
+//--------------------------------------------------------------------------------------
+// Store the index of sorted beams to BRAM
+//--------------------------------------------------------------------------------------
 assign bram_idx_wdata = sort_addr[15:0];
 assign bram_idx_waddr = {rbg_num[3:0]};
 
@@ -453,10 +486,20 @@ reg                                             rbg_sop               =0;
 reg                                             rbg_sop_out           =0;
 reg            [15:0][7: 0]                     beam_index_out        =0;
 reg            [2:0][5: 0]                      rbg_num_out           =0;
+reg            [   4: 0]                        rbg_load_1st_buf      =0;
+reg            [  11: 0]                        rbg_load_2nd_buf      =0;
+reg            [   2: 0]                        rbg_load_out_buf      =0;
+reg            [   3: 0]                        sym_1st_done_buf      =0;
 
 
 always @ (posedge i_clk)begin
     rbg_sop_out <= rd_init_sop;
+end
+
+always @ (posedge i_clk)begin
+    rbg_load_1st_buf <= {rbg_load_1st_buf[ 3:0], rd_init | rd_init_sop};
+    rbg_load_2nd_buf <= {rbg_load_2nd_buf[10:0], i_rbg_load};
+    sym_1st_done_buf <= {sym_1st_done_buf[2:0], sym_1st_done};
 end
 
 always @ (posedge i_clk)begin
@@ -481,9 +524,31 @@ always @(posedge i_clk) begin
     end
 end
 
-assign o_data                 = sort_data;
+
+
+always @(posedge i_clk) begin
+    for(int i=0; i<16; i=i+1)begin
+        if(bram_pwr_rden)
+            pwr_rdout[i] <= rd_data[i*32 +: 32];
+    end
+end
+
+
+always @(posedge i_clk) begin
+    if(sym_1st_done_buf[3])
+        bram_pwr_rden <= rbg_load_2nd_buf[7];
+    else
+        bram_pwr_rden <= rbg_load_1st_buf[0];
+end
+
+always @ (posedge i_clk)begin
+    rbg_load_out_buf <= {rbg_load_out_buf[1:0], bram_pwr_rden};
+end
+
+
+assign o_data                 = pwr_rdout;
 assign o_score                = score;
-assign o_rbg_load             = data_vld;
+assign o_rbg_load             = rbg_load_out_buf[0];
 assign o_rbg_num              = rbg_num_out[2];
 assign o_tvalid               = rd_vld;
 assign o_idx_sop              = rbg_sop_out;

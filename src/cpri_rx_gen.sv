@@ -88,7 +88,6 @@ always @(posedge wr_clk) begin
 end
 
 loop_buffer_async_intel #
-//loop_buffer_async #
 (
     .WDATA_WIDTH                (WDATA_WIDTH                     ),
     .WADDR_WIDTH                (WADDR_WIDTH                     ),
@@ -106,7 +105,7 @@ loop_buffer_async_intel #
     .wr_clk                     (wr_clk                          ),  
     .rd_rst                     (rd_rst                          ), 
     .rd_clk                     (rd_clk                          ),     
-    .wr_wen                     (r_cpri_wen                      ),
+    .wr_wen                     (i_cpri_wen                      ),
     .wr_addr                    (i_cpri_waddr                    ),
     .wr_data                    (i_cpri_wdata                    ),  
     .wr_wlast                   (i_cpri_wlast                    ),
@@ -116,7 +115,7 @@ loop_buffer_async_intel #
     .rd_data                    (cpri_rdata                      ),
     .rd_vld                     (cpri_rvld                       ),
     .rd_info                    (cpri_rinfo                      ),
-    .rd_rdy                     (cpri_rdy                        )   
+    .rd_rdy                     (cpri_rdy                        )  
 );
 //-----------------------------------------------------------------------------
 always @ (posedge rd_clk)

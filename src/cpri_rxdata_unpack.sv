@@ -30,8 +30,8 @@ module cpri_rxdata_unpack # (
     input          [  63: 0]                        i_cpri_rx_data          ,
     input                                           i_cpri_rx_vld           ,
 
-    input                                           i_sym1_done             ,
-
+    output         [  63: 0]                        o_info_0                ,
+    output         [  63: 0]                        o_info_1                ,
     output         [  10: 0]                        o_iq_addr               ,
     output         [ANT*32-1: 0]                    o_iq_data               ,
     output                                          o_iq_vld                ,
@@ -89,16 +89,44 @@ wire                                            cpri_buf_vld            ;
 wire                                            cpri_buf_last           ;
 
 
+reg            [   3: 0]                        rx_vld_buf            =0;
+reg            [   3: 0]                        symb_idx              =0;
+reg                                             rx_vld                =0;
+reg            [3:0][63: 0]                     rx_data_buf           =0;
+reg            [  63: 0]                        cpri_rx_data          =0;
+reg                                             cpri_rx_vld           =0;
+
+always @(posedge i_clk) begin
+    rx_vld_buf[3:0] <= {rx_vld_buf[2:0],i_cpri_rx_vld};
+    if(rx_vld_buf[2])
+        symb_idx <= i_cpri_rx_data[11:8];
+end
+
+always @(posedge i_clk) begin
+    cpri_rx_vld <= rx_vld_buf[3];
+    if(symb_idx ==0 && rx_vld_buf[3])
+        rx_vld <= 1'b1;
+end
+
+always @(posedge i_clk) begin
+    rx_data_buf[0] <= i_cpri_rx_data;
+    cpri_rx_data   <= rx_data_buf[3];
+    for(int i=1; i<4; i=i+1)begin
+        rx_data_buf[i] <= rx_data_buf[i-1];
+    end 
+end
+
+
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer
 //--------------------------------------------------------------------------------------
 cpri_rxdata_buffer                                      cpri_rxdata_buffer(
     .i_clk                                              (i_cpri_clk             ),
     .i_reset                                            (i_cpri_rst             ),
-    .i_rx_data                                          (i_cpri_rx_data         ),
-    .i_rvalid                                           (i_cpri_rx_vld          ),
+    .i_rx_data                                          (cpri_rx_data           ),
+    .i_rvalid                                           (cpri_rx_vld            ),
     .i_rready                                           (cpri_rx_ready          ),
-    .i_sym1_done                                        (i_sym1_done            ),
+    .i_sym1_done                                        (1'b0                   ),
     .o_tx_data                                          (cpri_data_buf          ),
     .o_tx_addr                                          (cpri_addr_buf          ),
     .o_tx_last                                          (cpri_buf_last          ),
@@ -192,7 +220,7 @@ always @(posedge i_clk) begin
 end
 
 generate
-    for(ant=0; ant<4; ant++) begin: unpack_ant_data
+    for(ant=0; ant<ANT; ant++) begin: unpack_ant_data
         always @(posedge i_clk) begin
             case(re_cnt_cycle)
                 3'd0:       ant_package[ant] <=  cpri_iq_data[ant*16 +: 14];
@@ -224,7 +252,7 @@ end
 // unpack rb shift data from agc data 
 //--------------------------------------------------------------------------------------
 generate
-    for(ant=0; ant<4; ant++) begin: unpack_rb_agc
+    for(ant=0; ant<ANT; ant++) begin: unpack_rb_agc
         always @( * ) begin
             case(prb_cnt_cycle)
                 3'd0:       rb_shift[ant] = rb_agc[ant*32 + 4*0 +: 4]; 
@@ -244,7 +272,7 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // data uncompress logic
 //--------------------------------------------------------------------------------------
-generate for(ant=0; ant<4; ant++) begin: gen_unpack_data
+generate for(ant=0; ant<ANT; ant++) begin: gen_unpack_data
     always @(posedge i_clk) begin
         data_unpack[ant] <= {16'(signed'(ant_package[ant][13:7]) << rb_shift[ant]), 16'(signed'(ant_package[ant][6:0]) << rb_shift[ant])};
     end
@@ -277,17 +305,61 @@ always @(posedge i_clk) begin
         iq_addr <= iq_addr;
 end
 
+
+//--------------------------------------------------------------------------------------
+// receive header data
+//--------------------------------------------------------------------------------------
+reg            [  63: 0]                        header_info_0         =0;
+reg            [  63: 0]                        header_info_1         =0;
+reg            [  63: 0]                        dout_info0            =0;
+reg            [  63: 0]                        dout_info1            =0;
+
+always @(posedge i_clk) begin
+    if(cpri_iq_raddr==7'd3)
+        header_info_0[63:0] <= cpri_iq_data;
+    else if(cpri_iq_raddr==7'd4)
+        header_info_1[63:0] <= cpri_iq_data;
+end
+
+
+
 //--------------------------------------------------------------------------------------
 // output 
 //--------------------------------------------------------------------------------------
-assign o_iq_addr = iq_addr;
-assign o_iq_vld  = data_unpack_vld;
-assign o_iq_last = prb_reached_132;
+reg            [ANT*32-1: 0]                    iq_data_out           =0;
+reg                                             iq_vld_out            =0;
+reg                                             iq_last_out           =0;
+reg            [  10: 0]                        iq_addr_out           =0;
 
-generate for(ant=0; ant<4; ant++) begin: comb_dataout 
-    assign o_iq_data[ant*32 +: 32] = data_unpack[ant];
+
+always @(posedge i_clk) begin
+    for(int i=0; i<ANT; i++)begin
+        if(data_unpack_vld) begin
+            iq_data_out[i*32 +: 32] <= data_unpack[i];
+        end
+    end
 end
-endgenerate
+
+always @(posedge i_clk) begin
+    iq_vld_out  <= data_unpack_vld;
+    iq_last_out <= prb_reached_132;
+    iq_addr_out <= iq_addr;
+end
+
+always @(posedge i_clk) begin
+    if(!iq_vld_out && data_unpack_vld)begin
+        dout_info0 <= header_info_0;
+        dout_info1 <= header_info_1;
+    end
+end
+
+
+assign o_iq_data = iq_data_out;
+assign o_iq_addr = iq_addr_out;
+assign o_iq_vld  = iq_vld_out;
+assign o_iq_last = iq_last_out;
+assign o_info_0  = dout_info0;
+assign o_info_1  = dout_info1;
 
 
 endmodule
