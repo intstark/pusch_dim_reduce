@@ -29,11 +29,9 @@ module compress_matrix
     input  wire                                     i_rbg_load              ,
     input  wire    [15:0][31: 0]                    i_beam_pwr              ,
 
-    input  wire    [   6: 0]                        i_slot_idx              ,
-    input  wire    [   3: 0]                        i_symb_idx              ,
-    input  wire    [   8: 0]                        i_prb_idx               ,
-    input  wire    [   3: 0]                        i_ch_type               ,
-    input  wire    [   7: 0]                        i_info                  ,
+    input  wire    [  63: 0]                        i_info_0                ,
+    input  wire    [  63: 0]                        i_info_1                ,
+
     output wire                                     o_sel                   ,
     output wire                                     o_sop                   ,
     output wire                                     o_eop                   ,
@@ -43,11 +41,13 @@ module compress_matrix
     output reg     [   4: 0]                        o_shift                 ,
     output wire                                     o_rbg_load              ,
     output wire    [15:0][31: 0]                    o_beam_pwr              ,
+
+    output wire    [   3: 0]                        o_rbg_idx               ,
+    output wire    [   3: 0]                        o_pkg_type              ,
+    output wire                                     o_cell_idx              ,
     output wire    [   6: 0]                        o_slot_idx              ,
     output wire    [   3: 0]                        o_symb_idx              ,
-    output wire    [   8: 0]                        o_prb_idx               ,
-    output wire    [   3: 0]                        o_type                  ,
-    output wire    [   7: 0]                        o_info                   
+    output wire    [  63: 0]                        o_fft_agc                   
 );
 
 
@@ -70,17 +70,6 @@ reg            [DAT_DEPTH-1: 0]                 rx_vld_dly            =0;
 reg                                             i_eop_d1              =0;
 reg            [   4: 0]                        shift_num             =0;
 reg            [  39: 0]                        max_value_iq          =0;
-reg            [  11: 0]                        wr_addr               =0;
-reg            [  11: 0]                        rd_addr               =0;
-wire           [  79: 0]                        data_dly                ;
-reg            [  39: 0]                        data_shift_i          =0;
-reg            [  39: 0]                        data_shift_q          =0;
-reg            [  39: 0]                        rounding_i            =0;
-reg            [  39: 0]                        rounding_q            =0;
-reg            [  39: 0]                        data_shift_i_dly      =0;
-reg            [  39: 0]                        data_shift_q_dly      =0;
-reg            [  39: 0]                        result_i0             =0;
-reg            [  39: 0]                        result_q0             =0;
 reg            [   4: 0]                        max_shift_dly1        =0;
 reg            [   4: 0]                        max_shift_dly2        =0;
 reg            [   4: 0]                        max_shift_dly3        =0;
@@ -225,40 +214,64 @@ begin
 end
 
 //--------------------------------------------------------------------------------------------
+// info_0 
+//--------------------------------------------------------------------------------------------
+wire           [   3: 0]                        pkg_type                ;
+wire                                            cell_idx                ;
+wire           [   6: 0]                        slot_idx                ;
+wire           [   3: 0]                        symb_idx                ;
+
+assign pkg_type  = i_info_0[39:36];
+assign cell_idx  = i_info_0[19];
+assign slot_idx  = i_info_0[18:12];
+assign symb_idx  = i_info_0[11:8];
+
+//--------------------------------------------------------------------------------------------
 // Delay match 
 //--------------------------------------------------------------------------------------------
-register_shift
-#(
+register_shift # (
     .WIDTH                                              (4                      ),
     .DEPTH                                              (TOT_CYCLE              ) 
-)
-u_dly_vld
-(
+)u_dly_vld(
     .clk                                                (clk                    ),
     .in                                                 ({i_sel,i_sop,i_eop,i_vld}),
     .out                                                ({o_sel,o_sop,o_eop,o_vld}) 
 );
 
-register_shift
-#(
+register_shift # (
     .WIDTH                                              (1                      ),
     .DEPTH                                              (TOT_CYCLE-1            ) 
-)
-u_rbg_load_dly
-(
+)u_dly_rbg_load(
     .clk                                                (clk                    ),
     .in                                                 (i_rbg_load             ),
     .out                                                (rbg_load_dly           ) 
 );
 
+register_shift # (
+    .WIDTH                                              (16                     ),
+    .DEPTH                                              (TOT_CYCLE              ) 
+)u_dly_info_0(
+    .clk                                                (clk                    ),
+    .in                                                 ({pkg_type,cell_idx,slot_idx,symb_idx}),
+    .out                                                ({o_pkg_type,o_cell_idx,o_slot_idx,o_symb_idx}) 
+);
+
+register_shift # (
+    .WIDTH                                              (64                     ),
+    .DEPTH                                              (TOT_CYCLE              ) 
+)u_dly_info_1(
+    .clk                                                (clk                    ),
+    .in                                                 (i_info_1               ),
+    .out                                                (o_fft_agc               ) 
+);
+
 //--------------------------------------------------------------------------------------
-// Store 4 blocks of data in memory at different time
-// Read data from memory at the same time
-// Latency is 3 cycles
+// beam power memory
 //--------------------------------------------------------------------------------------
-wire [15:0][31:0] rd_beam_pwr;
-reg  [15:0][31:0] rd_beam_pwr_out = 0;
-reg rbg_load_out = 0;
+wire           [15:0][31: 0]                    rd_beam_pwr             ;
+wire           [   3: 0]                        rd_addr                 ;
+reg            [15:0][31: 0]                    rd_beam_pwr_out       =0;
+reg                                             rbg_load_out          =0;
 
 mem_streams_ram # (
     .CHANNELS                                           (16                     ),
@@ -276,7 +289,7 @@ mem_streams_ram # (
     .i_wr_data                                          (i_beam_pwr             ),
     .i_rd_ren                                           (rbg_load_dly           ),
     .o_rd_data                                          (rd_beam_pwr            ),
-    .o_rd_addr                                          (                       ),
+    .o_rd_addr                                          (rd_addr                ),
     .o_tvalid                                           (                       ) 
 );
 
@@ -284,11 +297,13 @@ always @(posedge clk) begin
     rbg_load_out <= rbg_load_dly;
     if(rbg_load_dly)
         rd_beam_pwr_out <= rd_beam_pwr;
-    
+    else
+        rd_beam_pwr_out <= rd_beam_pwr_out;
 end
 
 assign o_rbg_load = rbg_load_out;
 assign o_beam_pwr = rd_beam_pwr_out;
+assign o_rbg_idx  = rd_addr[3:0];
 
 
 endmodule

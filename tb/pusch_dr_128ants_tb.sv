@@ -176,25 +176,21 @@ wire                                            dr0_sop                 ;
 wire                                            dr0_eop                 ;
 wire                                            dr0_vld                 ;
 wire           [3:0][31: 0]                     dr0_data                ;
-wire           [   8: 0]                        dr0_prb_idx             ;
 
 wire                                            dr1_sop                  ;
 wire                                            dr1_eop                  ;
 wire                                            dr1_vld                  ;
 wire           [15:0][15: 0]                    dr1_data                 ;
-wire           [15:0][15: 0]                    dr1_prb_idx              ;
 
 wire                                            dr2_sop                  ;
 wire                                            dr2_eop                  ;
 wire                                            dr2_vld                  ;
 wire           [15:0][15: 0]                    dr2_data                 ;
-wire           [15:0][15: 0]                    dr2_prb_idx              ;
 
 wire                                            dr3_sop                  ;
 wire                                            dr3_eop                  ;
 wire                                            dr3_vld                  ;
 wire           [15:0][15: 0]                    dr3_data                 ;
-wire           [15:0][15: 0]                    dr3_prb_idx              ;
 
 //------------------------------------------------------------------------------------------
 // 8 Lanes data
@@ -236,11 +232,10 @@ pusch_dr_core                                           pusch_dr_core_aiu0(
     .i_iq_vld                                           (iq0_vld                ),// 32 ants iq vld
     .i_iq_last                                          (iq0_last               ),// 32 ants iq last(132prb ends)
 
-    .o_tx_data                                          (dr0_data               ),
-    .o_tx_vld                                           (dr0_vld                ),
-    .o_tx_sop                                           (dr0_sop                ),
-    .o_tx_eop                                           (dr0_eop                ),
-    .o_prb_idx                                          (dr0_prb_idx            )
+    .o_dr_data                                          (dr0_data               ),
+    .o_dr_vld                                           (dr0_vld                ),
+    .o_dr_sop                                           (dr0_sop                ),
+    .o_dr_eop                                           (dr0_eop                )
 );
 
 //------------------------------------------------------------------------------------------
@@ -258,11 +253,10 @@ pusch_dr_core                                           pusch_dr_core_aiu1(
     .i_iq_vld                                           (iq1_vld                ),// 32 ants iq vld
     .i_iq_last                                          (iq1_last               ),// 32 ants iq last(132prb ends)
 
-    .o_tx_data                                          (dr1_data               ),
-    .o_tx_vld                                           (dr1_vld                ),
-    .o_tx_sop                                           (dr1_sop                ),
-    .o_tx_eop                                           (dr1_eop                ),
-    .o_prb_idx                                          (dr1_prb_idx            )
+    .o_dr_data                                          (dr1_data               ),
+    .o_dr_vld                                           (dr1_vld                ),
+    .o_dr_sop                                           (dr1_sop                ),
+    .o_dr_eop                                           (dr1_eop                )
 );
 
 //------------------------------------------------------------------------------------------
@@ -280,11 +274,10 @@ pusch_dr_core                                           pusch_dr_core_aiu2(
     .i_iq_vld                                           (iq2_vld                ),// 32 ants iq vld
     .i_iq_last                                          (iq2_last               ),// 32 ants iq last(132prb ends)
 
-    .o_tx_data                                          (dr2_data               ),
-    .o_tx_vld                                           (dr2_vld                ),
-    .o_tx_sop                                           (dr2_sop                ),
-    .o_tx_eop                                           (dr2_eop                ),
-    .o_prb_idx                                          (dr2_prb_idx            )
+    .o_dr_data                                          (dr2_data               ),
+    .o_dr_vld                                           (dr2_vld                ),
+    .o_dr_sop                                           (dr2_sop                ),
+    .o_dr_eop                                           (dr2_eop                )
 );
 
 //------------------------------------------------------------------------------------------
@@ -302,11 +295,10 @@ pusch_dr_core                                           pusch_dr_core_aiu3(
     .i_iq_vld                                           (iq3_vld                ),// 32 ants iq vld
     .i_iq_last                                          (iq3_last               ),// 32 ants iq last(132prb ends)
 
-    .o_tx_data                                          (dr3_data               ),
-    .o_tx_vld                                           (dr3_vld                ),
-    .o_tx_sop                                           (dr3_sop                ),
-    .o_tx_eop                                           (dr3_eop                ),
-    .o_prb_idx                                          (dr3_prb_idx            )
+    .o_dr_data                                          (dr3_data               ),
+    .o_dr_vld                                           (dr3_vld                ),
+    .o_dr_sop                                           (dr3_sop                ),
+    .o_dr_eop                                           (dr3_eop                )
 );
 
 

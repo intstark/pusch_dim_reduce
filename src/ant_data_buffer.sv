@@ -28,16 +28,25 @@ module ant_data_buffer #(
     parameter   FIFO_DEPTH      = 16    ,
     parameter   FIFO_WIDTH      = 1     ,
     parameter   LOOP_WIDTH      = 12    ,
-    parameter   INFO_WIDTH      = 1     ,
+    parameter   INFO_WIDTH      = 128   ,
     parameter   RAM_TYPE        = 1     
 )(
     input                                           i_clk                   ,
     input                                           i_reset                 ,
 
+    // header info
+    input          [  63: 0]                        i_info_0                ,// IQ HD 
+    input          [  63: 0]                        i_info_1                ,// FFT AGC
+
     input          [WADDR_WIDTH-1: 0]               i_iq_addr               ,
     input          [ANT-1:0][31: 0]                 i_iq_data               ,
     input                                           i_iq_vld                ,
     input                                           i_iq_last               ,
+
+    output         [  63: 0]                        o_info_0                ,
+    output         [  63: 0]                        o_info_1                ,
+    output         [   6: 0]                        o_slot_idx              ,
+    output         [   3: 0]                        o_symb_idx              ,
 
     output         [ANT*32-1: 0]                    o_ant_even              ,
     output         [ANT*32-1: 0]                    o_ant_odd               ,
@@ -82,6 +91,12 @@ reg            [   2: 0]                        tvalid_out            =0;
 reg            [   2: 0]                        tsop_out              =0;
 reg            [   2: 0]                        teop_out              =0;
 
+reg            [INFO_WIDTH-1: 0]                wr_info               =0;
+
+reg            [4:0][127:0]                     dout_info0            =0;
+reg            [4:0][127:0]                     dout_info1            =0;
+
+
 //------------------------------------------------------------------------------------------
 // ant_sel=0: even antenna, ant_sel=1: odd antenna
 //------------------------------------------------------------------------------------------
@@ -98,7 +113,8 @@ end
 //------------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     wr_addr  <= i_iq_addr;
-    
+    wr_info  <= {i_info_1, i_info_0};
+
     for(int ant=0;ant<ANT;ant=ant+1) begin
         wr_data[ant*32 +: 32] <= i_iq_data[ant];
     end
@@ -167,7 +183,7 @@ loop_buffer_sync_intel #
     .wr_addr                                            (wr_addr                ),
     .wr_data                                            (wr_data                ),
     .wr_wlast                                           (wr_wlast_even          ),
-    .wr_info                                            (wr_wlast_even          ),
+    .wr_info                                            (wr_info                ),
     .free_size                                          (                       ),
     .rd_addr                                            (sync_raddr             ),
     .rd_data                                            (even_rdata             ),
@@ -201,7 +217,7 @@ loop_buffer_sync_intel #
     .wr_addr                                            (wr_addr                ),
     .wr_data                                            (wr_data                ),
     .wr_wlast                                           (wr_wlast_odd           ),
-    .wr_info                                            (wr_wlast_odd           ),
+    .wr_info                                            (wr_info                ),
     .free_size                                          (                       ),
     .rd_addr                                            (sync_raddr             ),
     .rd_data                                            (odd_rdata              ),
@@ -211,15 +227,47 @@ loop_buffer_sync_intel #
 );
 
 always @ (posedge i_clk)begin
-   tvalid_out[2:0] <= {tvalid_out[1:0], odd_rvld};
-   tsop_out[2:0]  <= {tsop_out[1:0], sync_rd_sop};
-   teop_out[2:0]  <= {teop_out[1:0], sync_rd_eop};
+   tvalid_out[2:0] <= {tvalid_out[1:0], odd_rvld };
+   tsop_out[2:0]   <= {tsop_out[1:0], sync_rd_sop};
+   teop_out[2:0]   <= {teop_out[1:0], sync_rd_eop};
 end
 
-assign o_ant_even = even_rdata;
-assign o_ant_odd  = odd_rdata ;
-assign o_tvalid = tvalid_out[2];
-assign o_ant_sop  = tsop_out[1];
-assign o_ant_eop  = teop_out[2];
+always @(posedge i_clk) begin
+    if(even_rvld)
+        dout_info0[0] <= even_rinfo;
+    else
+        dout_info0[0] <= dout_info0[0];
+
+    for(int i=1; i<5; i++)begin
+        dout_info0[i] <= dout_info0[i-1];
+    end
+end
+
+wire           [   3: 0]                        pkg_type_out            ;
+wire                                            cell_idx_out            ;
+wire           [   6: 0]                        slot_idx_out            ;
+wire           [   3: 0]                        symb_idx_out            ;
+wire           [  63: 0]                        fft_agc_out             ;
+
+
+
+assign pkg_type_out = dout_info0[2][39:36]  ;
+assign cell_idx_out = dout_info0[2][19]     ;
+assign slot_idx_out = dout_info0[2][18:12]  ;
+assign symb_idx_out = dout_info0[2][11:8]   ;
+assign fft_agc_out  = dout_info0[2][127:64] ;
+
+
+assign o_ant_even = even_rdata      ;
+assign o_ant_odd  = odd_rdata       ;
+assign o_tvalid   = tvalid_out[2]   ;
+assign o_ant_sop  = tsop_out[1]     ;
+assign o_ant_eop  = teop_out[2]     ;
+
+assign o_info_0   = dout_info0[2][ 63: 0];
+assign o_info_1   = dout_info0[2][127:64];
+assign o_symb_idx = symb_idx_out;
+assign o_slot_idx = slot_idx_out;
+
 
 endmodule

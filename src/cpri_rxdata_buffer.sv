@@ -46,7 +46,7 @@ module cpri_rxdata_buffer#(
 //--------------------------------------------------------------------------------------
 // PARAMETER
 //--------------------------------------------------------------------------------------
-localparam [WADDR_WIDTH-1: 0] DATA_DEPTH = 1585*2-1;
+localparam [WADDR_WIDTH-1: 0] DATA_DEPTH = 1584*2-1;
 localparam [6: 0]             CHIP_DW    = 95;
 
 //--------------------------------------------------------------------------------------
@@ -171,8 +171,6 @@ end
 always @ (posedge i_clk)begin
     if(i_reset)
         seq_num <= 'd0;
-    else if(~sym1_done && (rd_rlast_buf[2] || rd_rlast_buf[1]))
-        seq_num <= 'd0;
     else if(seq_num==CHIP_DW)
         seq_num <= 'd0;
     else if(data_vld_buf[2] && rd_en_buf[2])
@@ -244,29 +242,6 @@ assign o_tx_data    = rx_data_out;
 assign o_tx_addr    = tx_addr_out;
 assign o_tvalid     = tvalid_out ;
 assign o_tx_last    = txlast_out ;
-
-//--------------------------------------------------------------------------------------
-// DEBUG PORT
-//--------------------------------------------------------------------------------------
-`ifdef SIM_PRJ
-reg [6:0] prb_num = 0;
-reg [3:0] symbol_num = 0;
-
-always @ (posedge i_clk)begin
-    if(i_reset)begin
-        prb_num <= 'd0;
-        symbol_num <= 'd0;
-    end else if(prb_num == 131)begin
-        prb_num <= 'd0;
-        symbol_num <= symbol_num + 'd1;
-    end else if(wr_wen) begin
-        prb_num <= prb_num + 'd1;
-    end
-    
-    $display("NO %d Symbol", symbol_num);
-end
-
-`endif
 
 
 

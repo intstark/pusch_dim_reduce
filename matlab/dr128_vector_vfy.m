@@ -574,7 +574,47 @@ function sim_beam=ReadData(datafile,BITW,headLines,varargin)
 end
 
 % 动态定标截断
-function dataout_sft_fix=dynamic_truncation(datain,OW,varargin)
+% function dataout_sft_fix=dynamic_truncation(datain,OW,varargin)
+% 
+%     datain_i = real(datain);
+%     datain_q = imag(datain);
+%     
+%     abs_data_i = abs(datain_i);
+%     abs_data_q = abs(datain_q);
+%     
+%     i_max = max(abs_data_i,[],[1,2]);
+%     q_max = max(abs_data_q,[],[1,2]);
+%     
+%     iq_max = max([i_max q_max]);
+%     
+%     idx = floor(log2(iq_max)+1);
+%     
+%     
+%     factor_shift = idx - (OW-1);
+%     
+%     
+%     dataout_sft = datain/2^factor_shift;
+% 
+%     if(nargin>2)
+%         if(varargin{1}=="round")  
+%             dataout_sft_fix = round(dataout_sft);
+%         elseif(varargin{1}=="floor")  
+%             dataout_sft_fix = floor(dataout_sft);
+%         elseif(varargin{1}=="ceil")  
+%             dataout_sft_fix = ceil(dataout_sft);
+%         elseif(varargin{1}=="fix")  
+%             dataout_sft_fix = fix(dataout_sft);
+%         end
+%     else
+%         dataout_sft_fix = round(dataout_sft);
+%     end
+% 
+% %     dataout_sft_fix = quantize(quantizer('fixed','round','saturate',[16,0]),datain/2^factor_shift);
+%     
+% end
+
+% 动态定标截断
+function [dataout_sft_fix,factor_shift]=dynamic_truncation(datain,OW,varargin)
 
     datain_i = real(datain);
     datain_q = imag(datain);
@@ -596,22 +636,24 @@ function dataout_sft_fix=dynamic_truncation(datain,OW,varargin)
     dataout_sft = datain/2^factor_shift;
 
     if(nargin>2)
-        if(varargin{1}=="round")  
-            dataout_sft_fix = round(dataout_sft);
+        if(varargin{1}=="round")
+            truncation_mode = 'round';
         elseif(varargin{1}=="floor")  
-            dataout_sft_fix = floor(dataout_sft);
+            truncation_mode = 'floor';
         elseif(varargin{1}=="ceil")  
-            dataout_sft_fix = ceil(dataout_sft);
+            truncation_mode = 'ceil';
         elseif(varargin{1}=="fix")  
-            dataout_sft_fix = fix(dataout_sft);
+            truncation_mode = 'fix';
         end
     else
-        dataout_sft_fix = round(dataout_sft);
+        truncation_mode = 'round';
     end
 
-%     dataout_sft_fix = quantize(quantizer('fixed','round','saturate',[16,0]),datain/2^factor_shift);
-    
+    warning('off');
+    dataout_sft_fix = quantize(quantizer('fixed',truncation_mode,'saturate',[OW,0]),dataout_sft);
+    warning('on');
 end
+
 
 % 写仿真激励文件HEX
 function write2hex_fcn(desfile,WrData,BITW)

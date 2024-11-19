@@ -88,15 +88,15 @@ begin
     data_shift_i <= data_dly[2*IW-1:IW] << i_shift_num;
     data_shift_q <= data_dly[1*IW-1: 0] << i_shift_num;
 end
-//example
-//result bit[15]-bit[9]     
-//rounding off--bit[8]
-//16-7=9
+
 always@(posedge clk)
 begin
-    if(data_shift_i[IW-1] == 1'b0 && data_shift_i[IW-OW-1]) // pose
-        rounding_i <= 40'h00_0100_0000;
-    else if(data_shift_i[IW-1] == 1'b1 && data_shift_i[IW-OW-1] && (|data_shift_i[IW-OW-2:0]) ) // neg
+    if(data_shift_i[IW-1] == 1'b0 && data_shift_i[IW-OW-1])begin // pose
+        if(data_shift_i[IW-2:IW-OW]=={(OW-1){1'b1}}) // pos max
+            rounding_i <= 40'h00_0000_0000;
+        else
+            rounding_i <= 40'h00_0100_0000;
+    end else if(data_shift_i[IW-1] == 1'b1 && data_shift_i[IW-OW-1] && (|data_shift_i[IW-OW-2:0]) ) // neg
         rounding_i <= 40'h00_0100_0000;
     else
         rounding_i <= 40'h00_0000_0000;
@@ -104,9 +104,12 @@ end
 
 always@(posedge clk)
 begin          
-    if(data_shift_q[IW-1] == 1'b0 && data_shift_q[IW-OW-1]) // pose
-        rounding_q <= 40'h00_0100_0000;
-    else if(data_shift_q[IW-1] == 1'b1 && data_shift_q[IW-OW-1] && (|data_shift_q[IW-OW-2:0]) ) // neg
+    if(data_shift_q[IW-1] == 1'b0 && data_shift_q[IW-OW-1])begin // pose
+        if(data_shift_q[IW-2:IW-OW]=={(OW-1){1'b1}}) // pos max
+            rounding_q <= 40'h00_0000_0000;
+        else
+            rounding_q <= 40'h00_0100_0000;
+    end else if(data_shift_q[IW-1] == 1'b1 && data_shift_q[IW-OW-1] && (|data_shift_q[IW-OW-2:0]) ) // neg
         rounding_q <= 40'h00_0100_0000;
     else
         rounding_q <= 40'h00_0000_0000;

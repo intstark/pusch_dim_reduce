@@ -37,6 +37,14 @@ module beams_pick_top # (
     input                                           i_rbg_load              ,
 
     input                                           i_sym_1st               ,
+    
+    // input header info
+    input          [  63: 0]                        i_info_0                ,// IQ HD 
+    input          [  63: 0]                        i_info_1                ,// FFT AGC
+
+    // output header info
+    output         [  63: 0]                        o_info_0                ,// IQ HD 
+    output         [  63: 0]                        o_info_1                ,// FFT AGC
 
     output         [15:0][31: 0]                    o_sort_pwr              ,
     output         [15:0][RDATA_WIDTH-1: 0]         o_data_re               ,
@@ -66,8 +74,13 @@ beams_mem_pick # (
 
     .i_sort_idx                                         (i_sort_idx             ),
     .i_sort_sop                                         (i_sort_sop             ),
-
     .i_sym_1st                                          (i_sym_1st              ),
+
+    .i_info_0                                           (i_info_0               ),  // IQ HD
+    .i_info_1                                           (i_info_1               ),  // FFT AGC
+
+    .o_info_0                                           (o_info_0               ),  // IQ HD
+    .o_info_1                                           (o_info_1               ),  // FFT AGC
 
     .o_rd_data                                          (o_data_re              ),
     .o_rd_addr                                          (                       ),
@@ -91,8 +104,13 @@ beams_mem_pick # (
 
     .i_sort_idx                                         (i_sort_idx             ),
     .i_sort_sop                                         (i_sort_sop             ),
-
     .i_sym_1st                                          (i_sym_1st              ),
+
+    .i_info_0                                           (                       ),// IQ HD
+    .i_info_1                                           (                       ),// FFT AGC
+
+    .o_info_0                                           (                       ),// IQ HD
+    .o_info_1                                           (                       ),// FFT AGC
 
     .o_rd_data                                          (o_data_im              ),
     .o_rd_addr                                          (                       ),
@@ -114,17 +132,16 @@ register_shift # (
 );
 
 
-generate
-    for (genvar i = 0; i < 16; i++) begin : delay_match
-        register_shift #(
-            .WIDTH                                              (32                     ),
-            .DEPTH                                              (4                      ) 
-        )dly_sort_pwr(
-            .clk                                                (i_clk                  ),
-            .in                                                 (i_sort_pwr[i]          ),
-            .out                                                (o_sort_pwr[i]          ) 
-        );
-    end
+generate for (genvar i = 0; i < 16; i++) begin : delay_match
+    register_shift #(
+        .WIDTH                                              (32                     ),
+        .DEPTH                                              (4                      ) 
+    )dly_sort_pwr(
+        .clk                                                (i_clk                  ),
+        .in                                                 (i_sort_pwr[i]          ),
+        .out                                                (o_sort_pwr[i]          ) 
+    );
+end
 endgenerate
 
 

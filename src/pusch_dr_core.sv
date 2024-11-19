@@ -20,28 +20,40 @@
 module pusch_dr_core #(
     parameter integer LANE  =   8 
 )(
-    input                                           i_clk                   ,   // data clock
-    input                                           i_reset                 ,   // reset
+    input                                           i_clk                   ,// data clock
+    input                                           i_reset                 ,// reset
 
-    input          [   1: 0]                        i_rbg_size              ,   // default:2'b10 16rb
-    input                                           i_aiu_idx               ,   // default:0
+    input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
+    input          [   1: 0]                        i_dr_mode               ,// re-sort mode
 
     // header info
-    input          [LANE-1:0][63: 0]                i_info_0                ,   // IQ HD 
-    input          [LANE-1:0][63: 0]                i_info_1                ,   // FFT AGC
+    input          [   3: 0]                        i_pkg_type              ,
+    input          [   6: 0]                        i_slot_idx              ,
+    input          [   3: 0]                        i_symb_idx              ,
+    input                                           i_cell_idx              ,
+    input          [LANE-1:0][63: 0]                i_info_0                ,// IQ HD 
+    input          [LANE-1:0][63: 0]                i_info_1                ,// FFT AGC
 
     // cpri rxdata
-    input          [LANE-1:0][10: 0]                i_iq_addr               ,   // 4 ants iq addr
-    input          [LANE-1:0][4*32-1: 0]            i_iq_data               ,   // 4 ants iq data
-    input          [LANE-1: 0]                      i_iq_vld                ,   // 4 ants iq vld
-    input          [LANE-1: 0]                      i_iq_last               ,   // 4 ants iq last(132prb ends)
+    input          [LANE-1:0][10: 0]                i_iq_addr               ,// 4 ants iq addr
+    input          [LANE-1:0][4*32-1: 0]            i_iq_data               ,// 4 ants iq data
+    input          [LANE-1: 0]                      i_iq_vld                ,// 4 ants iq vld
+    input          [LANE-1: 0]                      i_iq_last               ,// 4 ants iq last(132prb ends)
 
     // output dr data
-    output         [3:0][31: 0]                     o_tx_data               ,
-    output                                          o_tx_vld                , 
-    output                                          o_tx_sop                ,
-    output                                          o_tx_eop                ,
-    output         [   8: 0]                        o_prb_idx               
+    output         [15:0][31: 0]                    o_beam_pwr              ,
+    output         [15:0][31: 0]                    o_dr_data               ,
+    output                                          o_dr_vld                , 
+    output                                          o_dr_sop                ,
+    output                                          o_dr_eop                ,
+    output                                          o_rbg_load              ,
+
+    output         [   3: 0]                        o_rbg_idx               ,// rbg index 
+    output         [   3: 0]                        o_pkg_type              ,// pusch:4'b1000 
+    output                                          o_cell_idx              ,// cell index
+    output         [   6: 0]                        o_slot_idx              ,// slot index 
+    output         [   3: 0]                        o_symb_idx              ,// symbol index 0-13
+    output         [  63: 0]                        o_fft_agc                // fft agc value 
 
 );
 
@@ -58,6 +70,10 @@ genvar gi;
 //------------------------------------------------------------------------------------------
 // RAM BLOCK FOR CPRI DATA FOR 7 SYMBOLS 
 //------------------------------------------------------------------------------------------
+wire           [LANE-1:0][63: 0]                ant_info_0              ;
+wire           [LANE-1:0][63: 0]                ant_info_1              ;
+wire           [LANE-1:0][ 6: 0]                ant_slot_idx            ;
+wire           [LANE-1:0][ 3: 0]                ant_symb_idx            ;
 wire           [LANE-1:0][4*32-1: 0]            ant_even                ;
 wire           [LANE-1:0][4*32-1: 0]            ant_odd                 ;
 wire           [LANE-1:0][11-1: 0]              ant_addr                ;
@@ -69,7 +85,8 @@ wire           [LANE-1: 0]                      ant_eop                 ;
 wire           [LANE*4*32-1: 0]                 ant_data_even           ;
 wire           [LANE*4*32-1: 0]                 ant_data_odd            ;
 
-
+wire           [63: 0]                          beams_info_0            ;
+wire           [63: 0]                          beams_info_1            ;
 wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_i            ;
 wire     signed[BEAM-1:0][OW-1: 0]              beams_ants_q            ;
 wire                                            beams_tvalid            ;
@@ -88,6 +105,8 @@ wire                                            beams_pick_sop          ;
 wire                                            beams_pick_eop          ;
 wire                                            beams_pick_load         ;
 wire           [BEAM-1:0][31: 0]                beams_pick_pwr          ;
+wire           [63: 0]                          beams_pick_info_0       ;
+wire           [63: 0]                          beams_pick_info_1       ;
 
 
 //------------------------------------------------------------------------------------------
@@ -102,17 +121,27 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: ant_data_buffer
         .RADDR_WIDTH                                        (11                     ),
         .READ_LATENCY                                       (3                      ),
         .FIFO_DEPTH                                         (16                     ),
-        .FIFO_WIDTH                                         (1                      ),
+        .FIFO_WIDTH                                         (128                    ),
         .LOOP_WIDTH                                         (12                     ),
-        .INFO_WIDTH                                         (1                      ),
+        .INFO_WIDTH                                         (128                    ),
         .RAM_TYPE                                           (1                      ) 
     )ant_data_buffer(
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
+
+        .i_info_0                                           (i_info_0      [gi]     ),  // IQ HD
+        .i_info_1                                           (i_info_1      [gi]     ),  // FFT AGC
+
         .i_iq_addr                                          (i_iq_addr     [gi]     ),
         .i_iq_data                                          (i_iq_data     [gi]     ),
         .i_iq_vld                                           (i_iq_vld      [gi]     ),
         .i_iq_last                                          (i_iq_last     [gi]     ),
+
+        .o_info_0                                           (ant_info_0    [gi]     ),  // IQ HD
+        .o_info_1                                           (ant_info_1    [gi]     ),  // FFT AGC
+        .o_slot_idx                                         (ant_slot_idx  [gi]     ),
+        .o_symb_idx                                         (ant_symb_idx  [gi]     ),
+
         .o_ant_even                                         (ant_even      [gi]     ),
         .o_ant_odd                                          (ant_odd       [gi]     ),
         .o_ant_addr                                         (ant_addr      [gi]     ),
@@ -121,7 +150,7 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: ant_data_buffer
         .o_tvalid                                           (ant_tvalid    [gi]     ) 
     );
 
-    // Get 32 ants data, one clock pipe
+    // arrange data for even and odd ants
     assign ant_data_even[gi*4*32 +: 4*32] = ant_even[gi];       
     assign ant_data_odd [gi*4*32 +: 4*32] = ant_odd [gi];
 
@@ -132,23 +161,24 @@ endgenerate
 // rbG number and re number
 //------------------------------------------------------------------------------------------
 reg                                             sym_is_1st            =1;
-reg            [   7: 0]                        ant_buffer_sym        =0;
+reg            [   3: 0]                        ant_buffer_sym        =0;
 
 wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
 
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
 
-wire                                            aiu_idx                 ;
+reg                                             aiu_idx               =0;
 reg            [   7: 0]                        re_num                =0;
 reg            [   7: 0]                        rbg_num               =0;
 reg            [   7: 0]                        re_num_per_rbg        =0;
 wire           [   7: 0]                        rbg_num_max             ;
 
-assign aiu_idx = i_aiu_idx;
 
 always @(posedge i_clk) begin
     if(i_reset)
+        ant_buffer_sym <= 'd0;
+    else if(ant_buffer_sym == 'd13 && ant_eop[0])
         ant_buffer_sym <= 'd0;
     else if(ant_eop[0])
         ant_buffer_sym <= ant_buffer_sym + 'd1;
@@ -157,7 +187,7 @@ end
 always @(posedge i_clk) begin
     if(i_reset)
         sym_is_1st <= 'd1;
-    else if(ant_buffer_sym < 8'd4)
+    else if(ant_symb_idx == 'd0)
         sym_is_1st <= 'd1;
     else
         sym_is_1st <= 'd0;
@@ -248,13 +278,21 @@ mac_beams #(
     .OW                                                 (OW                     ) 
 )mac_beams(
     .i_clk                                              (i_clk                  ),
-    .i_ants_data_even                                   (ant_data_even          ),
-    .i_ants_data_odd                                    (ant_data_odd           ),
+
     .i_rvalid                                           (ant_tvalid[0]          ),
     .i_sop                                              (ant_sop   [0]          ),
     .i_eop                                              (ant_eop   [0]          ),
+    
+    .i_ants_data_even                                   (ant_data_even          ),
+    .i_ants_data_odd                                    (ant_data_odd           ),
     .i_code_word_even                                   (code_word_even         ),
     .i_code_word_odd                                    (code_word_odd          ),
+
+    .i_info_0                                           (ant_info_0[0]          ),  // IQ HD
+    .i_info_1                                           (ant_info_1[0]          ),  // FFT AGC
+
+    .o_info_0                                           (beams_info_0           ),  // IQ HD
+    .o_info_1                                           (beams_info_1           ),  // FFT AGC
     .o_data_even_i                                      (                       ),
     .o_data_even_q                                      (                       ),
     .o_data_odd_i                                       (                       ),
@@ -382,6 +420,11 @@ beams_pick_top # (
     .i_rbg_load                                         (beam_sort_load         ),
     .i_sym_1st                                          (sym_is_1st             ),
 
+    .i_info_0                                           (beams_info_0           ),  // IQ HD
+    .i_info_1                                           (beams_info_1           ),  // FFT AGC
+
+    .o_info_0                                           (beams_pick_info_0      ),  // IQ HD
+    .o_info_1                                           (beams_pick_info_1      ),  // FFT AGC
     .o_sort_pwr                                         (beams_pick_pwr         ),
     .o_data_re                                          (beams_pick_i           ),
     .o_data_im                                          (beams_pick_q           ),
@@ -399,10 +442,14 @@ wire           [15:0][15: 0]                    dr_data_im              ;
 wire                                            dr_vld                  ;
 wire                                            dr_sop                  ;
 wire                                            dr_eop                  ;
-wire           [   8: 0]                        dr_prb_idx              ;
 wire                                            dr_rbg_load             ;
 wire           [BEAM-1:0][31: 0]                dr_beam_pwr             ;
-
+wire           [   3: 0]                        dr_rbg_idx              ;
+wire           [   3: 0]                        dr_pkg_type             ;
+wire                                            dr_cell_idx             ;
+wire           [   6: 0]                        dr_slot_idx             ;
+wire           [   3: 0]                        dr_symb_idx             ;
+wire           [  63: 0]                        dr_fft_agc              ;
 
 compress_matrix #(
     .IW                                                 (OW                     ),
@@ -421,11 +468,9 @@ compress_matrix #(
     .i_rbg_load                                         (beams_pick_load        ),
     .i_beam_pwr                                         (beams_pick_pwr         ),
 
-    .i_slot_idx                                         (                       ),
-    .i_symb_idx                                         (                       ),
-    .i_prb_idx                                          (                       ),
-    .i_ch_type                                          (                       ),
-    .i_info                                             (                       ),
+    .i_info_0                                           (beams_pick_info_0      ),
+    .i_info_1                                           (beams_pick_info_1      ),
+
     .o_sel                                              (                       ),
     .o_sop                                              (dr_sop                 ),
     .o_eop                                              (dr_eop                 ),
@@ -435,36 +480,34 @@ compress_matrix #(
     .o_shift                                            (                       ),
     .o_rbg_load                                         (dr_rbg_load            ),
     .o_beam_pwr                                         (dr_beam_pwr            ),
-    .o_slot_idx                                         (                       ),
-    .o_symb_idx                                         (                       ),
-    .o_prb_idx                                          (                       ),
-    .o_type                                             (                       ),
-    .o_info                                             (                       ) 
+
+    .o_rbg_idx                                          (dr_rbg_idx             ),
+    .o_pkg_type                                         (dr_pkg_type            ),
+    .o_cell_idx                                         (dr_cell_idx            ),
+    .o_slot_idx                                         (dr_slot_idx            ),
+    .o_symb_idx                                         (dr_symb_idx            ),
+    .o_fft_agc                                          (dr_fft_agc             ) 
 );
 
 //------------------------------------------------------------------------------------------
 // store 16 beams data, output 4 beams data 
 // -----------------------------------------------------------------------------------------
-wire           [15:0][31: 0]                    dr_data_iq              ;
 for(genvar i=0;i<16;i++)begin: gen_dr_data_iq
-    assign dr_data_iq[i] = {dr_data_re[i],dr_data_im[i]};
+    assign o_dr_data[i] = {dr_data_re[i],dr_data_im[i]};
 end
 
-dr_data_buffer                                          dr_data_buffer(
-    .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
-    .i_rx_data                                          (dr_data_iq             ),
-    .i_rx_vld                                           (dr_vld                 ),
-    .i_rx_sop                                           (dr_sop                 ),
-    .i_rx_eop                                           (dr_eop                 ),
-    .i_rready                                           (1'b1                   ),
-    .o_tx_data                                          (o_tx_data              ),
-    .o_tx_vld                                           (o_tx_vld               ),
-    .o_tx_sop                                           (o_tx_sop               ),
-    .o_tx_eop                                           (o_tx_eop               ),
-    .o_prb_idx                                          (o_prb_idx              )
-);
+assign o_beam_pwr = dr_beam_pwr;
+assign o_dr_sop   = dr_sop;
+assign o_dr_eop   = dr_eop;
+assign o_dr_vld   = dr_vld;
+assign o_rbg_load = dr_rbg_load;
 
+assign o_rbg_idx  = dr_rbg_idx;
+assign o_pkg_type = dr_pkg_type;
+assign o_cell_idx = dr_cell_idx;
+assign o_slot_idx = dr_slot_idx;
+assign o_symb_idx = dr_symb_idx;
+assign o_fft_agc  = dr_fft_agc;
 
 
 endmodule

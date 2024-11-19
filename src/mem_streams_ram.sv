@@ -76,6 +76,7 @@ assign rvld_neg = ~i_rvalid & (rvalid_r[0]);
 // generate blocks write enable signal
 //--------------------------------------------------------------------------------------
 reg            [RADDR_WIDTH-1: 0]               rd_addr_syn           =0;
+reg            [RADDR_WIDTH-1: 0]               addr_out              =0;
 wire           [CHANNELS-1: 0]                  data_vld                ;
 wire           [CHANNELS-1: 0]                  rd_empty                ;
 wire           [CHANNELS-1: 0]                  wr_full                 ;
@@ -149,9 +150,16 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // output valid signal
 //--------------------------------------------------------------------------------------
+always @(posedge i_clk) begin
+    if(i_rd_ren)
+        addr_out <= rd_addr_syn;
+    else
+        addr_out <= addr_out;
+end
 
-assign o_tvalid = data_vld[0];
+assign o_tvalid  = data_vld[0];
 assign o_rd_data = rd_data;
+assign o_rd_addr = addr_out;
 
 
 

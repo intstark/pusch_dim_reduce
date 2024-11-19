@@ -57,15 +57,13 @@ module package_data
     input   wire  [7:0]     i_pkg3_info       ,
     input   wire  [13:0]    i_pkg3_data       ,
     input   wire  [3:0]     i_pkg3_shift      ,      
+
+    input   wire  [3:0]     i_rbg_idx         ,      
     
-    input   wire  [31:0]    i_pkg0_power      ,
-    input   wire  [31:0]    i_pkg1_power      ,
-    input   wire  [31:0]    i_pkg2_power      ,
-    input   wire  [31:0]    i_pkg3_power      ,
-    input   wire  [31:0]    i_pkg4_power      ,
-    input   wire  [31:0]    i_pkg5_power      ,
-    input   wire  [31:0]    i_pkg6_power      ,
-    input   wire  [31:0]    i_pkg7_power      ,
+    input   wire  [63:0]    i_pkg0_power      ,
+    input   wire  [63:0]    i_pkg1_power      ,
+    input   wire  [63:0]    i_pkg2_power      ,
+    input   wire  [63:0]    i_pkg3_power      ,
 
     output  reg             o_cpri_wen        ,
     output  reg   [6:0]     o_cpri_waddr      ,
@@ -81,7 +79,7 @@ module package_data
     localparam  READ_LATENCY       =  3    ;
     localparam  FIFO_DEPTH         =  16   ;
     localparam  FIFO_WIDTH         =  256  ;
-    localparam  LOOP_WIDTH         =  8    ;
+    localparam  LOOP_WIDTH         =  9    ;
     localparam  INFO_WIDTH         =  256  ;
     localparam  RAM_TYPE           =  1    ;
 
@@ -93,23 +91,28 @@ reg  [6:0]   pkg_waddr;
 reg  [63:0]  pkg_head=0;
 reg  [63:0]  pkg_info=0;
 reg  [31:0]  ant0_shift,ant1_shift,ant2_shift,ant3_shift;
-wire         pkg_last;
+reg          pkg_last;
 reg  [6:0]   pkg_raddr;
 wire [63:0]  pkg_rdata;
+wire [255:0] wr_power ;
+wire [255:0] rd_power ;
+reg  [255:0] cpri_power =0;
 wire         pkg_rvld;
-reg          pkg_rvld_d1,pkg_rvld_d2,pkg_rvld_d3,pkg_rvld_d4;
-wire         pkg_rdy;
+reg          pkg_rvld_d1,pkg_rvld_d2,pkg_rvld_d3;
+reg          pkg_rdy;
 reg          pkg_rdy_d0,pkg_rdy_d1,pkg_rdy_d2,pkg_rdy_d3;
 wire [255:0] pkg_rinfo;
 reg  [63:0]  cpri_head0,cpri_head1,cpri_head2,cpri_head3;
-reg  [2:0]   re_cnt,re_cnt_d1,re_cnt_d2,re_cnt_d3,re_cnt_d4;
-reg  [3:0]   group_cnt,group_cnt_d1,group_cnt_d2,group_cnt_d3,group_cnt_d4;
+reg  [2:0]   re_cnt,re_cnt_d1,re_cnt_d2,re_cnt_d3;
+reg  [3:0]   group_cnt,group_cnt_d1,group_cnt_d2,group_cnt_d3;
 wire [13:0]  a0_data,a1_data,a2_data,a3_data;
 reg  [13:0]  a0_data_d1,a1_data_d1,a2_data_d1,a3_data_d1;
 reg  [15:0]  a0_pkg_data,a1_pkg_data,a2_pkg_data,a3_pkg_data;
 reg  [6:0]   cpri_waddr;
-wire         [LOOP_WIDTH-WADDR_WIDTH:0] free_size;
-
+wire         [LOOP_WIDTH-WADDR_WIDTH:0] free_size;     
+reg          pkg_rvld_d4_1,pkg_rvld_d4_2 /*synthesis preserve*/;
+reg  [2:0]   re_cnt_d4_1,re_cnt_d4_2 /*synthesis preserve*/;
+reg  [3:0]   group_cnt_d4_1,group_cnt_d4_2 /*synthesis preserve*/;
 
 //-----------------------------------------------------------------------------
 
@@ -137,14 +140,14 @@ always @ (posedge clk)
 //--common
 always @ (posedge clk)
     begin
-        if(i_vld  && (pkg_sel_1 == 3'd0))//
+        if(i_sop  && (pkg_sel_1 == 3'd0))//
           begin
-            pkg_head[63:36]    <= {24'd0,i_pkg0_ch_type};
+            pkg_head[39:36]    <= {i_pkg0_ch_type};
             pkg_head[19:8]     <= {i_pkg0_cell_idx,i_pkg0_slot_idx,i_pkg0_sym_idx};
           end  
         else
           begin        
-            pkg_head[63:36]    <= pkg_head[63:36] ;
+            pkg_head[39:36]    <= pkg_head[39:36] ;
             pkg_head[19:8]     <= pkg_head[19:8]  ;    
           end                                      
     end
@@ -152,13 +155,15 @@ always @ (posedge clk)
 //--group-0-prb_idx    
 always @ (posedge clk)
     begin
-        if(i_sop && i_vld  && (pkg_sel_1 == 3'd0))//
+        if(i_sop  && (pkg_sel_1 == 3'd0))//
           begin         
+            pkg_head[48:40]  <= {i_rbg_idx,5'd0};
             pkg_head[35:28]  <= {i_pkg0_prb_idx};
             pkg_head[7:4]    <= i_pkg0_info[7:4];
           end  
         else 
           begin        
+            pkg_head[48:40]  <= pkg_head[48:40];
             pkg_head[35:28]  <= pkg_head[35:28];
             pkg_head[7:4]    <= pkg_head[7:4];            
           end  
@@ -168,19 +173,41 @@ always @ (posedge clk)
 //--group-1-prb_idx      
 always @ (posedge clk)
     begin
-        if(i_sop && i_vld  && (pkg_sel_1 ==3'd4))//
+        if(i_sop  && (pkg_sel_1 ==3'd4))//
           begin         
+            pkg_head[63:49]  <= {11'd0,i_rbg_idx};
             pkg_head[27:20]  <= {i_pkg0_prb_idx};
             pkg_head[3:0]    <= i_pkg0_info[7:4];            
           end  
         else
           begin        
+            pkg_head[63:49]  <= pkg_head[63:49];
             pkg_head[27:20]  <= pkg_head[27:20];
             pkg_head[3:0]    <= pkg_head[3:0] ;            
           end  
     end        
     
-    
+// ant power
+reg            [  63: 0]                        pkg0_power            =0;
+reg            [  63: 0]                        pkg1_power            =0;
+reg            [  63: 0]                        pkg2_power            =0;
+reg            [  63: 0]                        pkg3_power            =0;
+always @ (posedge clk)
+begin
+    if(i_sop && i_vld  && (pkg_sel_1 ==3'd0))begin         
+        pkg0_power <= i_pkg0_power;
+        pkg1_power <= i_pkg1_power;
+        pkg2_power <= i_pkg2_power;
+        pkg3_power <= i_pkg3_power;
+    end else begin        
+        pkg0_power <= pkg0_power;
+        pkg1_power <= pkg1_power;
+        pkg2_power <= pkg2_power;
+        pkg3_power <= pkg3_power;
+    end  
+end    
+
+assign wr_power = {pkg3_power, pkg2_power, pkg1_power, pkg0_power};
     
 //--info null
 //always @ (posedge clk)
@@ -195,57 +222,48 @@ always @ (posedge clk)
 //--0
 always @ (posedge clk)
     begin
-        case( {pkg_sel_1[2] , i_pkg0_prb_idx[1:0]})
+        case( {pkg_sel_1[2],i_pkg0_prb_idx[1:0]})
             {1'd0,2'd0}    : ant0_shift[3:0]   <= i_pkg0_shift;
             {1'd0,2'd1}    : ant0_shift[7:4]   <= i_pkg0_shift;
             {1'd0,2'd2}    : ant0_shift[11:8]  <= i_pkg0_shift;
             {1'd0,2'd3}    : ant0_shift[15:12] <= i_pkg0_shift;           
+            default        : ant0_shift[15:0]  <= ant0_shift[15:0];
+        endcase
+    end
+
+always @ (posedge clk)
+    begin
+        case({pkg_sel_1[2] , i_pkg0_prb_idx[1:0]})
             {1'd1,2'd0}    : ant0_shift[19:16] <= i_pkg0_shift;
             {1'd1,2'd1}    : ant0_shift[23:20] <= i_pkg0_shift;
             {1'd1,2'd2}    : ant0_shift[27:24] <= i_pkg0_shift;
             {1'd1,2'd3}    : ant0_shift[31:28] <= i_pkg0_shift;
-            default        : ant0_shift[31:0]  <= 32'd0;
+            default        : ant0_shift[31:16] <= ant0_shift[31:16];
         endcase
     end
-
-//always @ (posedge clk)
-//    begin
-//        case({pkg_sel_1[2] , i_pkg0_prb_idx[1:0]})
-//            {1'd1,2'd0}    : ant0_shift[19:16] <= i_pkg0_shift;
-//            {1'd1,2'd1}    : ant0_shift[23:20] <= i_pkg0_shift;
-//            {1'd1,2'd2}    : ant0_shift[27:24] <= i_pkg0_shift;
-//            {1'd1,2'd3}    : ant0_shift[31:28] <= i_pkg0_shift;
-//            default        : ant0_shift[31:16] <= 16'd0;
-//        endcase
-//    end
     
 //--1
-
 always @ (posedge clk)
     begin
-        case( {pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
+        case({pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
             {1'd0,2'd0}    : ant1_shift[3:0]   <= i_pkg1_shift;
             {1'd0,2'd1}    : ant1_shift[7:4]   <= i_pkg1_shift;
             {1'd0,2'd2}    : ant1_shift[11:8]  <= i_pkg1_shift;
             {1'd0,2'd3}    : ant1_shift[15:12] <= i_pkg1_shift;           
+            default        : ant1_shift[15:0]  <= ant1_shift[15:0];
+        endcase
+    end
+
+always @ (posedge clk)
+    begin
+        case({pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
             {1'd1,2'd0}    : ant1_shift[19:16] <= i_pkg1_shift;
             {1'd1,2'd1}    : ant1_shift[23:20] <= i_pkg1_shift;
             {1'd1,2'd2}    : ant1_shift[27:24] <= i_pkg1_shift;
             {1'd1,2'd3}    : ant1_shift[31:28] <= i_pkg1_shift;
-            default        : ant1_shift[31:0]  <= 32'd0;
+            default        : ant1_shift[31:16] <= ant1_shift[31:16];
         endcase
     end
-
-//always @ (posedge clk)
-//    begin
-//        case({pkg_sel_1[2] , i_pkg1_prb_idx[1:0]})
-//            {1'd1,2'd0}    : ant1_shift[19:16] <= i_pkg1_shift;
-//            {1'd1,2'd1}    : ant1_shift[23:20] <= i_pkg1_shift;
-//            {1'd1,2'd2}    : ant1_shift[27:24] <= i_pkg1_shift;
-//            {1'd1,2'd3}    : ant1_shift[31:28] <= i_pkg1_shift;
-//            default        : ant1_shift[31:16] <= 16'd0;
-//        endcase
-//    end
 
 //--2
 always @ (posedge clk)
@@ -255,24 +273,20 @@ always @ (posedge clk)
             {1'd0,2'd1}    : ant2_shift[7:4]   <= i_pkg2_shift;
             {1'd0,2'd2}    : ant2_shift[11:8]  <= i_pkg2_shift;
             {1'd0,2'd3}    : ant2_shift[15:12] <= i_pkg2_shift;           
+            default        : ant2_shift[15:0]  <= ant2_shift[15:0];
+        endcase
+    end
+
+always @ (posedge clk)
+    begin
+        case({pkg_sel_1[2] , i_pkg2_prb_idx[1:0]})
             {1'd1,2'd0}    : ant2_shift[19:16] <= i_pkg2_shift;
             {1'd1,2'd1}    : ant2_shift[23:20] <= i_pkg2_shift;
             {1'd1,2'd2}    : ant2_shift[27:24] <= i_pkg2_shift;
             {1'd1,2'd3}    : ant2_shift[31:28] <= i_pkg2_shift;
-            default        : ant2_shift[31:0]  <= 32'd0;
+            default        : ant2_shift[31:16] <= ant2_shift[31:16];
         endcase
     end
-
-//always @ (posedge clk)
-//    begin
-//        case({pkg_sel_1[2] , i_pkg2_prb_idx[1:0]})
-//            {1'd1,2'd0}    : ant2_shift[19:16] <= i_pkg2_shift;
-//            {1'd1,2'd1}    : ant2_shift[23:20] <= i_pkg2_shift;
-//            {1'd1,2'd2}    : ant2_shift[27:24] <= i_pkg2_shift;
-//            {1'd1,2'd3}    : ant2_shift[31:28] <= i_pkg2_shift;
-//            default        : ant2_shift[31:16] <= 16'd0;
-//        endcase
-//    end
 
 //--3
 always @ (posedge clk)
@@ -282,24 +296,20 @@ always @ (posedge clk)
             {1'd0,2'd1}    : ant3_shift[7:4]   <= i_pkg3_shift;
             {1'd0,2'd2}    : ant3_shift[11:8]  <= i_pkg3_shift;
             {1'd0,2'd3}    : ant3_shift[15:12] <= i_pkg3_shift;           
+            default        : ant3_shift[15:0]  <= ant3_shift[15:0];
+        endcase
+    end
+
+always @ (posedge clk)
+    begin
+        case({pkg_sel_1[2] , i_pkg3_prb_idx[1:0]})
             {1'd1,2'd0}    : ant3_shift[19:16] <= i_pkg3_shift;
             {1'd1,2'd1}    : ant3_shift[23:20] <= i_pkg3_shift;
             {1'd1,2'd2}    : ant3_shift[27:24] <= i_pkg3_shift;
             {1'd1,2'd3}    : ant3_shift[31:28] <= i_pkg3_shift;
-            default        : ant3_shift[31:0]  <= 32'd0;
+            default        : ant3_shift[31:16] <= ant3_shift[31:16];
         endcase
     end
-
-//always @ (posedge clk)
-//    begin
-//        case({pkg_sel_1[2] , i_pkg3_prb_idx[1:0]})
-//            {1'd1,2'd0}    : ant3_shift[19:16] <= i_pkg3_shift;
-//            {1'd1,2'd1}    : ant3_shift[23:20] <= i_pkg3_shift;
-//            {1'd1,2'd2}    : ant3_shift[27:24] <= i_pkg3_shift;
-//            {1'd1,2'd3}    : ant3_shift[31:28] <= i_pkg3_shift;
-//            default        : ant3_shift[31:16] <= 16'd0;
-//        endcase
-//    end
 
 
 //-----------------------------------------------------------------------------
@@ -318,12 +328,16 @@ always @ (posedge clk)
             pkg_waddr <= pkg_waddr;    
     end
 
-
+always @ (posedge clk)
+ if (pkg_waddr == 7'd94)
+       pkg_last <= 1'd1;  
+ else
+       pkg_last <= 1'd0; 
                         
-assign pkg_last = (i_vld && i_eop && (pkg_waddr == 7'd95))? 1'd1 : 1'd0;
-
+//assign pkg_last = (i_vld && i_eop && (pkg_waddr == 7'd95))? 1'd1 : 1'd0;
 
 loop_buffer_sync_intel #
+//loop_buffer_sync #
 (
     .WDATA_WIDTH                (WDATA_WIDTH                                                   ),
     .WADDR_WIDTH                (WADDR_WIDTH                                                   ),
@@ -351,13 +365,55 @@ loop_buffer_sync_intel #
     .rd_info                    (pkg_rinfo                                                     ),
     .rd_rdy                     (pkg_rdy                                                       )
 );
+
+
+
+loop_buffer_sync_intel #
+(
+    .WDATA_WIDTH                                        (256                    ),
+    .WADDR_WIDTH                                        (WADDR_WIDTH            ),
+    .RDATA_WIDTH                                        (256                    ),
+    .RADDR_WIDTH                                        (RADDR_WIDTH            ),
+    .READ_LATENCY                                       (READ_LATENCY           ),
+    .FIFO_DEPTH                                         (FIFO_DEPTH             ),
+    .FIFO_WIDTH                                         (1                      ),
+    .LOOP_WIDTH                                         (LOOP_WIDTH             ),
+    .INFO_WIDTH                                         (1                      ),
+    .RAM_TYPE                                           (RAM_TYPE               ) 
+)u_pwr_ram
+(
+    .syn_rst                                            (rst                    ),
+    .clk                                                (clk                    ),
+    .wr_wen                                             (i_vld                  ),
+    .wr_addr                                            (pkg_waddr              ),
+    .wr_data                                            (wr_power               ),
+    .wr_wlast                                           (pkg_last               ),
+    .wr_info                                            (pkg_last               ),
+    .free_size                                          (                       ),
+    .rd_addr                                            (pkg_raddr              ),
+    .rd_data                                            (rd_power               ),
+    .rd_vld                                             (                       ),
+    .rd_info                                            (                       ),
+    .rd_rdy                                             (pkg_rdy                ) 
+);
+
+always @ (posedge clk)
+    begin
+        if(pkg_rvld)
+            cpri_power <= rd_power[63:0];
+        else
+            cpri_power <= 256'd0;    
+    end 
+
+
 //-----------------------------------------------------------------------------
 always @ (posedge clk)
     begin
-        pkg_rvld_d1 <= pkg_rvld;
-        pkg_rvld_d2 <= pkg_rvld_d1;
-        pkg_rvld_d3 <= pkg_rvld_d2;
-        pkg_rvld_d4 <= pkg_rvld_d3;
+        pkg_rvld_d1   <= pkg_rvld;
+        pkg_rvld_d2   <= pkg_rvld_d1;
+        pkg_rvld_d3   <= pkg_rvld_d2;
+        pkg_rvld_d4_1 <= pkg_rvld_d3;
+        pkg_rvld_d4_2 <= pkg_rvld_d3;
     end
 
 always @ (posedge clk)
@@ -372,8 +428,13 @@ always @ (posedge clk)
         else
             pkg_raddr <= 7'd0;
     end
+    
+always @ (posedge clk)
+ if (pkg_rvld && (pkg_raddr == 7'd94))
+       pkg_rdy <= 1'd1;  
+ else
+       pkg_rdy <= 1'd0;    
 
-assign pkg_rdy = (pkg_rvld && (pkg_raddr == 7'd95))? 1'd1 : 1'd0;
 
 always @ (posedge clk)
     begin
@@ -429,10 +490,11 @@ always @ (posedge clk)
 
 always @ (posedge clk)
     begin
-        re_cnt_d1 <= re_cnt;
-        re_cnt_d2 <= re_cnt_d1;
-        re_cnt_d3 <= re_cnt_d2;
-        re_cnt_d4 <= re_cnt_d3;
+        re_cnt_d1  <= re_cnt;
+        re_cnt_d2  <= re_cnt_d1;
+        re_cnt_d3  <= re_cnt_d2;
+        re_cnt_d4_1 <= re_cnt_d3;
+        re_cnt_d4_2 <= re_cnt_d3;
     end
 //12group*8=96DW
 
@@ -460,11 +522,13 @@ always @ (posedge clk)
 //-----------------------------------------------------------------------------
 always @ (posedge clk)
     begin
-        group_cnt_d1 <= group_cnt;
-        group_cnt_d2 <= group_cnt_d1;
-        group_cnt_d3 <= group_cnt_d2;
-        group_cnt_d4 <= group_cnt_d3;
+        group_cnt_d1   <= group_cnt;
+        group_cnt_d2   <= group_cnt_d1;
+        group_cnt_d3   <= group_cnt_d2;
+        group_cnt_d4_1 <= group_cnt_d3;
+        group_cnt_d4_2 <= group_cnt_d3;
     end
+  
   
 
 
@@ -557,12 +621,12 @@ always @ (posedge clk)
             a3_pkg_data <= 16'd0;
     end 
 //-----------------------------------------------------------------------------
-//group_cnt=12group  group_cnt_d4[1:0]=12/4=3cycle
+//group_cnt=12group  group_cnt_d4_1[1:0]=12/4=3cycle
       
 always @ (posedge clk)
     begin
-        if( pkg_rvld_d4 )
-//        if(pkg_rvld_d4 && ((re_cnt_d4 != 3'd0) || (group_cnt_d4[1:0] != 2'd0)))
+        if( pkg_rvld_d4_1 )
+//        if(pkg_rvld_d4_1 && ((re_cnt_d4_1 != 3'd0) || (group_cnt_d4_1[1:0] != 2'd0)))
             o_cpri_wen <= 1'd1;           
         else
             o_cpri_wen <= 1'd0;//96DW-3cycle=93DW
@@ -573,9 +637,9 @@ always @ (posedge clk)
 //3-86=84num
 always @ (posedge clk)
     begin
-        if(pkg_rvld_d4)
+        if(pkg_rvld_d4_1)
             begin
-                if(re_cnt_d4 != 3'd0)
+                if(re_cnt_d4_1 != 3'd0)
                     begin
                         if(cpri_waddr == 7'd90)
                             cpri_waddr <= 7'd7;
@@ -592,9 +656,9 @@ always @ (posedge clk)
 //address 0 write twice
 always @ (posedge clk)
     begin
-        if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0))
-            case(group_cnt_d4)
-// group_cnt_d4 0--11           
+        if(pkg_rvld_d4_1 && (re_cnt_d4_1 == 3'd0))
+            case(group_cnt_d4_1)
+// group_cnt_d4_1 0--11           
                 4'd0    : o_cpri_waddr <= 7'd0;
                 4'd1    : o_cpri_waddr <= 7'd1;
                 4'd2    : o_cpri_waddr <= 7'd2;
@@ -617,32 +681,23 @@ always @ (posedge clk)
     begin
 
                             
-        if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd3))
+        if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd3))
             o_cpri_wdata <= cpri_head0;
-        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd4))
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd4))
             o_cpri_wdata <= cpri_head1;
-        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd5))
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd5))
             o_cpri_wdata <= cpri_head2; 
-        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd6))
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd6))
             o_cpri_wdata <= cpri_head3;  
-//for test            
-//        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd0))
-//            o_cpri_wdata <= 64'd5;
-//        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd1))
-//            o_cpri_wdata <= 64'd6;            
-//        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd2))
-//            o_cpri_wdata <= 64'd7; 
-//        else if(pkg_rvld_d4 && (re_cnt_d4 == 3'd0) && (group_cnt_d4 == 4'd11))
-//            o_cpri_wdata <= 64'd11;                            
-        else if(pkg_rvld_d4 && (group_cnt_d4 == 4'd7))
-            o_cpri_wdata <= 64'd91;  
-        else if(pkg_rvld_d4 && (group_cnt_d4 == 4'd8))
-            o_cpri_wdata <= 64'd92;  
-        else if(pkg_rvld_d4 && (group_cnt_d4 == 4'd9))
-            o_cpri_wdata <= 64'd93;  
-        else if(pkg_rvld_d4 && (group_cnt_d4 == 4'd10))
-            o_cpri_wdata <= 64'd94;  
-        else if(pkg_rvld_d4 && (group_cnt_d4 == 4'd11))
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd7))
+            o_cpri_wdata <= cpri_power[64*0 +: 64];
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd8))
+            o_cpri_wdata <= cpri_power[64*1 +: 64];
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd9))
+            o_cpri_wdata <= cpri_power[64*2 +: 64];
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd10))
+            o_cpri_wdata <= cpri_power[64*3 +: 64];
+        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd11))
             o_cpri_wdata <= 64'd95;  
         else
             o_cpri_wdata <= {a3_pkg_data,a2_pkg_data,a1_pkg_data,a0_pkg_data};

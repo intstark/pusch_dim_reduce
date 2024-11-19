@@ -33,8 +33,16 @@ module beams_mem_pick # (
 
     input          [15:0][7: 0]                     i_sort_idx              ,
     input                                           i_sort_sop              ,
-
     input                                           i_sym_1st               ,
+    
+    // input header info
+    input          [  63: 0]                        i_info_0                ,// IQ HD 
+    input          [  63: 0]                        i_info_1                ,// FFT AGC
+
+    // output header info
+    output         [  63: 0]                        o_info_0                ,// IQ HD 
+    output         [  63: 0]                        o_info_1                ,// FFT AGC
+
 
     output         [15:0][RDATA_WIDTH-1: 0]         o_rd_data               ,
     output         [RADDR_WIDTH-1: 0]               o_rd_addr               ,
@@ -87,7 +95,10 @@ reg            [15:0][WDATA_WIDTH-1: 0]         data_out              =0;
 reg                                             sym_is_1st            =0;
 reg            [   2: 0]                        rd_last_buf           =0;
 wire                                            rd_last                 ;
-
+reg            [63: 0]                          symb1_info_0          =0;
+reg            [63: 0]                          symb1_info_1          =0;
+reg            [63: 0]                          dout_info_0           =0;
+reg            [63: 0]                          dout_info_1           =0;
 
 //--------------------------------------------------------------------------------------
 // generate data block number due to cutting data into 4 blocks 
@@ -364,9 +375,34 @@ always @(posedge i_clk) begin
         sop_out <= rvld_pos;
 end
 
+always @(posedge i_clk) begin
+    if(i_reset)begin
+        symb1_info_0 <= 'd0;
+        symb1_info_1 <= 'd0;
+    end else if(rd_rden_buf[1] & (~rd_rden_buf[2]))begin
+        symb1_info_0 <= i_info_0;
+        symb1_info_1 <= i_info_1;
+    end
+end
+
+always @ (posedge i_clk)begin
+    if(sym_is_1st)begin
+        dout_info_0 <= symb1_info_0;
+        dout_info_1 <= symb1_info_1;
+    end else begin
+        dout_info_0 <= i_info_0;
+        dout_info_1 <= i_info_1;
+    end
+end	
+
+
+
+
 assign o_tvalid     = tvalid;
 assign o_sop        = sop_out;
 assign o_eop        = eop_out;
 assign o_rd_data    = data_out;
+assign o_info_0     = dout_info_0;
+assign o_info_1     = dout_info_1;
 
 endmodule

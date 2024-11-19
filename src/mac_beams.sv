@@ -26,14 +26,22 @@ module mac_beams #(
 )(
     input                                           i_clk                   ,
 
-    input          [ANT*IW-1: 0]                    i_ants_data_even        ,
-    input          [ANT*IW-1: 0]                    i_ants_data_odd         ,
     input                                           i_rvalid                ,
     input                                           i_sop                   ,
     input                                           i_eop                   ,
 
+    input          [ANT*IW-1: 0]                    i_ants_data_even        ,
+    input          [ANT*IW-1: 0]                    i_ants_data_odd         ,
     input          [BEAM-1:0][ANT*IW-1: 0]          i_code_word_even        ,
     input          [BEAM-1:0][ANT*IW-1: 0]          i_code_word_odd         ,
+    
+    // input header info
+    input          [  63: 0]                        i_info_0                ,// IQ HD 
+    input          [  63: 0]                        i_info_1                ,// FFT AGC
+
+    // output header info
+    output         [  63: 0]                        o_info_0                ,// IQ HD 
+    output         [  63: 0]                        o_info_1                ,// FFT AGC
 
     // debug
     output         [BEAM-1:0][OW-1: 0]              o_data_even_i           ,
@@ -188,6 +196,10 @@ end
 //--------------------------------------------------------------------------------------
 // OUTPUT 
 //--------------------------------------------------------------------------------------
+reg            [63:0]                           dout_info0 [14:0]     ='{default:0};
+reg            [63:0]                           dout_info1 [14:0]     ='{default:0};
+
+
 always @(posedge i_clk) begin
     for(int k=0; k<BEAM; k++)begin:output_even_sum
         ants_even_re[k] <= even_ants_re[k];
@@ -208,6 +220,16 @@ always @(posedge i_clk) begin
     eop_out <= even_eop[0];
 end
 
+always @(posedge i_clk) begin
+    dout_info0[0] <= i_info_0;
+    dout_info1[0] <= i_info_1;
+    for(int i=1; i<15; i++)begin
+        dout_info0[i] <= dout_info0[i-1];
+        dout_info1[i] <= dout_info1[i-1];
+    end
+end
+
+
 
 assign o_data_even_i    = ants_even_re;
 assign o_data_even_q    = ants_even_im;
@@ -218,6 +240,9 @@ assign o_data_q         = ants_sum_im ;
 assign o_tvalid         = tvalid_buf[0];
 assign o_sop            = sop_out;
 assign o_eop            = eop_out;
+
+assign o_info_0         = dout_info0[12];
+assign o_info_1         = dout_info1[12];
 
 
 endmodule

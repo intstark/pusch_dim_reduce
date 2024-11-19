@@ -65,7 +65,7 @@ begin
    	        if(!i_din[31])
 	        	abs_i <= i_din[31:16];
    	        else
-	        	abs_i <= ~i_din[31:16];
+	        	abs_i <= ~i_din[31:16]+'d1;
         end
     else
        abs_i <= 16'b0;
@@ -78,7 +78,7 @@ begin
 	        if(!i_din[15])
 	        	abs_q <= i_din[15:0];
             else
-            abs_q <= ~i_din[15:0];  
+            abs_q <= ~i_din[15:0]+'d1;  
         end
     else
         abs_q <= 16'b0;
@@ -185,18 +185,38 @@ end
 //16-7=9
 always@(posedge clk)
 begin
-    if(data_shift_i[15-1:(15-Num+1)] == {1'b1,1'b1,{(Num-3){1'b1}}})
-        rounding_i <= 16'h0000;
+    if(data_shift_i[15] == 1'b0 && data_shift_i[15-Num])begin// pose
+        if(data_shift_i[14:16-Num]=={(Num-1){1'b1}}) // pos max
+            rounding_i <= 16'h0000;
+        else
+            rounding_i <= 16'h0200;
+    end else if(data_shift_i[15] == 1'b1 && data_shift_i[15-Num] && (|data_shift_i[15-Num-1:0]) ) // neg
+        rounding_i <= 16'h0200;
     else
-        rounding_i <= 16'h0100;
+        rounding_i <= 16'h0000; 
+
+//    if(data_shift_i[15-1:(15-Num+1)] == {1'b1,1'b1,{(Num-3){1'b1}}})
+//        rounding_i <= 16'h0000;
+//    else
+//        rounding_i <= 16'h0100;
 end
 
 always@(posedge clk)
 begin          
-    if(data_shift_q[15-1:(15-Num+1)] == {1'b1,1'b1,{(Num-3){1'b1}}})
-        rounding_q <= 16'h0000;
+    if(data_shift_q[15] == 1'b0 && data_shift_q[15-Num])begin // pose
+        if(data_shift_q[14:16-Num]=={(Num-1){1'b1}}) // pos max
+            rounding_q <= 16'h0000;
+        else
+            rounding_q <= 16'h0200;
+    end else if(data_shift_q[15] == 1'b1 && data_shift_q[15-Num] && (|data_shift_q[15-Num-1:0]) ) // neg
+        rounding_q <= 16'h0200;
     else
-        rounding_q <= 16'h0100;
+        rounding_q <= 16'h0000; 
+//        
+//    if(data_shift_q[15-1:(15-Num+1)] == {1'b1,1'b1,{(Num-3){1'b1}}})
+//        rounding_q <= 16'h0000;
+//    else
+//        rounding_q <= 16'h0100;
 end
     
 always@(posedge clk)

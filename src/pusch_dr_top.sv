@@ -24,6 +24,7 @@ module pusch_dr_top #(
     input                                           i_reset                 , // reset
 
     input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
+    input          [   1: 0]                        i_dr_mode               ,// re-sort mode
 
     // cpri rxdata
     input                                           i_l0_cpri_clk           , // cpri clkout
@@ -69,8 +70,10 @@ module pusch_dr_top #(
 
     // cpri txdata
     input                                           i_iq_tx_enable          , // cpri tx enable
-    output         [  63: 0]                        o_cpri_tx_data          , // cpri data
-    output                                          o_cpri_tx_vld             // cpri valid
+    output         [  63: 0]                        o_cpri0_tx_data         , // cpri data
+    output                                          o_cpri0_tx_vld          , // cpri valid
+    output         [  63: 0]                        o_cpri1_tx_data         , // cpri data
+    output                                          o_cpri1_tx_vld            // cpri valid
 
 );
 
@@ -93,21 +96,29 @@ wire           [LANE-1: 0]                      unpack_iq_vld           ;
 wire           [LANE-1: 0]                      unpack_iq_last          ;
 wire           [LANE-1:0][63:0]                 unpack_info_0           ;
 wire           [LANE-1:0][63:0]                 unpack_info_1           ;
+wire           [   3: 0]                        pkg_type                ;
+wire           [   6: 0]                        slot_idx                ;
+wire           [   3: 0]                        symb_idx                ;
+wire                                            cell_idx                ;
 
-reg                                             sym1_done             =0;
 
 wire           [LANE-1: 0]                      w_cpri_clk              ;
 wire           [LANE-1: 0]                      w_cpri_rst              ;
 wire           [LANE-1:0][63: 0]                w_cpri_rx_data          ;
 wire           [LANE-1: 0]                      w_cpri_rx_vld           ;
 
+wire                                            dr_rbg_load             ;
 wire                                            dr_sop                  ;
 wire                                            dr_eop                  ;
 wire                                            dr_vld                  ;
-wire           [3:0][31: 0]                     dr_data                 ;
-wire           [   8: 0]                        dr_prb_idx              ;
-
-
+wire           [15:0][31: 0]                    dr_data                 ;
+wire           [   3: 0]                        dr_rbg_idx              ;
+wire           [   3: 0]                        dr_pkg_type             ;
+wire                                            dr_cell_idx             ;
+wire           [   6: 0]                        dr_slot_idx             ;
+wire           [   3: 0]                        dr_symb_idx             ;
+wire           [  63: 0]                        dr_fft_agc              ;
+wire           [15:0][31: 0]                    dr_beam_pwr             ;
 
 //------------------------------------------------------------------------------------------
 // arrange cpri data for 8 lanes
@@ -136,28 +147,30 @@ assign w_cpri_rx_data[7] = i_l7_cpri_rx_data;
 //------------------------------------------------------------------------------------------
 //cpri rxdata & unpack
 //------------------------------------------------------------------------------------------
-generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
-    // Instantiate the Unit Under Test (UUT)
-    cpri_rxdata_unpack                                      cpri_rxdata_unpack_4ant
-    (
 
-        .i_clk                                              (i_clk                  ),
-        .i_reset                                            (i_reset                ),
-        .i_cpri_clk                                         (w_cpri_clk    [gi]     ),
-        .i_cpri_rst                                         (w_cpri_rst    [gi]     ),
-        .i_cpri_rx_data                                     (w_cpri_rx_data[gi]     ),
-        .i_cpri_rx_vld                                      (w_cpri_rx_vld [gi]     ),
+cpri_rxdata_top                                         cpri_rxdata_top
+(
 
-        .o_info_0                                           (unpack_info_0 [gi]     ),  // IQ HD
-        .o_info_1                                           (unpack_info_1 [gi]     ),  // FFT AGC
-        .o_iq_addr                                          (unpack_iq_addr[gi]     ),  // CPRI IQ addr
-        .o_iq_data                                          (unpack_iq_data[gi]     ),  // CPRI IQ data
-        .o_iq_vld                                           (unpack_iq_vld [gi]     ),  // CPRI IQ valid
-        .o_iq_last                                          (unpack_iq_last[gi]     )   // CPRI IQ last(132prb ends)
-    );
-    
-end
-endgenerate
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+
+    .i_cpri_clk                                         (w_cpri_clk             ),
+    .i_cpri_rst                                         (w_cpri_rst             ),
+    .i_cpri_rx_data                                     (w_cpri_rx_data         ),
+    .i_cpri_rx_vld                                      (w_cpri_rx_vld          ),
+
+    .o_pkg_type                                         (pkg_type               ),
+    .o_slot_idx                                         (slot_idx               ),
+    .o_symb_idx                                         (symb_idx               ),
+    .o_cell_idx                                         (cell_idx               ),
+    .o_info_0                                           (unpack_info_0          ),  // IQ HD
+    .o_info_1                                           (unpack_info_1          ),  // FFT AGC
+    .o_iq_addr                                          (unpack_iq_addr         ),  // CPRI IQ addr
+    .o_iq_data                                          (unpack_iq_data         ),  // CPRI IQ data
+    .o_iq_vld                                           (unpack_iq_vld          ),  // CPRI IQ valid
+    .o_iq_last                                          (unpack_iq_last         )   // CPRI IQ last(132prb ends)
+);
+
 
 
 //------------------------------------------------------------------------------------------
@@ -167,8 +180,13 @@ pusch_dr_core                                           pusch_dr_core(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
     
-    .i_rbg_size                                         (2'b10                  ),
+    .i_rbg_size                                         (i_rbg_size             ),
+    .i_dr_mode                                          (i_dr_mode              ),
 
+    .i_pkg_type                                         (pkg_type               ),
+    .i_slot_idx                                         (slot_idx               ),
+    .i_symb_idx                                         (symb_idx               ),
+    .i_cell_idx                                         (cell_idx               ),
     .i_info_0                                           (unpack_info_0          ),  // IQ HD
     .i_info_1                                           (unpack_info_1          ),  // FFT AGC
     .i_iq_addr                                          (unpack_iq_addr         ),  // 32 ants iq addr
@@ -176,11 +194,19 @@ pusch_dr_core                                           pusch_dr_core(
     .i_iq_vld                                           (unpack_iq_vld          ),  // 32 ants iq vld
     .i_iq_last                                          (unpack_iq_last         ),  // 32 ants iq last(132prb ends)
 
-    .o_tx_data                                          (dr_data                ),
-    .o_tx_vld                                           (dr_vld                 ),
-    .o_tx_sop                                           (dr_sop                 ),
-    .o_tx_eop                                           (dr_eop                 ),
-    .o_prb_idx                                          (dr_prb_idx             )
+    .o_beam_pwr                                         (dr_beam_pwr            ),
+    .o_dr_data                                          (dr_data                ),
+    .o_dr_vld                                           (dr_vld                 ),
+    .o_dr_sop                                           (dr_sop                 ),
+    .o_dr_eop                                           (dr_eop                 ),
+    .o_rbg_load                                         (dr_rbg_load            ),
+
+    .o_rbg_idx                                          (dr_rbg_idx             ),
+    .o_pkg_type                                         (dr_pkg_type            ),
+    .o_cell_idx                                         (dr_cell_idx            ),
+    .o_slot_idx                                         (dr_slot_idx            ),
+    .o_symb_idx                                         (dr_symb_idx            ),
+    .o_fft_agc                                          (dr_fft_agc             ) 
 );
 
 
@@ -188,28 +214,26 @@ pusch_dr_core                                           pusch_dr_core(
 // cpri txdata & repack
 // -----------------------------------------------------------------------------------------
 cpri_txdata_top                                         cpri_txdata_top(
-    .sys_clk_491_52                                     (i_clk                  ),
-    .sys_rst_491_52                                     (i_reset                ),
-    .sys_clk_368_64                                     (i_clk                  ),
-    .sys_rst_368_64                                     (i_reset                ),
-    .i_if_re_sel                                        (                       ),
-    .i_if_re_vld                                        ({4{dr_vld}}            ),
-    .i_if_re_sop                                        ({4{dr_sop}}            ),
-    .i_if_re_eop                                        ({4{dr_eop}}            ),
-    .i_if_re_ant0                                       (dr_data[0]             ),
-    .i_if_re_ant1                                       (dr_data[1]             ),
-    .i_if_re_ant2                                       (dr_data[2]             ),
-    .i_if_re_ant3                                       (dr_data[3]             ),
-    .i_if_re_slot_idx                                   (                       ),
-    .i_if_re_sym_idx                                    (                       ),
-    .i_if_re_prb_idx                                    (dr_prb_idx             ),
-    .i_if_re_info0                                      (                       ),
-    .i_if_re_info1                                      (                       ),
-    .i_if_re_info2                                      (                       ),
-    .i_if_re_info3                                      (                       ),
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+    .i_rx_sel                                           (1'b0                   ),
+    .i_rx_vld                                           (dr_vld                 ),
+    .i_rx_sop                                           (dr_sop                 ),
+    .i_rx_eop                                           (dr_eop                 ),
+    .i_rbg_load                                         (dr_rbg_load            ),
+    .i_ant_data                                         (dr_data                ),
+    .i_ant_pwr                                          (dr_beam_pwr            ),
+    .i_rbg_idx                                          (dr_rbg_idx             ),
+    .i_pkg_type                                         (dr_pkg_type            ),
+    .i_cell_idx                                         (dr_cell_idx            ),
+    .i_slot_idx                                         (dr_slot_idx            ),
+    .i_symb_idx                                         (dr_symb_idx            ),
+    .i_fft_agc                                          (dr_fft_agc             ),
     .i_iq_tx_enable                                     (i_iq_tx_enable         ),
-    .o_iq_tx_data                                       (o_cpri_tx_data         ),
-    .o_iq_tx_valid                                      (o_cpri_tx_vld          ) 
+    .o_iq_tx0_data                                      (o_cpri0_tx_data        ),// lane 0
+    .o_iq_tx0_valid                                     (o_cpri0_tx_vld         ),
+    .o_iq_tx1_data                                      (o_cpri1_tx_data        ),// lane 1
+    .o_iq_tx1_valid                                     (o_cpri1_tx_vld         ) 
 );
 
 
