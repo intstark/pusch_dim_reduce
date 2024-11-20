@@ -4,7 +4,7 @@
 //Author(s)       :  xxxxx 
 //Email           :  xxxxx 
 //Creation Date   :  2024-03-07
-//File name       :  compress_data.v
+//File name       :  ul_compress_data.v
 //-----------------------------------------------------------------------------
 //Detailed Description :                                                     
 //
@@ -28,7 +28,7 @@ module ul_compress_data
     input  wire    [   6: 0]                        i_slot_idx              ,
     input  wire    [   3: 0]                        i_symb_idx              ,
     input  wire    [   8: 0]                        i_prb_idx               ,
-    input  wire    [   8: 0]                        i_rbg_idx               ,
+    input  wire    [   3: 0]                        i_rbg_idx               ,
     input  wire    [   3: 0]                        i_channel_type0         ,
     input  wire    [   3: 0]                        i_channel_type1         ,
     input  wire    [   3: 0]                        i_channel_type2         ,
@@ -62,7 +62,7 @@ module ul_compress_data
     output wire    [   6: 0]                        o_slot_idx              ,
     output wire    [   3: 0]                        o_symb_idx              ,
     output wire    [   8: 0]                        o_prb_idx               ,
-    output wire    [   8: 0]                        o_rbg_idx               ,
+    output wire    [   3: 0]                        o_rbg_idx               ,
     output wire    [   3: 0]                        o_channel_type0         ,
     output wire    [   3: 0]                        o_channel_type1         ,
     output wire    [   3: 0]                        o_channel_type2         ,
@@ -72,10 +72,10 @@ module ul_compress_data
     output wire    [   7: 0]                        o_info2                 ,
     output wire    [   7: 0]                        o_info3                 ,
 
-    input  wire    [  63: 0]                        o_pkg0_power            ,
-    input  wire    [  63: 0]                        o_pkg1_power            ,
-    input  wire    [  63: 0]                        o_pkg2_power            ,
-    input  wire    [  63: 0]                        o_pkg3_power           
+    output wire    [  63: 0]                        o_pkg0_power            ,
+    output wire    [  63: 0]                        o_pkg1_power            ,
+    output wire    [  63: 0]                        o_pkg2_power            ,
+    output wire    [  63: 0]                        o_pkg3_power           
 );         
 
 compress_bit #
@@ -174,7 +174,7 @@ u3_compress_bit
 
 
 register_shift # (
-    .WIDTH                                              (32                     ),
+    .WIDTH                                              (4                      ),
     .DEPTH                                              (19                     ) 
 )u_dly_rbg_idx(                                        
     .clk                                                (clk                    ),

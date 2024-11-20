@@ -4,7 +4,7 @@
 // 
 // Create Date: 2024/08/15 15:54:23
 // Design Name: 
-// Module Name: dr_data_buffer
+// Module Name: txdata_queue
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 

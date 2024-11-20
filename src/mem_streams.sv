@@ -64,7 +64,7 @@ wire                                            rvld_neg                ;
 
 
 //--------------------------------------------------------------------------------------
-// generate data block number due to cutting data into CHANNELS blocks 
+// rvalid buffer
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk) begin
     rvalid_r <= {rvalid_r[1:0],i_rvalid};

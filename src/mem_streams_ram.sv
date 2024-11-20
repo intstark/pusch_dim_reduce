@@ -63,7 +63,7 @@ reg [WADDR_WIDTH-1: 0] addr_max = 0;
 
 
 //--------------------------------------------------------------------------------------
-// generate data block number due to cutting data into CHANNELS blocks 
+// rvalid buffer
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk) begin
     rvalid_r <= {rvalid_r[1:0],i_rvalid};
@@ -81,12 +81,6 @@ wire           [CHANNELS-1: 0]                  data_vld                ;
 wire           [CHANNELS-1: 0]                  rd_empty                ;
 wire           [CHANNELS-1: 0]                  wr_full                 ;
 
-always @(posedge i_clk) begin
-    if(data_vld[0])
-        rd_ren <= {CHANNELS{i_rd_ren}};
-    else
-        rd_ren <= 'd0;
-end
 
 always @(posedge i_clk) begin
     if(i_reset)
@@ -157,7 +151,7 @@ always @(posedge i_clk) begin
         addr_out <= addr_out;
 end
 
-assign o_tvalid  = data_vld[0];
+assign o_tvalid  = i_rd_ren;
 assign o_rd_data = rd_data;
 assign o_rd_addr = addr_out;
 

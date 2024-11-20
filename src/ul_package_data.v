@@ -4,7 +4,7 @@
 //Author(s)       :  xxxxx 
 //Email           :  xxxxx 
 //Creation Date   :  2024-03-07
-//File name       :  package_data.v
+//File name       :  ul_package_data.v
 //-----------------------------------------------------------------------------
 //Detailed Description :                                                     
 //
@@ -400,9 +400,9 @@ loop_buffer_sync_intel #
 always @ (posedge clk)
     begin
         if(pkg_rvld)
-            cpri_power <= rd_power[63:0];
+            cpri_power <= rd_power;
         else
-            cpri_power <= 256'd0;    
+            cpri_power <= 256'd0;
     end 
 
 

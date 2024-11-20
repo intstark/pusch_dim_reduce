@@ -239,9 +239,9 @@ end
 //--------------------------------------------------------------------------------------
 // Store the power of 16 beams to BRAM
 //--------------------------------------------------------------------------------------
-wire           [   7: 0]                        wr_addr                 ;
+wire           [   3: 0]                        wr_addr                 ;
 reg            [   3: 0]                        wr_num                =0;
-wire           [   7: 0]                        rd_addr                 ;
+wire           [   3: 0]                        rd_addr                 ;
 
 reg                                             wr_wen                =0;
 wire           [511: 0]                         wr_data                 ;
@@ -289,9 +289,9 @@ always @ (posedge i_clk)begin
 end
 
 
-assign wr_addr = {4'd0,rbg_num[3:0]};
+assign wr_addr = rbg_num[3:0];
 
-for(genvar i=0; i<16; i=i+1)begin
+for(genvar i=0; i<16; i=i+1)begin: gen_wr_data
     assign wr_data[i*32 +: 32] = sort_data[i][31:0];
 end
 
@@ -319,7 +319,7 @@ always @(posedge i_clk) begin
 end
 
 
-assign rd_addr = {4'd0,bram_pwr_raddr[3:0]};
+assign rd_addr = bram_pwr_raddr[3:0];
 
 
 

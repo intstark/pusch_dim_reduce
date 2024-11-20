@@ -26,7 +26,7 @@ module cpri_tx_lane
     input  wire    [  31: 0]                        i_if_re_ant1            ,
     input  wire    [  31: 0]                        i_if_re_ant2            ,
     input  wire    [  31: 0]                        i_if_re_ant3            ,
-    input  wire    [   7: 0]                        i_if_re_slot_idx        ,
+    input  wire    [   6: 0]                        i_if_re_slot_idx        ,
     input  wire    [   3: 0]                        i_if_re_sym_idx         ,
     input  wire    [   8: 0]                        i_if_re_prb_idx         ,
     input  wire    [   7: 0]                        i_if_re_info0           ,

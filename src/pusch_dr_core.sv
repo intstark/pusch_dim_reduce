@@ -161,7 +161,7 @@ endgenerate
 // rbG number and re number
 //------------------------------------------------------------------------------------------
 reg                                             sym_is_1st            =1;
-reg            [   3: 0]                        ant_buffer_sym        =0;
+reg            [   7: 0]                        ant_buffer_sym        =0;
 
 wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
 
@@ -174,11 +174,10 @@ reg            [   7: 0]                        rbg_num               =0;
 reg            [   7: 0]                        re_num_per_rbg        =0;
 wire           [   7: 0]                        rbg_num_max             ;
 
-
 always @(posedge i_clk) begin
     if(i_reset)
         ant_buffer_sym <= 'd0;
-    else if(ant_buffer_sym == 'd13 && ant_eop[0])
+    else if(ant_symb_idx[0] == 'd13 && ant_eop[0])
         ant_buffer_sym <= 'd0;
     else if(ant_eop[0])
         ant_buffer_sym <= ant_buffer_sym + 'd1;
@@ -187,7 +186,7 @@ end
 always @(posedge i_clk) begin
     if(i_reset)
         sym_is_1st <= 'd1;
-    else if(ant_symb_idx == 'd0)
+    else if(ant_symb_idx[0] == 'd0)
         sym_is_1st <= 'd1;
     else
         sym_is_1st <= 'd0;
