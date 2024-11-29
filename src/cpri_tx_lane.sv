@@ -35,15 +35,12 @@ module cpri_tx_lane
     input  wire    [   7: 0]                        i_if_re_info3           ,
 
     input  wire    [   3: 0]                        i_rbg_idx               ,
+    input  wire    [  31: 0]                        i_fft_agc               ,
                 
     input  wire    [  31: 0]                        i_ant_power0            ,
     input  wire    [  31: 0]                        i_ant_power1            ,
     input  wire    [  31: 0]                        i_ant_power2            ,
     input  wire    [  31: 0]                        i_ant_power3            ,
-    input  wire    [  31: 0]                        i_ant_power4            ,
-    input  wire    [  31: 0]                        i_ant_power5            ,
-    input  wire    [  31: 0]                        i_ant_power6            ,
-    input  wire    [  31: 0]                        i_ant_power7            ,
 
     input  wire                                     i_iq_tx_enable          ,
     output wire    [  63: 0]                        o_iq_tx_data            , 
@@ -67,6 +64,7 @@ wire           [   6: 0]                        m_slot_idx              ;
 wire           [   3: 0]                        m_symb_idx              ;
 wire           [   8: 0]                        m_prb_idx               ;
 wire           [   3: 0]                        m_rbg_idx               ;
+wire           [  31: 0]                        m_fft_agc               ;
 wire           [   3: 0]                        m_channel_type0         ;
 wire           [   3: 0]                        m_channel_type1         ;
 wire           [   3: 0]                        m_channel_type2         ;
@@ -79,11 +77,15 @@ wire                                            m_cpri_wen              ;
 wire           [   6: 0]                        m_cpri_waddr            ;
 wire           [  63: 0]                        m_cpri_wdata            ;
 wire                                            m_cpri_wlast            ;
-wire           [  63: 0]                        m_pkg0_power            ;
-wire           [  63: 0]                        m_pkg1_power            ;
-wire           [  63: 0]                        m_pkg2_power            ;
-wire           [  63: 0]                        m_pkg3_power            ;
 
+wire           [  31: 0]                        m_pkg0_power            ;
+wire           [  31: 0]                        m_pkg1_power            ;
+wire           [  31: 0]                        m_pkg2_power            ;
+wire           [  31: 0]                        m_pkg3_power            ;
+wire           [  31: 0]                        m_pkg4_power            ;
+wire           [  31: 0]                        m_pkg5_power            ;
+wire           [  31: 0]                        m_pkg6_power            ;
+wire           [  31: 0]                        m_pkg7_power            ;
 
     
 ul_compress_data                                        ul_compress_data 
@@ -102,6 +104,7 @@ ul_compress_data                                        ul_compress_data
     .i_symb_idx                                         (i_if_re_sym_idx        ),
     .i_prb_idx                                          (i_if_re_prb_idx        ),
     .i_rbg_idx                                          (i_rbg_idx              ),
+    .i_fft_agc                                          (i_fft_agc              ),
     .i_channel_type0                                    (4'd8                   ),
     .i_channel_type1                                    (4'd8                   ),
     .i_channel_type2                                    (4'd8                   ),
@@ -114,10 +117,6 @@ ul_compress_data                                        ul_compress_data
     .i_ant_power1                                       (i_ant_power1           ),
     .i_ant_power2                                       (i_ant_power2           ),
     .i_ant_power3                                       (i_ant_power3           ),
-    .i_ant_power4                                       (i_ant_power4           ),
-    .i_ant_power5                                       (i_ant_power5           ),
-    .i_ant_power6                                       (i_ant_power6           ),
-    .i_ant_power7                                       (i_ant_power7           ),
     .o_sel                                              (m_sel                  ),
     .o_sop                                              (m_sop                  ),
     .o_eop                                              (m_eop                  ),
@@ -134,6 +133,7 @@ ul_compress_data                                        ul_compress_data
     .o_symb_idx                                         (m_symb_idx             ),
     .o_prb_idx                                          (m_prb_idx              ),
     .o_rbg_idx                                          (m_rbg_idx              ),
+    .o_fft_agc                                          (m_fft_agc              ),
     .o_channel_type0                                    (m_channel_type0        ),
     .o_channel_type1                                    (m_channel_type1        ),
     .o_channel_type2                                    (m_channel_type2        ),
@@ -198,6 +198,7 @@ ul_package_data                                         ul_package_data
     .i_pkg3_shift                                       (m_shift3               ),
     
     .i_rbg_idx                                          (m_rbg_idx              ),
+    .i_fft_agc                                          (m_fft_agc              ),
 
     .i_pkg0_power                                       (m_pkg0_power           ),
     .i_pkg1_power                                       (m_pkg1_power           ),

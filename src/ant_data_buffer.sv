@@ -28,7 +28,7 @@ module ant_data_buffer #(
     parameter   FIFO_DEPTH      = 16    ,
     parameter   FIFO_WIDTH      = 1     ,
     parameter   LOOP_WIDTH      = 12    ,
-    parameter   INFO_WIDTH      = 128   ,
+    parameter   INFO_WIDTH      = 1     ,
     parameter   RAM_TYPE        = 1     
 )(
     input                                           i_clk                   ,
@@ -36,17 +36,17 @@ module ant_data_buffer #(
 
     // header info
     input          [  63: 0]                        i_info_0                ,// IQ HD 
-    input          [  63: 0]                        i_info_1                ,// FFT AGC
+    input          [   7: 0]                        i_info_1                ,// FFT AGC
 
     input          [WADDR_WIDTH-1: 0]               i_iq_addr               ,
     input          [ANT-1:0][31: 0]                 i_iq_data               ,
     input                                           i_iq_vld                ,
     input                                           i_iq_last               ,
 
-    output         [  63: 0]                        o_info_0                ,
-    output         [  63: 0]                        o_info_1                ,
-    output         [   6: 0]                        o_slot_idx              ,
-    output         [   3: 0]                        o_symb_idx              ,
+    output         [  63: 0]                        o_info_0                ,// IQ HD 
+    output         [  15: 0]                        o_info_1                ,// FFT AGC: {odd, even}
+    output         [   6: 0]                        o_slot_idx              ,//slot index
+    output         [   3: 0]                        o_symb_idx              ,// symbol index
 
     output         [ANT*32-1: 0]                    o_ant_even              ,
     output         [ANT*32-1: 0]                    o_ant_odd               ,
@@ -94,7 +94,6 @@ reg            [   2: 0]                        teop_out              =0;
 reg            [INFO_WIDTH-1: 0]                wr_info               =0;
 
 reg            [4:0][127:0]                     dout_info0            =0;
-reg            [4:0][127:0]                     dout_info1            =0;
 
 
 //------------------------------------------------------------------------------------------
@@ -232,9 +231,36 @@ always @ (posedge i_clk)begin
    teop_out[2:0]   <= {teop_out[1:0], sync_rd_eop};
 end
 
+reg            [   7: 0]                        fft_agc_even          =0;
+reg            [   7: 0]                        fft_agc_odd           =0;
+reg            [1:0][15: 0]                     dout_fft_agc          =0;
+
+
 always @(posedge i_clk) begin
-    if(even_rvld)
-        dout_info0[0] <= even_rinfo;
+    if(odd_rvld)begin
+        fft_agc_even <= even_rinfo[71:64];
+        fft_agc_odd  <= odd_rinfo[71:64];
+    end else begin
+        fft_agc_even <= fft_agc_even;
+        fft_agc_odd  <= fft_agc_odd;
+    end 
+end
+
+always @(posedge i_clk) begin
+    dout_fft_agc[0] <= {fft_agc_odd, fft_agc_even};
+    for(int i=1; i<2; i++)begin
+        dout_fft_agc[i] <= dout_fft_agc[i-1];
+    end
+end
+
+
+
+
+always @(posedge i_clk) begin
+//    if(even_rvld)
+//        dout_info0[0] <= even_rinfo;
+    if(odd_rvld)
+        dout_info0[0] <= odd_rinfo;
     else
         dout_info0[0] <= dout_info0[0];
 
@@ -264,8 +290,8 @@ assign o_tvalid   = tvalid_out[2]   ;
 assign o_ant_sop  = tsop_out[1]     ;
 assign o_ant_eop  = teop_out[2]     ;
 
-assign o_info_0   = dout_info0[2][ 63: 0];
-assign o_info_1   = dout_info0[2][127:64];
+assign o_info_0   = dout_info0[2][63: 0];
+assign o_info_1   = dout_fft_agc[1];
 assign o_symb_idx = symb_idx_out;
 assign o_slot_idx = slot_idx_out;
 

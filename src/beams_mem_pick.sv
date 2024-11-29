@@ -4,7 +4,7 @@
 // 
 // Create Date: 2024/08/15 15:54:23
 // Design Name: 
-// Module Name: mac_beams_mem
+// Module Name: beams_mem_pick
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -28,20 +28,22 @@ module beams_mem_pick # (
 
     input                                           i_rvalid                ,
     input                                           i_wr_wen                ,
+    input                                           i_wr_sop                ,
     input                                           i_wr_eop                ,
     input          [15:0][WDATA_WIDTH-1: 0]         i_wr_data               ,
 
     input          [15:0][7: 0]                     i_sort_idx              ,
     input                                           i_sort_sop              ,
     input                                           i_sym_1st               ,
+    input                                           i_rbg_load              ,
     
     // input header info
     input          [  63: 0]                        i_info_0                ,// IQ HD 
-    input          [  63: 0]                        i_info_1                ,// FFT AGC
+    input          [  15: 0]                        i_info_1                ,// FFT AGC{odd, even}
 
     // output header info
     output         [  63: 0]                        o_info_0                ,// IQ HD 
-    output         [  63: 0]                        o_info_1                ,// FFT AGC
+    output         [15:0][7: 0]                     o_info_1                ,// FFT AGC
 
 
     output         [15:0][RDATA_WIDTH-1: 0]         o_rd_data               ,
@@ -75,17 +77,15 @@ wire           [15:0][RDATA_WIDTH-1: 0]         rd_data_1               ;
 wire           [15:0][RDATA_WIDTH-1: 0]         rd_data_2               ;
 wire           [15:0][RDATA_WIDTH-1: 0]         rd_data_3               ;
 reg            [63:0][RDATA_WIDTH-1: 0]         rd_data_matrix        =0;
-reg            [   6: 0]                        wr_wen_buf            =0;
-reg            [   6: 0]                        wr_eop_buf            =0;
+reg                                             wr_wen_d1             =0;
+reg                                             wr_eop_d1             =0;
 
 wire           [   3: 0]                        data_vld                ;
 wire           [   3: 0]                        rd_empty                ;
 wire           [   3: 0]                        wr_full                 ;
 
-reg            [   2: 0]                        num_blocks            =0;
-reg            [   2: 0]                        rvalid_r              =0;
-wire                                            rvld_pos                ;
-wire                                            rvld_neg                ;
+reg            [   1: 0]                        num_blocks            =0;
+reg            [   1: 0]                        rvalid_r              =0;
 reg            [WADDR_WIDTH-1: 0]               addr_max              =1;
 reg            [1:0]                            sort_sop_buf          =0;
 wire                                            sort_sop_pos            ;
@@ -96,24 +96,30 @@ reg                                             sym_is_1st            =0;
 reg            [   2: 0]                        rd_last_buf           =0;
 wire                                            rd_last                 ;
 reg            [63: 0]                          symb1_info_0          =0;
-reg            [63: 0]                          symb1_info_1          =0;
 reg            [63: 0]                          dout_info_0           =0;
-reg            [63: 0]                          dout_info_1           =0;
+wire                                            wr_wen_1st              ;
+wire                                            wr_eop_1st              ;
 
 //--------------------------------------------------------------------------------------
 // generate data block number due to cutting data into 4 blocks 
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk) begin
-    rvalid_r <= {rvalid_r[1:0],i_rvalid};
+    rvalid_r <= {rvalid_r[0],i_rvalid};
 end
 
-assign rvld_pos = i_rvalid & (~rvalid_r[0]);
-assign rvld_neg = ~i_rvalid & (rvalid_r[0]);
+
+assign wr_wen_1st = i_wr_wen & sym_is_1st;
+assign wr_eop_1st = i_wr_eop & sym_is_1st;
+
+always @(posedge i_clk) begin
+    wr_wen_d1 <= wr_wen_1st;
+    wr_eop_d1 <= wr_eop_1st;
+end
 
 always @(posedge i_clk) begin
     if(i_reset)
         num_blocks <= 'd0;
-    else if(rvld_neg)
+    else if(wr_eop_d1)
         num_blocks <= num_blocks + 'd1;
 end
 
@@ -123,16 +129,16 @@ end
 always @ (posedge i_clk) begin
     case(num_blocks)
         2'b00:  begin
-                    wr_wen[3:0] <= {3'd0,i_wr_wen};
+                    wr_wen[3:0] <= {3'd0,wr_wen_1st};
                 end
         2'b01:  begin
-                    wr_wen[3:0] <= {2'd0,i_wr_wen,1'd0};
+                    wr_wen[3:0] <= {2'd0,wr_wen_1st,1'd0};
                 end
         2'b10:  begin
-                    wr_wen[3:0] <= {1'd0,i_wr_wen,2'd0};
+                    wr_wen[3:0] <= {1'd0,wr_wen_1st,2'd0};
                 end
         2'b11:  begin
-                    wr_wen[3:0] <= {i_wr_wen,3'd0};
+                    wr_wen[3:0] <= {wr_wen_1st,3'd0};
                 end
         default:begin
                     wr_wen[3:0] <= 4'd0;
@@ -142,9 +148,9 @@ end
 
 always @(posedge i_clk) begin
     for(int i=0;i<4;i=i+1)begin
-        if(i_wr_eop)
+        if(wr_eop_d1)
             wr_addr[i] <= 'd0;
-        else if(i_rvalid)
+        else if(wr_wen_d1)
             wr_addr[i] <= wr_addr[i] + 'd1;
     end
 end
@@ -160,13 +166,10 @@ end
 // generate 4 mem blocks reaad signal
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    wr_wen_buf <= {wr_wen_buf[5:0], i_wr_wen};
-    wr_eop_buf <= {wr_eop_buf[5:0], i_wr_eop};
-end
-
-always @(posedge i_clk) begin
-    if(i_wr_eop)
+    if(wr_eop_d1)
         addr_max <= wr_addr[3];
+    else
+        addr_max <= addr_max;
 end
 
 always @(posedge i_clk) begin
@@ -330,7 +333,59 @@ always @ (posedge i_clk)begin
         else
             data_out[i] <= i_wr_data[i];
     end
-end	
+end
+
+
+//--------------------------------------------------------------------------------------
+// original beam polarity(even/odd)
+//--------------------------------------------------------------------------------------
+reg            [15:0][7: 0]                     sort_idx_2nd          =0;
+reg            [  15: 0]                        ant_polarity          =0;
+reg            [  15: 0]                        ant_polarity_2nd      =0;
+wire           [15:0][7: 0]                     fft_agc_1st             ;
+wire           [15:0][7: 0]                     fft_agc_2nd             ;
+reg            [15:0][7: 0]                     dout_fft_agc          =0;
+reg [6:0][15:0] ant_polarity_buf = 0;
+reg            [15:0][7: 0]                     fft_agc_out[6:0]      ='{default:0};
+
+always @ (posedge i_clk)begin
+    for(int i=0; i<16; i=i+1)begin
+        if(i_sort_idx[i]<'d32)
+            ant_polarity[i] <= 1'b0;
+        else
+            ant_polarity[i] <= 1'b1;
+    end
+end
+
+always @ (posedge i_clk)begin
+    if(!i_sym_1st && i_sort_sop)
+        sort_idx_2nd <= i_sort_idx;
+    else
+        sort_idx_2nd <= sort_idx_2nd;
+end
+
+always @ (posedge i_clk)begin
+    for(int i=0; i<16; i=i+1)begin
+        if(sort_idx_2nd[i]<'d32)
+            ant_polarity_2nd[i] <= 1'b0;
+        else
+            ant_polarity_2nd[i] <= 1'b1;
+    end
+end
+
+
+always @ (posedge i_clk)begin
+    ant_polarity_buf[0] <= ant_polarity_2nd;
+    for(int i=1; i<7; i=i+1)begin
+        ant_polarity_buf[i] <= ant_polarity_buf[i-1];
+    end
+end
+
+generate for (gi=0; gi<16; gi=gi+1) begin: gen_fft_agc
+    assign fft_agc_1st[gi] = (ant_polarity[gi]) ? i_info_1[15:8] : i_info_1[ 7:0];
+    assign fft_agc_2nd[gi] = (ant_polarity_buf[5][gi]) ? i_info_1[15:8] : i_info_1[ 7:0];
+end
+endgenerate
 
 //--------------------------------------------------------------------------------------
 // output valid signal
@@ -340,6 +395,8 @@ reg                                             tvalid                =0;
 reg                                             sop_out               =0;
 reg                                             eop_out               =0;
 reg            [   3: 0]                        rd_rden_buf           =0;
+wire                                            rden_pos_d1             ;
+wire                                            rden_pos_d2             ;
 
 
 always @(posedge i_clk) begin
@@ -347,6 +404,8 @@ always @(posedge i_clk) begin
     rd_rden_buf <= {rd_rden_buf[2:0], rd_ren[3]};
 end
 
+assign rden_pos_d1 = rd_rden_buf[1] & (~rd_rden_buf[2]);
+assign rden_pos_d2 = rd_rden_buf[2] & (~rd_rden_buf[3]);
 
 always @(posedge i_clk) begin
     if(i_reset)
@@ -370,29 +429,32 @@ always @(posedge i_clk) begin
     if(i_reset)
         sop_out <= 1'b0;
     else if(sym_is_1st)
-        sop_out <= rd_rden_buf[2] & (~rd_rden_buf[3]);
+        sop_out <= rden_pos_d2;
     else
-        sop_out <= rvld_pos;
+        sop_out <= i_wr_sop;
 end
 
 always @(posedge i_clk) begin
-    if(i_reset)begin
+    if(i_reset)
         symb1_info_0 <= 'd0;
-        symb1_info_1 <= 'd0;
-    end else if(rd_rden_buf[1] & (~rd_rden_buf[2]))begin
+    else if(rden_pos_d1)
         symb1_info_0 <= i_info_0;
-        symb1_info_1 <= i_info_1;
-    end
 end
 
 always @ (posedge i_clk)begin
-    if(sym_is_1st)begin
+    if(sym_is_1st)
         dout_info_0 <= symb1_info_0;
-        dout_info_1 <= symb1_info_1;
-    end else begin
+    else
         dout_info_0 <= i_info_0;
-        dout_info_1 <= i_info_1;
-    end
+end
+
+always @ (posedge i_clk)begin
+    if(sym_is_1st && rd_rden_buf[2])
+        dout_fft_agc <= fft_agc_1st;
+    else if(!sym_is_1st && i_rvalid)
+        dout_fft_agc <= fft_agc_2nd;
+    else 
+        dout_fft_agc <= 'd0;
 end	
 
 
@@ -403,6 +465,6 @@ assign o_sop        = sop_out;
 assign o_eop        = eop_out;
 assign o_rd_data    = data_out;
 assign o_info_0     = dout_info_0;
-assign o_info_1     = dout_info_1;
+assign o_info_1     = dout_fft_agc;
 
 endmodule

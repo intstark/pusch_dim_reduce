@@ -22,23 +22,24 @@ module cpri_rxdata_top # (
     parameter                                       DW                     = 32    ,
     parameter                                       ANT                    = 4     
 )(
-    input                                           i_clk                   ,
-    input                                           i_reset                 ,
+    input                                           i_clk                   ,// data clock
+    input                                           i_reset                 ,// system reset
+    input          [   1: 0]                        i_dr_mode               ,// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
-    input          [LANE-1: 0]                      i_cpri_clk              ,
-    input          [LANE-1: 0]                      i_cpri_rst              ,
-    input          [LANE-1:0][63:0]                 i_cpri_rx_data          ,
-    input          [LANE-1: 0]                      i_cpri_rx_vld           ,
+    input          [LANE-1: 0]                      i_cpri_clk              ,// cpri rx clock
+    input          [LANE-1: 0]                      i_cpri_rst              ,// cpri rx reset
+    input          [LANE-1:0][63:0]                 i_cpri_rx_data          ,// cpri rx data
+    input          [LANE-1: 0]                      i_cpri_rx_vld           ,// cpri rx valid
 
-    output         [   3: 0]                        o_pkg_type              ,
-    output         [   6: 0]                        o_slot_idx              ,
-    output         [   3: 0]                        o_symb_idx              ,
-    output                                          o_cell_idx              ,
-    output         [LANE-1:0][63: 0]                o_info_0                ,
-    output         [LANE-1:0][63: 0]                o_info_1                ,
-    output         [LANE-1:0][10: 0]                o_iq_addr               ,
-    output         [LANE-1:0][ANT*32-1: 0]          o_iq_data               ,
-    output         [LANE-1:0]                       o_iq_vld                ,
+    output         [   3: 0]                        o_pkg_type              ,// package type
+    output         [   6: 0]                        o_slot_idx              ,// slot index
+    output         [   3: 0]                        o_symb_idx              ,// symbol index
+    output                                          o_cell_idx              ,// cell index
+    output         [LANE-1:0][63: 0]                o_info_0                ,// IQ HD
+    output         [LANE-1:0][ 7: 0]                o_info_1                ,// FFT AGC
+    output         [LANE-1:0][10: 0]                o_iq_addr               ,// CPRI addr 0-1583
+    output         [LANE-1:0][ANT*32-1: 0]          o_iq_data               ,// CPRI data
+    output         [LANE-1:0]                       o_iq_vld                ,// CPRI valid
     output         [LANE-1:0]                       o_iq_last                
 );
 
@@ -58,9 +59,11 @@ module cpri_rxdata_top # (
 genvar gi;
 
 wire           [LANE-1: 0]                      rx_buf_vld              ;
+wire           [LANE-1: 0]                      symb_eop                ;
 wire                                            rx_buf_rden             ;
 wire           [LANE-1:0]                       cpri_rx_ready           ;
 wire           [LANE-1:0][63: 0]                cpri_data_buf           ;
+wire           [LANE-1:0][31: 0]                fft_agc_buf             ;
 
 wire           [LANE-1:0][6: 0]                 cpri_addr_buf           ;
 wire           [LANE-1: 0]                      cpri_buf_last           ;
@@ -76,8 +79,15 @@ wire           [LANE-1:0][6: 0]                 slot_idx                ;
 wire           [LANE-1:0][3: 0]                 symb_idx                ;
 wire           [LANE-1: 0]                      cell_idx                ;
 wire           [LANE-1:0][63: 0]                info_0                  ;
-wire           [LANE-1:0][63: 0]                info_1                  ;
+wire           [LANE-1:0][ 7: 0]                info_1                  ;
 
+wire           [LANE-1:0][63: 0]                tx_data                 ;
+wire           [LANE-1:0][6: 0]                 tx_addr                 ;
+wire           [LANE-1: 0]                      tx_last                 ;
+wire           [LANE-1: 0]                      tx_vld                  ;
+wire           [LANE-1: 0]                      tx_rdy                  ;
+wire           [   7: 0]                        fft_agc_base            ;
+wire           [LANE-1:0][31: 0]                fft_agc_shift           ;
 
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer
@@ -91,11 +101,14 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
         .i_cpri_reset                                       (i_cpri_rst    [gi]     ),
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
+        .i_dr_mode                                          (i_dr_mode              ),
         .i_rx_data                                          (i_cpri_rx_data[gi]     ),
         .i_rvalid                                           (i_cpri_rx_vld [gi]     ),
         .i_rready                                           (cpri_rx_ready [gi]     ),
         .i_rd_en                                            (rx_buf_rden            ),
         .o_rd_vld                                           (rx_buf_vld    [gi]     ),
+        .o_symb_eop                                         (symb_eop      [gi]     ),
+        .o_fft_agc                                          (fft_agc_buf   [gi]     ),
         .o_tx_data                                          (cpri_data_buf [gi]     ),
         .o_tx_addr                                          (cpri_addr_buf [gi]     ),
         .o_tx_last                                          (cpri_buf_last [gi]     ),
@@ -104,6 +117,33 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
     );
 end
 endgenerate
+
+//--------------------------------------------------------------------------------------
+// FFT AGC 
+//--------------------------------------------------------------------------------------
+agc_unpack                                              agc_unpack
+(
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+
+    .i_cpri_data                                        (cpri_data_buf          ),
+    .i_cpri_addr                                        (cpri_addr_buf          ),
+    .i_cpri_last                                        (cpri_buf_last          ),
+    .i_rvalid                                           (cpri_buf_vld           ),
+    .i_rready                                           (                       ),
+
+    .i_fft_agc                                          (fft_agc_buf            ),
+    .i_symb_eop                                         (symb_eop               ),
+
+    .o_fft_agc_base                                     (fft_agc_base           ),// {odd, even}
+    .o_fft_agc_shift                                    (fft_agc_shift          ),// {odd, even}
+    .o_tx_data                                          (tx_data                ),
+    .o_tx_addr                                          (tx_addr                ),
+    .o_tx_last                                          (tx_last                ),
+    .o_tx_vld                                           (tx_vld                 ),
+    .o_tready                                           (                       ) 
+);
+
 
 
 //------------------------------------------------------------------------------------------
@@ -116,10 +156,13 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
 
-        .i_cpri_data                                        (cpri_data_buf[gi]      ),
-        .i_cpri_addr                                        (cpri_addr_buf[gi]      ),
-        .i_cpri_last                                        (cpri_buf_last[gi]      ),
-        .i_cpri_vld                                         (cpri_buf_vld [gi]      ),
+        .i_cpri_data                                        (tx_data      [gi]      ),
+        .i_cpri_addr                                        (tx_addr      [gi]      ),
+        .i_cpri_last                                        (tx_last      [gi]      ),
+        .i_cpri_vld                                         (tx_vld       [gi]      ),
+
+        .i_fft_agc                                          (fft_agc_base           ),//{odd, even}
+        .i_fft_shift                                        (fft_agc_shift[gi]      ),//{odd, even}
 
         .o_tready                                           (cpri_rx_ready[gi]      ), 
 

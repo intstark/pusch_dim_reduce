@@ -225,6 +225,7 @@ pusch_dr_core                                           pusch_dr_core_aiu0(
     .i_reset                                            (reset                  ),
     
     .i_rbg_size                                         (rbg_size               ),
+    .i_dr_mode                                          (2'd0                   ),
     .i_aiu_idx                                          (1'b0                   ),
 
     .i_iq_addr                                          (iq0_addr               ),// 32 ants iq addrk
@@ -246,6 +247,7 @@ pusch_dr_core                                           pusch_dr_core_aiu1(
     .i_reset                                            (reset                  ),
     
     .i_rbg_size                                         (rbg_size               ),
+    .i_dr_mode                                          (2'd0                   ),
     .i_aiu_idx                                          (1'b1                   ),
 
     .i_iq_addr                                          (iq1_addr               ),// 32 ants iq addrk
@@ -267,6 +269,7 @@ pusch_dr_core                                           pusch_dr_core_aiu2(
     .i_reset                                            (reset                  ),
     
     .i_rbg_size                                         (rbg_size               ),
+    .i_dr_mode                                          (2'd0                   ),
     .i_aiu_idx                                          (1'b0                   ),
 
     .i_iq_addr                                          (iq2_addr               ),// 32 ants iq addrk
@@ -288,6 +291,7 @@ pusch_dr_core                                           pusch_dr_core_aiu3(
     .i_reset                                            (reset                  ),
     
     .i_rbg_size                                         (rbg_size               ),
+    .i_dr_mode                                          (2'd0                   ),
     .i_aiu_idx                                          (1'b1                   ),
 
     .i_iq_addr                                          (iq3_addr               ),// 32 ants iq addrk

@@ -39,7 +39,7 @@ module cpri_txdata_top
     input                                           i_cell_idx              ,
     input          [   6: 0]                        i_slot_idx              ,
     input          [   3: 0]                        i_symb_idx              ,
-    input          [  63: 0]                        i_fft_agc               ,
+    input          [  15:0][7:0]                    i_fft_agc               ,
                 
     input  wire                                     i_iq_tx_enable          ,
 
@@ -62,25 +62,26 @@ wire                                            tx1_vld                 ;
 wire                                            tx1_sop                 ;
 wire                                            tx1_eop                 ;
 
-wire           [7:0][31: 0]                     tx0_ant_pwr             ;
+wire           [3:0][31: 0]                     tx0_ant_pwr             ;
 wire           [   3: 0]                        tx0_rbg_idx             ;
 wire           [   3: 0]                        tx0_pkg_type            ;
 wire                                            tx0_cell_idx            ;
 wire           [   6: 0]                        tx0_slot_idx            ;
 wire           [   3: 0]                        tx0_symb_idx            ;
-wire           [  63: 0]                        tx0_fft_agc             ;
+wire           [  31: 0]                        tx0_fft_agc             ;
 wire           [  8: 0]                         tx0_prb_idx             ;
 wire           [3:0][7: 0]                      tx0_pkg_info            ;
 
-wire           [7:0][31: 0]                     tx1_ant_pwr             ;
+wire           [3:0][31: 0]                     tx1_ant_pwr             ;
 wire           [   3: 0]                        tx1_rbg_idx             ;
 wire           [   3: 0]                        tx1_pkg_type            ;
 wire                                            tx1_cell_idx            ;
 wire           [   6: 0]                        tx1_slot_idx            ;
 wire           [   3: 0]                        tx1_symb_idx            ;
-wire           [  63: 0]                        tx1_fft_agc             ;
+wire           [  31: 0]                        tx1_fft_agc             ;
 wire           [  8: 0]                         tx1_prb_idx             ;
 wire           [3:0][7: 0]                      tx1_pkg_info            ;
+
 
 
 //------------------------------------------------------------------------------------------
@@ -105,7 +106,7 @@ txdata_queue                                            txdata_queue_0
     .i_cell_idx                                         (i_cell_idx             ),
     .i_slot_idx                                         (i_slot_idx             ),
     .i_symb_idx                                         (i_symb_idx             ),
-    .i_fft_agc                                          (i_fft_agc              ),
+    .i_fft_agc                                          (i_fft_agc[7:0]         ),
 
     .o_tx_data                                          (tx0_data               ),
     .o_tx_vld                                           (tx0_vld                ),
@@ -146,15 +147,12 @@ cpri_tx_lane                                            cpri_tx_lane_0
     .i_if_re_info3                                      (tx0_pkg_info[3]        ),
 
     .i_rbg_idx                                          (tx0_rbg_idx            ),
+    .i_fft_agc                                          (tx0_fft_agc            ),
 
     .i_ant_power0                                       (tx0_ant_pwr[0]         ),
     .i_ant_power1                                       (tx0_ant_pwr[1]         ),
     .i_ant_power2                                       (tx0_ant_pwr[2]         ),
     .i_ant_power3                                       (tx0_ant_pwr[3]         ),
-    .i_ant_power4                                       (tx0_ant_pwr[4]         ),
-    .i_ant_power5                                       (tx0_ant_pwr[5]         ),
-    .i_ant_power6                                       (tx0_ant_pwr[6]         ),
-    .i_ant_power7                                       (tx0_ant_pwr[7]         ),
 
     .i_iq_tx_enable                                     (i_iq_tx_enable         ),
     .o_iq_tx_data                                       (o_iq_tx0_data          ),
@@ -183,7 +181,7 @@ txdata_queue                                            txdata_queue_1
     .i_cell_idx                                         (i_cell_idx             ),
     .i_slot_idx                                         (i_slot_idx             ),
     .i_symb_idx                                         (i_symb_idx             ),
-    .i_fft_agc                                          (i_fft_agc              ),
+    .i_fft_agc                                          (i_fft_agc[15:8]        ),
 
     .o_tx_data                                          (tx1_data               ),
     .o_tx_vld                                           (tx1_vld                ),
@@ -222,16 +220,14 @@ cpri_tx_lane                                            cpri_tx_lane_1
     .i_if_re_info1                                      (tx1_pkg_info[1]        ),
     .i_if_re_info2                                      (tx1_pkg_info[2]        ),
     .i_if_re_info3                                      (tx1_pkg_info[3]        ),
+
     .i_rbg_idx                                          (tx1_rbg_idx            ),
+    .i_fft_agc                                          (tx1_fft_agc            ),
 
     .i_ant_power0                                       (tx1_ant_pwr[0]         ),
     .i_ant_power1                                       (tx1_ant_pwr[1]         ),
     .i_ant_power2                                       (tx1_ant_pwr[2]         ),
     .i_ant_power3                                       (tx1_ant_pwr[3]         ),
-    .i_ant_power4                                       (tx1_ant_pwr[4]         ),
-    .i_ant_power5                                       (tx1_ant_pwr[5]         ),
-    .i_ant_power6                                       (tx1_ant_pwr[6]         ),
-    .i_ant_power7                                       (tx1_ant_pwr[7]         ),
 
     .i_iq_tx_enable                                     (i_iq_tx_enable         ),
     .o_iq_tx_data                                       (o_iq_tx1_data          ),

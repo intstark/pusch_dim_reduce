@@ -16,6 +16,8 @@ ReadFile = 0;
 MergeFile = 0;
 WriteCodeMif = 0;
 numSlot = 2;
+SymbolXCompare = 1;
+
 
 vector_dir = '../AlgoVec/ulrxDimRedu20241104';
 fpga_dir   = '../sim/pusch_dr_top_tb_work';
@@ -114,8 +116,8 @@ err_cps_odd = ant_odd - ant_uncps_odd;
 err_cps_eve_max = max((err_cps_eve),[],[1,2,3]);
 err_cps_odd_max = max((err_cps_odd),[],[1,2,3]);
 
-err_cps_eve_pct = err_cps_eve_max/max((ant_eve),[],[1,2,3])
-err_cps_odd_pct = err_cps_odd_max/max((ant_odd),[],[1,2,3])
+err_cps_eve_pct = err_cps_eve_max/max((ant_eve),[],[1,2,3]);
+err_cps_odd_pct = err_cps_odd_max/max((ant_odd),[],[1,2,3]);
 
 
 %% 重新合并压缩数据
@@ -170,13 +172,24 @@ if WriteCodeMif
 end
 
 
+%% Matlab算法实现
+%取出奇偶天线的第1个符号的数据
+
+
+temp2=[];
+ant_data_aiu = [];
+for jj=1:32
+    temp = squeeze(ant_uncps(:, jj,:));
+    ant_data_aiu(jj,:) = reshape(temp.',[1,3168*14]);
+end
+
 
 
 %% Matlab算法实现
 %取出奇偶天线的第1个符号的数据
 
-ant_data_0 = ant_data_read(:,   1:1584); %前1584,奇天线
-ant_data_1 = ant_data_read(:,1585:3168); %后1584,偶天线
+ant_data_0 = ant_data_aiu(:,   1:1584); %前1584,奇天线
+ant_data_1 = ant_data_aiu(:,1585:3168); %后1584,偶天线
 beams_eve = w0_data_read*ant_data_0; %奇天线 [64,32]*[32*1584]
 beams_odd = w1_data_read*ant_data_1; %偶天线 [64,32]*[32*1584]
 
@@ -254,6 +267,9 @@ for jj=1:rbGMaxNum
     end
 end
 
+BeamPower=rbG_sort_sum(:,1:16);
+BeamIndex=rbG_sort_addr(:,1:16);
+
 %% 动态定标比对
 beams_sum_sft_fix=dynamic_truncation(beams16_sym1_sort,16);
 
@@ -289,7 +305,12 @@ sim_beams_data = ReadData(datafile4,MAC_DW,0);
 sim_beams_pwr  = ReadData(datafile5,MAC_DW,0);
 sim_beams_sort = ReadData(datafile6,32,0);
 sim_beams_idx  = ReadData(datafile7,8,0);
-% sim_compress_data = ReadData(datafile1,16,0,'IQ');
+sim_compress_data = ReadData(datafile1,16,0,'IQ');
+
+
+
+
+
 
 
 
@@ -320,116 +341,91 @@ err_agc_max=max(abs(err_agc),[],[1,2]);
 fprintf('解压AGC误差分析(MAX):\t err_agc_max=\t%d\n',err_agc_max);
 
 
-err_beam_pwr = sum(sim_beams_pwr(1:rbGMaxNum,:) - rbG_sum,[1,2]);
-fprintf("rbG总能量(48bit):\t err_beam_pwr = %d\n",err_beam_pwr);
-
-err_sort_idx = sim_beams_idx - rbG_sort_addr(:,1:16);
-fprintf("rbG能量序号(8bit):\t err_beam_sort = %d\n",sum(err_sort_idx,[1,2]));
+err_sort_idx = BeamIndex-sim_beams_idx(1:9,:);
+fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
 
 
-err_beam_sort = sum(sim_beams_sort(1:rbGMaxNum,:) - rbG_sort_sum(:,1:16),[1,2]);
-fprintf("rbG总能量排序(48bit):\t err_beam_sort = %d\n",err_beam_sort);
+err_beam_sort = BeamPower-sim_beams_sort(1:9,:);
+fprintf("rbG波束能量值误差和:\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
 
 err_cprs = sim_compress_data((1-1)*numCarriers+1 : (1)*numCarriers,:)-beams_sum_sft_fix;
-err_cprs_sum=sum(err_cprs,[1,2]);
-fprintf('压缩后降维数据(16bit):\t err_cprs_sum=\t%d\n',err_cprs_sum);
+err_cprs_sum=sum(err_cprs,[1,2,3]);
+fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
 
-
-
-
-% FPGA与向量文本比较
-fprintf('---------------------------------------------\n');
-fprintf('FPGA与向量文本比较\n');
-fprintf('---------------------------------------------\n');
-
-err_sort_idx2 = sim_beams_idx - BeamIndex0(:,1:16);
-fprintf("rbG能量序号(8bit):\t err_beam_sort = %d\n",sum(err_sort_idx2,[1,2]));
-
-err_beam_pwr2 = rbG_sort_sum(:,1:16) - BeamPwr0;
-fprintf("rbG总能量降序(48bit):\t err_beam_pwr = %d\n",sum(err_beam_pwr2,[1,2]));
-pct_err_pwr2 = err_beam_pwr2/BeamPwr0;
-fprintf("rbG总能量降序(48bit):\t pct_err_pwr_max = %d\n",max(abs(pct_err_pwr2),[],[1,2]));
-
-
-
-err_cprs2 = sim_compress_data((1-1)*numCarriers+1 : (1)*numCarriers,1)-dr_data_read((1-1)*numCarriers+1 : (1)*numCarriers,1);
-err_cprs2_sum=sum(err_cprs2,[1,2]);
-fprintf('压缩后降维数据(16bit):\t err_cprs2_sum=\t%d\n',err_cprs2_sum);
 
 
 %% 后续符号对比
 %  采用对SYMBOL1筛选出来的最大16beam序号的码本与天线数据相乘降维，每个rbG不同
-
-clear beams_eve;
-clear beams_odd;
-clear sim_beams_eve_i;
-clear sim_beams_eve_q;
-clear sim_beams_odd_i;
-clear sim_beams_odd_q;
-clear sim_beams_eve;
-clear sim_beams_odd;
-clear err_beam_eve;
-clear err_beam_odd;
-clear beams_sum_sft_fix;
-
-
-%% 分析开始
-fprintf("#----------------------------------------------------------\n");
-fprintf("# 第%d个符号分析如下：\n",symbol_id);
-fprintf("#----------------------------------------------------------\n");
-
-% 分离出发送端的奇偶天线数据（单Lane 8天线）
-ant32_tx_eve = ant_data_read(:, (2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers);
-ant32_tx_odd = ant_data_read(:, (2*symbol_id-1)*numCarriers+1 : (2*symbol_id-0)*numCarriers);
-
-
-pwt = 0;
-for jj=1:rbGMaxNum
-    for ii=1:16
-        w0_data_sel(ii,:) = w0_data_read(rbG_sort_addr(jj,ii)+1, :);
-        w1_data_sel(ii,:) = w1_data_read(rbG_sort_addr(jj,ii)+1, :);
+if(SymbolXCompare)
+    clear beams_eve;
+    clear beams_odd;
+    clear sim_beams_eve_i;
+    clear sim_beams_eve_q;
+    clear sim_beams_odd_i;
+    clear sim_beams_odd_q;
+    clear sim_beams_eve;
+    clear sim_beams_odd;
+    clear err_beam_eve;
+    clear err_beam_odd;
+    clear beams_sum_sft_fix;
+    
+    
+    %% 分析开始
+    fprintf("#----------------------------------------------------------\n");
+    fprintf("# 第%d个符号分析如下：\n",symbol_id);
+    fprintf("#----------------------------------------------------------\n");
+    
+    % 分离出发送端的奇偶天线数据（单Lane 8天线）
+    ant32_tx_eve = ant_data_aiu(:, (2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers);
+    ant32_tx_odd = ant_data_aiu(:, (2*symbol_id-1)*numCarriers+1 : (2*symbol_id-0)*numCarriers);
+    
+    
+    pwt = 0;
+    for jj=1:rbGMaxNum
+        for ii=1:16
+            w0_data_sel(ii,:) = w0_data_read(rbG_sort_addr(jj,ii)+1, :);
+            w1_data_sel(ii,:) = w1_data_read(rbG_sort_addr(jj,ii)+1, :);
+        end
+    
+        % 前132PRB 不完整的rbG放在开头
+        if(jj==1 && aiu_idx==0)
+    
+            % 32奇偶天线数据和码本数据矩阵相乘
+            beams_eve(:,pwt+1:rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:rbGMaxMod*12);
+            beams_odd(:,pwt+1:rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:rbGMaxMod*12);
+    
+            pwt = rbGMaxMod*12;
+    
+        % 后132PRB 不完整的rbG放在末尾
+        elseif(jj==rbGMaxNum && aiu_idx==1)
+    
+            % 32奇偶天线数据和码本数据矩阵相乘
+            beams_eve(:,pwt+1:pwt+rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+rbGMaxMod*12);
+            beams_odd(:,pwt+1:pwt+rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+rbGMaxMod*12);
+    
+            pwt = rbGMaxMod*12;
+        else
+            % 32奇偶天线数据和码本数据矩阵相乘
+            beams_eve(:,pwt+1:pwt+numRE_rbG) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+numRE_rbG);
+            beams_odd(:,pwt+1:pwt+numRE_rbG) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+numRE_rbG);
+    
+            pwt = pwt + numRE_rbG;
+        end
     end
+    
+    beams_sum = beams_eve + beams_odd;
+    beams_sum = beams_sum.';
+    
+    
+    %% 动态定标
+    beams_sum_sft_fix=dynamic_truncation(beams_sum,16);
+    
+    %% 比对结果
+    err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
+    err_cprs_sum=sum(err_cprs,[1,2]);
+    fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
 
-    % 前132PRB 不完整的rbG放在开头
-    if(jj==1 && aiu_idx==0)
-
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:rbGMaxMod*12);
-        beams_odd(:,pwt+1:rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:rbGMaxMod*12);
-
-        pwt = rbGMaxMod*12;
-
-    % 后132PRB 不完整的rbG放在末尾
-    elseif(jj==rbGMaxNum && aiu_idx==1)
-
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:pwt+rbGMaxMod*12) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+rbGMaxMod*12);
-        beams_odd(:,pwt+1:pwt+rbGMaxMod*12) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+rbGMaxMod*12);
-
-        pwt = rbGMaxMod*12;
-    else
-        % 32奇偶天线数据和码本数据矩阵相乘
-        beams_eve(:,pwt+1:pwt+numRE_rbG) = w0_data_sel * ant32_tx_eve(:,pwt+1:pwt+numRE_rbG);
-        beams_odd(:,pwt+1:pwt+numRE_rbG) = w1_data_sel * ant32_tx_odd(:,pwt+1:pwt+numRE_rbG);
-
-        pwt = pwt + numRE_rbG;
-    end
 end
-
-beams_sum = beams_eve + beams_odd;
-beams_sum = beams_sum.';
-
-
-%% 动态定标
-beams_sum_sft_fix=dynamic_truncation(beams_sum,16);
-
-%% 比对结果
-err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
-
-err_cprs_sum=sum(err_cprs,[1,2]);
-
-fprintf('降维压缩后数据:\t err_cprs_sum = %d\n',err_cprs_sum);
-
 
 %%
 fprintf('---------------------------------------------\n');

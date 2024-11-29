@@ -8,7 +8,7 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: 12 Clocks latency
 // 
 // Dependencies: 
 // 
@@ -29,6 +29,8 @@ module mac_beams #(
     input                                           i_rvalid                ,
     input                                           i_sop                   ,
     input                                           i_eop                   ,
+    input                                           i_symb_clr              ,
+    input                                           i_symb_1st              ,
 
     input          [ANT*IW-1: 0]                    i_ants_data_even        ,
     input          [ANT*IW-1: 0]                    i_ants_data_odd         ,
@@ -37,11 +39,11 @@ module mac_beams #(
     
     // input header info
     input          [  63: 0]                        i_info_0                ,// IQ HD 
-    input          [  63: 0]                        i_info_1                ,// FFT AGC
+    input          [  15: 0]                        i_info_1                ,// FFT AGC{odd,even}
 
     // output header info
     output         [  63: 0]                        o_info_0                ,// IQ HD 
-    output         [  63: 0]                        o_info_1                ,// FFT AGC
+    output         [  15: 0]                        o_info_1                ,// FFT AGC{odd,even}
 
     // debug
     output         [BEAM-1:0][OW-1: 0]              o_data_even_i           ,
@@ -54,6 +56,8 @@ module mac_beams #(
     output         [BEAM-1:0][OW-1: 0]              o_data_q                ,
     output                                          o_sop                   , 
     output                                          o_eop                   , 
+    output                                          o_symb_clr              ,
+    output                                          o_symb_1st              ,
     output                                          o_tvalid                 
 );
 
@@ -196,8 +200,10 @@ end
 //--------------------------------------------------------------------------------------
 // OUTPUT 
 //--------------------------------------------------------------------------------------
+reg            [  11: 0]                        symb_clr_buf          =0;
+reg            [  11: 0]                        symb_1st_buf          =0;
 reg            [63:0]                           dout_info0 [14:0]     ='{default:0};
-reg            [63:0]                           dout_info1 [14:0]     ='{default:0};
+reg            [15:0]                           dout_info1 [14:0]     ='{default:0};
 
 
 always @(posedge i_clk) begin
@@ -215,9 +221,9 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    tvalid_buf <= {tvalid_buf[6:0], even_tvalid[0]};
-    sop_out <= even_sop[0];
-    eop_out <= even_eop[0];
+    tvalid_buf  <= {tvalid_buf[6:0], even_tvalid[0]};
+    sop_out     <= even_sop[0];
+    eop_out     <= even_eop[0];
 end
 
 always @(posedge i_clk) begin
@@ -229,7 +235,10 @@ always @(posedge i_clk) begin
     end
 end
 
-
+always @(posedge i_clk) begin
+    symb_1st_buf<= {symb_1st_buf[10:0], i_symb_1st};
+    symb_clr_buf<= {symb_clr_buf[10:0], i_symb_clr};
+end
 
 assign o_data_even_i    = ants_even_re;
 assign o_data_even_q    = ants_even_im;
@@ -243,6 +252,8 @@ assign o_eop            = eop_out;
 
 assign o_info_0         = dout_info0[12];
 assign o_info_1         = dout_info1[12];
+assign o_symb_clr       = symb_clr_buf[11];
+assign o_symb_1st       = symb_1st_buf[11];
 
 
 endmodule

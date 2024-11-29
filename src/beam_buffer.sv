@@ -68,7 +68,7 @@ wire           [   3: 0]                        data_vld                ;
 wire           [   3: 0]                        rd_empty                ;
 wire           [   3: 0]                        wr_full                 ;
 
-reg            [   2: 0]                        num_blocks            =0;
+reg            [   1: 0]                        num_blocks            =0;
 reg            [   4: 0]                        rvalid_r              =0;
 wire                                            rvld_pos                ;
 wire                                            rvld_neg                ;

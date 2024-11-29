@@ -27,6 +27,7 @@ module beams_pick_top # (
     input                                           i_reset                 ,
 
     input                                           i_rvld                  ,
+    input                                           i_sop                   ,
     input                                           i_eop                   ,
     input          [15:0][WDATA_WIDTH-1: 0]         i_data_re               ,
     input          [15:0][WDATA_WIDTH-1: 0]         i_data_im               ,
@@ -40,11 +41,11 @@ module beams_pick_top # (
     
     // input header info
     input          [  63: 0]                        i_info_0                ,// IQ HD 
-    input          [  63: 0]                        i_info_1                ,// FFT AGC
+    input          [  15: 0]                        i_info_1                ,// FFT AGC
 
     // output header info
     output         [  63: 0]                        o_info_0                ,// IQ HD 
-    output         [  63: 0]                        o_info_1                ,// FFT AGC
+    output         [15:0][7: 0]                     o_info_1                ,// FFT AGC
 
     output         [15:0][31: 0]                    o_sort_pwr              ,
     output         [15:0][RDATA_WIDTH-1: 0]         o_data_re               ,
@@ -69,12 +70,14 @@ beams_mem_pick # (
     .i_reset                                            (i_reset                ),
     .i_rvalid                                           (i_rvld                 ),
     .i_wr_wen                                           (i_rvld                 ),
+    .i_wr_sop                                           (i_sop                  ),
     .i_wr_eop                                           (i_eop                  ),
     .i_wr_data                                          (i_data_re              ),
 
     .i_sort_idx                                         (i_sort_idx             ),
     .i_sort_sop                                         (i_sort_sop             ),
     .i_sym_1st                                          (i_sym_1st              ),
+    .i_rbg_load                                         (i_rbg_load             ),
 
     .i_info_0                                           (i_info_0               ),  // IQ HD
     .i_info_1                                           (i_info_1               ),  // FFT AGC
@@ -99,6 +102,7 @@ beams_mem_pick # (
     .i_reset                                            (i_reset                ),
     .i_rvalid                                           (i_rvld                 ),
     .i_wr_wen                                           (i_rvld                 ),
+    .i_wr_sop                                           (i_sop                  ),
     .i_wr_eop                                           (i_eop                  ),
     .i_wr_data                                          (i_data_im              ),
 

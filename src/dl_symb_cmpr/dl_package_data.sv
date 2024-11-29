@@ -4,7 +4,7 @@
 //Author(s)       :  xxxxx 
 //Email           :  xxxxx 
 //Creation Date   :  2024-03-07
-//File name       :  ul_package_data.v
+//File name       :  package_data.v
 //-----------------------------------------------------------------------------
 //Detailed Description :                                                     
 //
@@ -13,7 +13,7 @@
 //-----------------------------------------------------------------------------
 
 
-module ul_package_data
+module package_data
 (
     input   wire            clk               ,
     input   wire            rst               ,
@@ -57,15 +57,6 @@ module ul_package_data
     input   wire  [7:0]     i_pkg3_info       ,
     input   wire  [13:0]    i_pkg3_data       ,
     input   wire  [3:0]     i_pkg3_shift      ,      
-
-    input   wire  [3:0]     i_rbg_idx         ,      
-    input   wire  [31:0]    i_fft_agc         ,      
-    
-    input   wire  [31:0]    i_pkg0_power      ,
-    input   wire  [31:0]    i_pkg1_power      ,
-    input   wire  [31:0]    i_pkg2_power      ,
-    input   wire  [31:0]    i_pkg3_power      ,
-
     output  reg             o_cpri_wen        ,
     output  reg   [6:0]     o_cpri_waddr      ,
     output  reg   [63:0]    o_cpri_wdata      ,
@@ -95,9 +86,6 @@ reg  [31:0]  ant0_shift,ant1_shift,ant2_shift,ant3_shift;
 reg          pkg_last;
 reg  [6:0]   pkg_raddr;
 wire [63:0]  pkg_rdata;
-wire [255:0] wr_power ;
-wire [255:0] rd_power ;
-reg  [255:0] cpri_power =0;
 wire         pkg_rvld;
 reg          pkg_rvld_d1,pkg_rvld_d2,pkg_rvld_d3;
 reg          pkg_rdy;
@@ -143,12 +131,12 @@ always @ (posedge clk)
     begin
         if(i_sop  && (pkg_sel_1 == 3'd0))//
           begin
-            pkg_head[39:36]    <= {i_pkg0_ch_type};
+            pkg_head[63:36]    <= {24'd0,i_pkg0_ch_type};
             pkg_head[19:8]     <= {i_pkg0_cell_idx,i_pkg0_slot_idx,i_pkg0_sym_idx};
           end  
         else
           begin        
-            pkg_head[39:36]    <= pkg_head[39:36] ;
+            pkg_head[63:36]    <= pkg_head[63:36] ;
             pkg_head[19:8]     <= pkg_head[19:8]  ;    
           end                                      
     end
@@ -158,13 +146,11 @@ always @ (posedge clk)
     begin
         if(i_sop  && (pkg_sel_1 == 3'd0))//
           begin         
-            pkg_head[48:40]  <= {i_rbg_idx,5'd0};
             pkg_head[35:28]  <= {i_pkg0_prb_idx};
             pkg_head[7:4]    <= i_pkg0_info[7:4];
           end  
         else 
           begin        
-            pkg_head[48:40]  <= pkg_head[48:40];
             pkg_head[35:28]  <= pkg_head[35:28];
             pkg_head[7:4]    <= pkg_head[7:4];            
           end  
@@ -176,66 +162,41 @@ always @ (posedge clk)
     begin
         if(i_sop  && (pkg_sel_1 ==3'd4))//
           begin         
-            pkg_head[63:49]  <= {11'd0,i_rbg_idx};
             pkg_head[27:20]  <= {i_pkg0_prb_idx};
             pkg_head[3:0]    <= i_pkg0_info[7:4];            
           end  
         else
           begin        
-            pkg_head[63:49]  <= pkg_head[63:49];
             pkg_head[27:20]  <= pkg_head[27:20];
             pkg_head[3:0]    <= pkg_head[3:0] ;            
           end  
     end        
-    
-// ant power
-reg            [  63: 0]                        pkg0_power            =0;
-reg            [  63: 0]                        pkg1_power            =0;
-reg            [  63: 0]                        pkg2_power            =0;
-reg            [  63: 0]                        pkg3_power            =0;
-reg            [  63: 0]                        fft_agc               =0;
 
-always @ (posedge clk)
-begin
-    if(i_sop && i_vld  && (pkg_sel_1 ==3'd0))begin         
-        pkg0_power <= {i_pkg1_power,i_pkg0_power};
-        pkg1_power <= {i_pkg3_power,i_pkg2_power};
-    end else begin        
-        pkg0_power <= pkg0_power;
-        pkg1_power <= pkg1_power;
-    end  
-end
+//-------------------------------------------------------------------------------
+// FFT AGC SIM
+//-------------------------------------------------------------------------------
+wire           [  31: 0]                        fft_agc_sel             ;
+reg            [  63: 0]                        pkg_agc               =0;
 
-always @ (posedge clk)
-begin
-    if(i_sop && i_vld  && (pkg_sel_1 ==3'd4))begin         
-        pkg2_power <= {i_pkg1_power,i_pkg0_power};
-        pkg3_power <= {i_pkg3_power,i_pkg2_power};
-    end else begin
-        pkg2_power <= pkg2_power;
-        pkg3_power <= pkg3_power;
-    end  
-end
+//assign fft_agc_sel =    (i_pkg0_sym_idx==0 && i_pkg0_info[7:4]==0) ? 32'h04030201 : 
+//                        (i_pkg0_sym_idx==0 && i_pkg1_info[7:4]==1) ? 32'h08070605 :
+//                        (i_pkg0_sym_idx==1 && i_pkg0_info[7:4]==0) ? 32'h04030201 : 
+//                        (i_pkg0_sym_idx==1 && i_pkg1_info[7:4]==1) ? 32'h08070605 :
+//                        (i_pkg0_sym_idx==2 && i_pkg1_info[7:4]==0) ? 32'h02020505 :
+//                        (i_pkg0_sym_idx==2 && i_pkg1_info[7:4]==1) ? 32'h04040303 : 32'd0;
 
-assign wr_power = {pkg3_power, pkg2_power, pkg1_power, pkg0_power};
+assign fft_agc_sel = 32'd0;
 
-//--group-0-fft_agc
+//--fft agc
 always @ (posedge clk)
-begin
-    if(i_sop  && (pkg_sel_1 == 3'd0))//
-        fft_agc[63:32] <= i_fft_agc;
-    else 
-        fft_agc[63:32] <= fft_agc[63:32];
-end
-    
-//--group-1-fft_agc
-always @ (posedge clk)
-begin
-    if(i_sop  && (pkg_sel_1 == 3'd4))//
-        fft_agc[31: 0] <= i_fft_agc;
-    else 
-        fft_agc[31: 0] <= fft_agc[31: 0];
-end       
+    begin
+        if(i_sop  && (pkg_sel_1 == 3'd0))//
+            pkg_agc[63:32]  <= fft_agc_sel;
+        else  if(i_sop  && (pkg_sel_1 ==3'd4))//
+            pkg_agc[31: 0]  <= fft_agc_sel;
+        else 
+            pkg_agc <= pkg_agc;            
+    end
 
 //--info null
 //always @ (posedge clk)
@@ -385,7 +346,7 @@ loop_buffer_sync_intel #
     .wr_addr                    (pkg_waddr                                                     ),
     .wr_data                    ({8'd0,i_pkg3_data,i_pkg2_data,i_pkg1_data,i_pkg0_data}        ),  
     .wr_wlast                   (pkg_last                                                      ),
-    .wr_info                    ({pkg_head,fft_agc,ant1_shift,ant0_shift,ant3_shift,ant2_shift}),
+    .wr_info                    ({pkg_head,pkg_agc,ant1_shift,ant0_shift,ant3_shift,ant2_shift}),
     .free_size                  (free_size                                                     ),
     .rd_addr                    (pkg_raddr                                                     ),
     .rd_data                    (pkg_rdata                                                     ),
@@ -396,42 +357,7 @@ loop_buffer_sync_intel #
 
 
 
-loop_buffer_sync_intel #
-(
-    .WDATA_WIDTH                                        (256                    ),
-    .WADDR_WIDTH                                        (WADDR_WIDTH            ),
-    .RDATA_WIDTH                                        (256                    ),
-    .RADDR_WIDTH                                        (RADDR_WIDTH            ),
-    .READ_LATENCY                                       (READ_LATENCY           ),
-    .FIFO_DEPTH                                         (FIFO_DEPTH             ),
-    .FIFO_WIDTH                                         (1                      ),
-    .LOOP_WIDTH                                         (LOOP_WIDTH             ),
-    .INFO_WIDTH                                         (1                      ),
-    .RAM_TYPE                                           (RAM_TYPE               ) 
-)u_pwr_ram
-(
-    .syn_rst                                            (rst                    ),
-    .clk                                                (clk                    ),
-    .wr_wen                                             (i_vld                  ),
-    .wr_addr                                            (pkg_waddr              ),
-    .wr_data                                            (wr_power               ),
-    .wr_wlast                                           (pkg_last               ),
-    .wr_info                                            (pkg_last               ),
-    .free_size                                          (                       ),
-    .rd_addr                                            (pkg_raddr              ),
-    .rd_data                                            (rd_power               ),
-    .rd_vld                                             (                       ),
-    .rd_info                                            (                       ),
-    .rd_rdy                                             (pkg_rdy                ) 
-);
 
-always @ (posedge clk)
-    begin
-        if(pkg_rvld)
-            cpri_power <= rd_power;
-        else
-            cpri_power <= 256'd0;
-    end 
 
 
 //-----------------------------------------------------------------------------
@@ -717,16 +643,15 @@ always @ (posedge clk)
             o_cpri_wdata <= cpri_head2; 
         else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd6))
             o_cpri_wdata <= cpri_head3;  
-        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd7))
-            o_cpri_wdata <= cpri_power[64*0 +: 64];
-        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd8))
-            o_cpri_wdata <= cpri_power[64*1 +: 64];
-        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd9))
-            o_cpri_wdata <= cpri_power[64*2 +: 64];
-        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd10))
-            o_cpri_wdata <= cpri_power[64*3 +: 64];
-        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd11))
-            o_cpri_wdata <= 64'd95;  
+//for test            
+//        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd0))
+//            o_cpri_wdata <= 64'd5;
+//        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd1))
+//            o_cpri_wdata <= 64'd6;            
+//        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd2))
+//            o_cpri_wdata <= 64'd7; 
+//        else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd11))
+//            o_cpri_wdata <= 64'd11;                            
         else
             o_cpri_wdata <= {a3_pkg_data,a2_pkg_data,a1_pkg_data,a0_pkg_data};
     end

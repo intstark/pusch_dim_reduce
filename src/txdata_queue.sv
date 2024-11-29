@@ -47,15 +47,15 @@ module txdata_queue #(
     input                                           i_cell_idx              ,
     input          [   6: 0]                        i_slot_idx              ,
     input          [   3: 0]                        i_symb_idx              ,
-    input          [  63: 0]                        i_fft_agc               ,
+    input          [7:0][7: 0]                      i_fft_agc               ,
 
-    output         [7:0][31: 0]                     o_ant_pwr               ,
+    output         [3:0][31: 0]                     o_ant_pwr               ,
     output         [   3: 0]                        o_rbg_idx               ,
     output         [   3: 0]                        o_pkg_type              ,
     output                                          o_cell_idx              ,
     output         [   6: 0]                        o_slot_idx              ,
     output         [   3: 0]                        o_symb_idx              ,
-    output         [  63: 0]                        o_fft_agc               ,
+    output         [  31: 0]                        o_fft_agc               ,
     output         [3:0][ 7: 0]                     o_pkg_info              ,
     output         [   8: 0]                        o_prb_idx               ,
 
@@ -72,6 +72,7 @@ module txdata_queue #(
 localparam [WADDR_WIDTH-1: 0] DATA_DEPTH  = 1583;
 localparam FSIZE_WIDTH = LOOP_WIDTH-WADDR_WIDTH;
 localparam GRP_NUM = 2;
+localparam DINFO_WIDTH = 52;
 
 //--------------------------------------------------------------------------------------
 // WIRE & REGISTER
@@ -83,6 +84,7 @@ reg                                             wr_wen                =0;
 reg            [GRP_NUM-1: 0]                   rd_ren                =0;
 reg            [WADDR_WIDTH-1: 0]               wr_addr               =0;
 reg            [WDATA_WIDTH-1: 0]               wr_data[GRP_NUM-1:0]  ='{default:0};
+reg            [WDATA_WIDTH-1: 0]               wr_pwr [GRP_NUM-1:0]  ='{default:0};
 reg            [GRP_NUM-1:0][RADDR_WIDTH-1: 0]  rd_addr               =0;
 wire           [RDATA_WIDTH-1: 0]               rd_data[GRP_NUM-1:0]    ;
 wire                                            rd_en                   ;
@@ -95,11 +97,12 @@ reg            [   7: 0]                        rd_sym_num            =0;
 wire           [GRP_NUM-1:0][FSIZE_WIDTH: 0]    free_size               ;
 reg                                             wr_block_num          =0;
 wire                                            wr_info                 ;
-reg            [83: 0]                          wr_dinfo[GRP_NUM-1:0] ='{default:0};
-wire           [83: 0]                          rd_dinfo[GRP_NUM-1:0]   ;
+reg            [DINFO_WIDTH-1: 0]               wr_dinfo[GRP_NUM-1:0] ='{default:0};
+wire           [DINFO_WIDTH-1: 0]               rd_dinfo[GRP_NUM-1:0]   ;
 reg            [1:0]                            wr_rbg_load           =0;
 wire           [GRP_NUM-1: 0]                   rd_rbg_load             ;
-
+wire           [  31: 0]                        fft_agc_0               ;
+wire           [  31: 0]                        fft_agc_1               ;
 
 
 //--------------------------------------------------------------------------------------
@@ -120,9 +123,12 @@ always @ (posedge i_clk)begin
 end
 
 
+assign fft_agc_0 = {i_fft_agc[6],i_fft_agc[4],i_fft_agc[2],i_fft_agc[0]};
+assign fft_agc_1 = {i_fft_agc[7],i_fft_agc[5],i_fft_agc[3],i_fft_agc[1]};
+
 always @ (posedge i_clk)begin
-    wr_dinfo[0] <= {i_fft_agc, i_rbg_idx, i_pkg_type, i_cell_idx, i_slot_idx, i_symb_idx};
-    wr_dinfo[1] <= {i_fft_agc, i_rbg_idx, i_pkg_type, i_cell_idx, i_slot_idx, i_symb_idx};
+    wr_dinfo[0] <= {fft_agc_0, i_rbg_idx, i_pkg_type, i_cell_idx, i_slot_idx, i_symb_idx};
+    wr_dinfo[1] <= {fft_agc_1, i_rbg_idx, i_pkg_type, i_cell_idx, i_slot_idx, i_symb_idx};
 end
 
 always @ (posedge i_clk)begin
@@ -132,7 +138,6 @@ end
 always @ (posedge i_clk)begin
     rx_vld_buf <= {rx_vld_buf[4:0],i_rx_vld};    
 end
-
 
 always @ (posedge i_clk)begin
     if(i_reset)
@@ -162,6 +167,33 @@ always @ (posedge i_clk)begin
         wr_block_num <= wr_block_num + 1'd1;
 end
 
+
+//--------------------------------------------------------------------------------------
+// Read logic
+//--------------------------------------------------------------------------------------
+reg wr_pwr_wen = 0;
+reg            [3: 0]               wr_pwr_addr               =0;
+always @ (posedge i_clk)begin
+    if(i_reset)
+        wr_pwr_wen <= 1'b0;
+    else
+        wr_pwr_wen <= i_rbg_load;
+end
+
+
+always @ (posedge i_clk)begin
+    wr_pwr[0] <= {i_ant_pwr[ 6],i_ant_pwr[ 4],i_ant_pwr[ 2],i_ant_pwr[ 0]};
+    wr_pwr[1] <= {i_ant_pwr[ 7],i_ant_pwr[ 5],i_ant_pwr[ 3],i_ant_pwr[ 1]};
+end
+
+always @ (posedge i_clk)begin
+    if(i_reset)
+        wr_pwr_addr <= 'd0;
+    else if(!wr_wen)
+        wr_pwr_addr <= 'd0;
+    else if(wr_pwr_wen)
+        wr_pwr_addr <= wr_pwr_addr + 'd1;    
+end
 
 //--------------------------------------------------------------------------------------
 // Read logic
@@ -385,9 +417,9 @@ generate
         );
 
         loop_buffer_sync_intel #(
-            .WDATA_WIDTH                                        (84                     ),
+            .WDATA_WIDTH                                        (DINFO_WIDTH            ),
             .WADDR_WIDTH                                        (WADDR_WIDTH            ),
-            .RDATA_WIDTH                                        (84                     ),
+            .RDATA_WIDTH                                        (DINFO_WIDTH            ),
             .RADDR_WIDTH                                        (RADDR_WIDTH            ),
             .READ_LATENCY                                       (READ_LATENCY           ),
             .FIFO_DEPTH                                         (FIFO_DEPTH             ),
@@ -427,7 +459,7 @@ generate
             .clk                                                (i_clk                  ),
             .wr_wen                                             (wr_wen                 ),             
             .wr_addr                                            (wr_addr                ),
-            .wr_data                                            (wr_rbg_load[0]         ),
+            .wr_data                                            (wr_rbg_load[1]         ),
             .wr_wlast                                           (wr_wlast               ),
             .wr_info                                            (wr_info                ),
             .free_size                                          (                       ),
@@ -443,46 +475,55 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // beam power memory
 //--------------------------------------------------------------------------------------
-wire           [ 7:0][31: 0]                    rd_beam_pwr             ;
-reg            [ 7:0][31: 0]                    rd_beam_pwr_out       =0;
+wire           [1:0][3:0][31: 0]                rd_beam_pwr             ;
+reg            [3:0][31: 0]                     rd_beam_pwr_out       =0;
 reg                                             rbg_load_out          =0;
-reg                                             pwr_rd_ren              ;
 
+
+
+
+generate
+    for(gi=0;gi<GRP_NUM;gi=gi+1) begin: gen_ram_pwr
+        mem_streams_ram # (
+            .CHANNELS                                           (4                      ),
+            .WDATA_WIDTH                                        (32                     ),
+            .WADDR_WIDTH                                        (4                      ),
+            .RDATA_WIDTH                                        (32                     ),
+            .RADDR_WIDTH                                        (4                      ),
+            .READ_LATENCY                                       (3                      ),
+            .RAM_TYPE                                           (1                      ) 
+        )mem_beam_pwr(
+            .i_clk                                              (i_clk                  ),
+            .i_reset                                            (i_reset                ),
+            .i_rvalid                                           (i_rx_vld               ),
+            .i_wr_wen                                           (wr_pwr_wen             ),
+            .i_wr_data                                          (wr_pwr[gi]             ),
+            .i_rd_ren                                           (rd_rbg_load[gi]        ),
+            .o_rd_data                                          (rd_beam_pwr[gi]        ),
+            .o_rd_addr                                          (                       ),
+            .o_tvalid                                           (                       ) 
+        );
+end
+endgenerate
 
 always @ (posedge i_clk)begin
     case(rd_ren_buf[2])
-        2'd1    : pwr_rd_ren <= rd_rbg_load[0];
-        2'd2    : pwr_rd_ren <= rd_rbg_load[1];
-        default : pwr_rd_ren <= 'd0;
+        2'd1    : begin
+                    rbg_load_out <= rd_rbg_load[0];
+                    if(rd_rbg_load[0])
+                        rd_beam_pwr_out <= rd_beam_pwr[0];
+                    else
+                        rd_beam_pwr_out <= rd_beam_pwr_out;
+                end
+        2'd2    : begin
+                    rbg_load_out <= rd_rbg_load[1];
+                    if(rd_rbg_load[1])
+                        rd_beam_pwr_out <= rd_beam_pwr[1];
+                    else
+                        rd_beam_pwr_out <= rd_beam_pwr_out;
+                end
+        default:        rd_beam_pwr_out <= 'd0;
     endcase
-end
-
-mem_streams_ram # (
-    .CHANNELS                                           (8                      ),
-    .WDATA_WIDTH                                        (32                     ),
-    .WADDR_WIDTH                                        (4                      ),
-    .RDATA_WIDTH                                        (32                     ),
-    .RADDR_WIDTH                                        (4                      ),
-    .READ_LATENCY                                       (3                      ),
-    .RAM_TYPE                                           (1                      ) 
-)mem_beam_pwr(
-    .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
-    .i_rvalid                                           (i_rx_vld               ),
-    .i_wr_wen                                           (i_rbg_load             ),
-    .i_wr_data                                          (i_ant_pwr              ),
-    .i_rd_ren                                           (pwr_rd_ren             ),
-    .o_rd_data                                          (rd_beam_pwr            ),
-    .o_rd_addr                                          (                       ),
-    .o_tvalid                                           (                       ) 
-);
-
-always @(posedge i_clk) begin
-    rbg_load_out <= pwr_rd_ren;
-    if(pwr_rd_ren)
-        rd_beam_pwr_out <= rd_beam_pwr;
-    else
-        rd_beam_pwr_out <= rd_beam_pwr_out;
 end
 
 
@@ -517,7 +558,7 @@ assign o_tx_eop     = re_eop;
 assign o_prb_idx    = dr_prb_idx;
 assign o_tready     = ready_out ;
 assign o_pkg_info   = pkg_info  ;
-assign o_fft_agc    = dinfo_out_dly[83:20];
+assign o_fft_agc    = dinfo_out_dly[51:20];
 assign o_rbg_idx    = dinfo_out_dly[19:16];
 assign o_pkg_type   = dinfo_out_dly[15:12];
 assign o_cell_idx   = dinfo_out_dly[11];

@@ -29,6 +29,7 @@ module ul_compress_data
     input  wire    [   3: 0]                        i_symb_idx              ,
     input  wire    [   8: 0]                        i_prb_idx               ,
     input  wire    [   3: 0]                        i_rbg_idx               ,
+    input  wire    [  31: 0]                        i_fft_agc               ,
     input  wire    [   3: 0]                        i_channel_type0         ,
     input  wire    [   3: 0]                        i_channel_type1         ,
     input  wire    [   3: 0]                        i_channel_type2         ,
@@ -42,10 +43,6 @@ module ul_compress_data
     input  wire    [  31: 0]                        i_ant_power1            ,
     input  wire    [  31: 0]                        i_ant_power2            ,
     input  wire    [  31: 0]                        i_ant_power3            ,
-    input  wire    [  31: 0]                        i_ant_power4            ,
-    input  wire    [  31: 0]                        i_ant_power5            ,
-    input  wire    [  31: 0]                        i_ant_power6            ,
-    input  wire    [  31: 0]                        i_ant_power7            ,
 
     output wire                                     o_sel                   ,
     output wire                                     o_sop                   ,
@@ -63,6 +60,7 @@ module ul_compress_data
     output wire    [   3: 0]                        o_symb_idx              ,
     output wire    [   8: 0]                        o_prb_idx               ,
     output wire    [   3: 0]                        o_rbg_idx               ,
+    output wire    [  31: 0]                        o_fft_agc               ,
     output wire    [   3: 0]                        o_channel_type0         ,
     output wire    [   3: 0]                        o_channel_type1         ,
     output wire    [   3: 0]                        o_channel_type2         ,
@@ -72,10 +70,10 @@ module ul_compress_data
     output wire    [   7: 0]                        o_info2                 ,
     output wire    [   7: 0]                        o_info3                 ,
 
-    output wire    [  63: 0]                        o_pkg0_power            ,
-    output wire    [  63: 0]                        o_pkg1_power            ,
-    output wire    [  63: 0]                        o_pkg2_power            ,
-    output wire    [  63: 0]                        o_pkg3_power           
+    output wire    [  31: 0]                        o_pkg0_power            ,
+    output wire    [  31: 0]                        o_pkg1_power            ,
+    output wire    [  31: 0]                        o_pkg2_power            ,
+    output wire    [  31: 0]                        o_pkg3_power           
 );         
 
 compress_bit #
@@ -182,25 +180,30 @@ register_shift # (
     .out                                                (o_rbg_idx              ) 
 );
 
+register_shift # (
+    .WIDTH                                              (32                     ),
+    .DEPTH                                              (19                     ) 
+)u_dly_fft_agc(                                        
+    .clk                                                (clk                    ),
+    .in                                                 (i_fft_agc              ),
+    .out                                                (o_fft_agc              ) 
+);
 //--------------------------------------------------------------------------------------
 // ant power unpack
 //--------------------------------------------------------------------------------------
-wire           [7:0][31: 0]                     ant_pwr                 ;
-wire           [7:0][31: 0]                     ant_pwr_dly             ;
+wire           [3:0][31: 0]                     ant_pwr                 ;
+wire           [3:0][31: 0]                     ant_pwr_dly             ;
 
 assign ant_pwr[0] = i_ant_power0;
 assign ant_pwr[1] = i_ant_power1;
 assign ant_pwr[2] = i_ant_power2;
 assign ant_pwr[3] = i_ant_power3;
-assign ant_pwr[4] = i_ant_power4;
-assign ant_pwr[5] = i_ant_power5;
-assign ant_pwr[6] = i_ant_power6;
-assign ant_pwr[7] = i_ant_power7;
+
 
 //--------------------------------------------------------------------------------------
 // ant power delay
 //--------------------------------------------------------------------------------------
-generate for (genvar gi = 0; gi < 8; gi++) begin : gen_ant_power
+generate for (genvar gi = 0; gi < 4; gi++) begin : gen_ant_power
     register_shift # (
         .WIDTH                                              (32                     ),
         .DEPTH                                              (19                     ) 
@@ -215,10 +218,10 @@ endgenerate
 //--------------------------------------------------------------------------------------
 // ant power output 
 //--------------------------------------------------------------------------------------
-assign o_pkg0_power = {ant_pwr_dly[1], ant_pwr_dly[0]};
-assign o_pkg1_power = {ant_pwr_dly[3], ant_pwr_dly[2]};
-assign o_pkg2_power = {ant_pwr_dly[5], ant_pwr_dly[4]};   
-assign o_pkg3_power = {ant_pwr_dly[7], ant_pwr_dly[6]};   
+assign o_pkg0_power = ant_pwr_dly[0];
+assign o_pkg1_power = ant_pwr_dly[1];
+assign o_pkg2_power = ant_pwr_dly[2];   
+assign o_pkg3_power = ant_pwr_dly[3];   
 
 
 

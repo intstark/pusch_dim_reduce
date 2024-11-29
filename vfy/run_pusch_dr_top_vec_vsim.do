@@ -1,5 +1,5 @@
 
-set TOP_LEVEL_NAME "pusch_dr_top_tb"
+set TOP_LEVEL_NAME "pusch_dr_top_vec"
 
 
 if ![info exists WORK_DIR] { 

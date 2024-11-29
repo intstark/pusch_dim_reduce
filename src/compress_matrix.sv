@@ -30,7 +30,7 @@ module compress_matrix
     input  wire    [15:0][31: 0]                    i_beam_pwr              ,
 
     input  wire    [  63: 0]                        i_info_0                ,
-    input  wire    [  63: 0]                        i_info_1                ,
+    input  wire    [15:0][7: 0]                     i_info_1                ,
 
     output wire                                     o_sel                   ,
     output wire                                     o_sop                   ,
@@ -47,7 +47,7 @@ module compress_matrix
     output wire                                     o_cell_idx              ,
     output wire    [   6: 0]                        o_slot_idx              ,
     output wire    [   3: 0]                        o_symb_idx              ,
-    output wire    [  63: 0]                        o_fft_agc                   
+    output wire    [15:0][7:0]                      o_fft_agc                   
 );
 
 
@@ -256,14 +256,18 @@ register_shift # (
     .out                                                ({o_pkg_type,o_cell_idx,o_slot_idx,o_symb_idx}) 
 );
 
-register_shift # (
-    .WIDTH                                              (64                     ),
-    .DEPTH                                              (TOT_CYCLE              ) 
-)u_dly_info_1(
-    .clk                                                (clk                    ),
-    .in                                                 (i_info_1               ),
-    .out                                                (o_fft_agc               ) 
-);
+generate for(gb=0;gb<16;gb=gb+1)begin : dly_info1 
+    register_shift # (
+        .WIDTH                                              (8                      ),
+        .DEPTH                                              (TOT_CYCLE              ) 
+    )u_dly_info_1(
+        .clk                                                (clk                    ),
+        .in                                                 (i_info_1[gb]           ),
+        .out                                                (o_fft_agc[gb]          ) 
+    );
+end
+endgenerate
+
 
 //--------------------------------------------------------------------------------------
 // beam power memory

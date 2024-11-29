@@ -11,7 +11,11 @@
 
 ## Introduction
 
+<div align="center"><img src="./AIU上行处理流程.png" width=800></div>
+
 ### 功能介绍
+
+<div align="center"><img src="./AIU降维处理流程.png" width=800></div>
 
 ### 目录介绍
 
@@ -103,3 +107,20 @@
 + 修改解包解压缩架构，涉及模块：
   + 增加了cpri_rxdata_top模块
   + 增加了cpri_rx_buffer模块，缓存8个符号，同时读取以对齐不同Lane延时差
+
+### 2024.11.21
+
++ 增加何时重新计算降维码本选择序号的模式
+
+### 2024.11.29
+
++ 增加FFT AGC相关功能，涉及的模块包括：
+  + cpri_rx_buffer：分奇偶天线解析FFT AGC字段
+  + agc_unpack：比较所有偶或奇天线中FFT AGC的值大小，找到最小值作为基值，并计算差值作为移位值
+  + cpri_rxdata_unpack：在解压缩之后，将FFT AGC应用到数据中
+  + beams_mem_pick：根据选出来的波束序号对降维后的16天线进行奇偶判断，并根据奇偶选择输出的FFT AGC基值
+  + txdata_queue：将8天线FFT AGC处理成4天线偶/奇天线
+  + dl_package_data：每4RB采样FFT AGC值放置在DW5字段中
++ 波束能量值打包输出按前4A和后4A的方式打包，涉及的模块包括：
+  + txdata_queue：将8天线能量值处理成4天线偶/奇天线
+  + dl_package_data：每4RB采样能量值放置在DW5字段中

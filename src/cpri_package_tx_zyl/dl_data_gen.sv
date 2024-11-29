@@ -9,7 +9,7 @@
 //
 //
 //-----------------------------------------------------------------------------
-module dl_data_gen
+module dl_data_gen # (parameter numDL = 14*264*12)
 (
 
     input  wire           sys_clk_491_52         ,
@@ -20,7 +20,7 @@ module dl_data_gen
     input  wire           sys_rst_245_76         ,      
     input  wire           fpga_clk_250mhz        ,
     input  wire           fpga_rst_250mhz        ,
-    input  wire  [127:0]  dl_data_sim [0:44351]
+    input  wire  [127:0]  dl_data_sim [0:numDL-1]
 );
 
 

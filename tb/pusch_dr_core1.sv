@@ -23,9 +23,9 @@ module pusch_dr_core #(
     input                                           i_clk                   ,// data clock
     input                                           i_reset                 ,// reset
 
-    input                                           i_aiu_idx               ,// aiu index
     input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
-    input          [   1: 0]                        i_dr_mode               ,// re-sort mode
+    input          [   1: 0]                        i_dr_mode               ,// re-sort
+    input          [   1: 0]                        i_aiu_idx               ,// aiu index
 
     // header info
     input          [   3: 0]                        i_pkg_type              ,
@@ -162,7 +162,7 @@ endgenerate
 // rbG number and re number
 //------------------------------------------------------------------------------------------
 reg                                             sym_is_1st            =1;
-reg            [   3: 0]                        ant_buffer_sym        =0;
+reg            [   7: 0]                        ant_buffer_sym        =0;
 
 wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
 
@@ -175,12 +175,40 @@ reg            [   7: 0]                        rbg_num               =0;
 reg            [   7: 0]                        re_num_per_rbg        =0;
 wire           [   7: 0]                        rbg_num_max             ;
 
+reg                                             symb_1st_d1           =0;
+reg                                             symb_1st_d2           =0;
+wire                                            symb_clr                ;
+
+
+always @ (posedge i_clk)begin
+    symb_1st_d2 <= symb_1st_d1;
+    case(i_dr_mode)
+        2'b00:  symb_1st_d1 <= 1'b0;
+        2'b01:  begin // every slot 0 & symbol 0
+                    if(ant_symb_idx[0] == 0 && ant_slot_idx[0] == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        2'b10:  begin // every symbol 0
+                    if(ant_symb_idx[0] == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        default:symb_1st_d1 <= 1'b0;
+    endcase
+end
+
+assign symb_clr = symb_1st_d1 && (~symb_1st_d2);
 
 always @(posedge i_clk) begin
     if(i_reset)
         ant_buffer_sym <= 'd0;
-    else if(ant_buffer_sym == 'd13 && ant_eop[0])
+    else if(symb_clr)
         ant_buffer_sym <= 'd0;
+    else if(ant_buffer_sym == 4)
+        ant_buffer_sym <= 'd4;
     else if(ant_eop[0])
         ant_buffer_sym <= ant_buffer_sym + 'd1;
 end
@@ -188,7 +216,6 @@ end
 always @(posedge i_clk) begin
     if(i_reset)
         sym_is_1st <= 'd1;
-//    else if(ant_symb_idx == 'd0)
     else if(ant_buffer_sym < 'd4)
         sym_is_1st <= 'd1;
     else
@@ -323,15 +350,21 @@ beam_power_calc # (
 )beam_power_calc(
     .i_clk                                              (i_clk                  ),// data clock
     .i_reset                                            (i_reset                ),// reset
+
     .i_rbg_size                                         (i_rbg_size             ),// default:2'b10 16rb
+    .i_symb_clr                                         (symb_clr               ),
+    .i_symb_1st                                         (sym_is_1st             ),   
+
     .i_data_re                                          (beams_ants_i           ),// 4 ants iq addr
     .i_data_im                                          (beams_ants_q           ),// 4 ants iq data
     .i_data_vld                                         (beams_tvalid           ),
     .i_data_eop                                         (beams_eop              ),
     .i_data_sop                                         (beams_sop              ),
+    
     .i_re_num                                           (re_num                 ),
     .i_rbg_num                                          (rbg_num                ),
     .i_rbg_load                                         (rbg_load               ),
+    
     .o_data_sum                                         (rbg_sum_abs            ),
     .o_data_addr                                        (rbg_abs_addr           ),
     .o_data_vld                                         (rbg_sum_vld            ),
@@ -354,9 +387,9 @@ wire                                            beam_sort_load          ;
 //------------------------------------------------------------------------------------------
 beam_buffer #(
     .WDATA_WIDTH                                        (OW                     ),
-    .WADDR_WIDTH                                        (8                      ),
+    .WADDR_WIDTH                                        (6                      ),
     .RDATA_WIDTH                                        (OW                     ),
-    .RADDR_WIDTH                                        (8                      ) 
+    .RADDR_WIDTH                                        (6                      ) 
 )beam_buffer (
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
@@ -384,6 +417,9 @@ beam_sort # (
     .i_enable                                           (rbg_buffer_tvalid      ),
     .i_rready                                           (1'b1                   ),
     .i_rvalid                                           (rbg_buffer_vld         ),
+    
+    .i_symb_clr                                         (symb_clr               ),
+    .i_symb_1st                                         (sym_is_1st             ),
 
     .i_rbg_max                                          (rbg_num_max            ),
     .i_rbg_load                                         (rbg_load               ),

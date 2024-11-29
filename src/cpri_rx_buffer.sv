@@ -23,10 +23,10 @@ module cpri_rx_buffer#(
     parameter integer RDATA_WIDTH        =  64   ,
     parameter integer RADDR_WIDTH        =  12   ,
     parameter integer FIFO_DEPTH         =  8    ,
-    parameter integer FIFO_WIDTH         =  1    ,
+    parameter integer FIFO_WIDTH         =  64   ,
     parameter integer READ_LATENCY       =  3    ,
     parameter integer LOOP_WIDTH         =  15   ,    
-    parameter integer INFO_WIDTH         =  1    ,    
+    parameter integer INFO_WIDTH         =  64   ,    
     parameter integer RAM_TYPE           =  1
 )(
     input                                           i_cpri_clk              ,
@@ -34,7 +34,7 @@ module cpri_rx_buffer#(
 
     input                                           i_clk                   ,
     input                                           i_reset                 ,
-
+    input          [   1: 0]                        i_dr_mode               ,
 
     input          [WDATA_WIDTH-1: 0]               i_rx_data               ,
     input                                           i_rvalid                ,
@@ -42,10 +42,14 @@ module cpri_rx_buffer#(
 
     input                                           i_rd_en                 ,
     output                                          o_rd_vld                ,
+    output                                          o_symb_1st              ,
+    output                                          o_symb_clr              ,
+    output                                          o_symb_eop              ,
 
-    output         [RDATA_WIDTH-1: 0]               o_tx_data               ,
-    output         [   6: 0]                        o_tx_addr               ,
-    output                                          o_tx_last               ,
+    output         [  31: 0]                        o_fft_agc               ,// fft agc
+    output         [RDATA_WIDTH-1: 0]               o_tx_data               ,// cpri data
+    output         [   6: 0]                        o_tx_addr               ,// cpri chip addr
+    output                                          o_tx_last               ,// cpri chip last
     output                                          o_tready                ,
     output                                          o_tvalid                 
 );
@@ -68,6 +72,8 @@ reg            [WADDR_WIDTH-1: 0]               wr_addr               =0;
 reg            [WDATA_WIDTH-1: 0]               wr_data               =0;
 reg            [RADDR_WIDTH-1: 0]               rd_addr               =0;
 wire           [RDATA_WIDTH-1: 0]               rd_data                 ;
+wire           [INFO_WIDTH-1: 0]                wr_info                 ;
+wire           [INFO_WIDTH-1: 0]                rd_info                 ;
 wire                                            rd_en                   ;
 reg            [   6: 0]                        seq_num               =0;
 wire                                            rd_vld                  ;
@@ -84,12 +90,14 @@ wire                                            raddr_least_2           ;
 wire                                            raddr_almost_full       ;
 
 reg            [   3: 0]                        rx_vld_buf            =0;
+reg            [   6: 0]                        slot_idx              =0;
 reg            [   3: 0]                        symb_idx              =0;
 reg                                             rx_vld                =0;
 reg            [3:0][63: 0]                     rx_data_buf           =0;
 reg            [  63: 0]                        cpri_rx_data          =0;
 reg                                             cpri_rx_vld           =0;
-
+reg            [   6: 0]                        slot_idx_out          =0;
+reg            [   3: 0]                        symb_idx_out          =0;
 
 
 //--------------------------------------------------------------------------------------
@@ -97,8 +105,10 @@ reg                                             cpri_rx_vld           =0;
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     rx_vld_buf[3:0] <= {rx_vld_buf[2:0],i_rvalid};
-    if(rx_vld_buf[2])
-        symb_idx <= i_rx_data[11:8];
+    if(rx_vld_buf[2])begin
+        slot_idx <= i_rx_data[18:12];
+        symb_idx <= i_rx_data[11: 8];
+    end
 end
 
 always @(posedge i_clk) begin
@@ -114,6 +124,38 @@ always @(posedge i_clk) begin
         rx_data_buf[i] <= rx_data_buf[i-1];
     end 
 end
+
+//--------------------------------------------------------------------------------------
+// dr re-calcuate mode ctrl 
+//--------------------------------------------------------------------------------------
+reg            [   1: 0]                        dr_mode               =2;
+reg                                             symb_1st_d1           =0;
+reg                                             symb_1st_d2           =0;
+wire                                            symb_clr                ;
+
+always @ (posedge i_clk)begin
+    symb_1st_d2 <= symb_1st_d1;
+    case(i_dr_mode)
+        2'b00:  symb_1st_d1 <= 1'b0;
+        2'b01:  begin // every slot 0 & symbol 0
+                    if(symb_idx_out == 0 && slot_idx_out == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        2'b10:  begin // every symbol 0
+                    if(symb_idx_out == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        default:symb_1st_d1 <= 1'b0;
+    endcase
+end
+
+assign symb_clr = symb_1st_d1 && (~symb_1st_d2);
+
+
 
 //--------------------------------------------------------------------------------------
 // Write logic
@@ -148,8 +190,17 @@ always @ (posedge i_clk)begin
         wr_wlast <= 1'b0;
 end
 
-assign wr_info = (wr_addr==1) ? 1'b1 : 1'b0;
+//assign wr_info = (wr_addr==1) ? 1'b1 : 1'b0;
 
+reg            [  31: 0]                        fft_agc_eve           =0;
+reg            [  31: 0]                        fft_agc_odd           =0;
+always @(posedge i_clk) begin
+    if(wr_addr == 'd4)
+        fft_agc_eve <= wr_data[63:32];
+    else if(wr_addr == 'd1636)
+        fft_agc_odd <= wr_data[63:32];
+end
+assign wr_info = {fft_agc_odd, fft_agc_eve};
 
 //--------------------------------------------------------------------------------------
 // Read logic
@@ -162,12 +213,18 @@ assign raddr_least_2        = (rd_addr == DATA_DEPTH-2) ? 1'b1 : 1'b0;
 always @ (posedge i_clk)begin
     if(i_reset)
         rd_sym_num <= 8'd0;
+    else if(symb_clr)
+        rd_sym_num <= 8'd0;
+    else if(rd_sym_num == 4)
+        rd_sym_num <= 8'd4;
     else if(i_rready && rd_rlast)
         rd_sym_num <= rd_sym_num + 8'd1;
 end
 
 always @ (posedge i_clk)begin
     if(i_reset)
+        sym1_done <= 1'b0;
+    else if(symb_clr)
         sym1_done <= 1'b0;
     else if(rd_sym_num==3 && raddr_least_2)
         sym1_done <= 1'b1;
@@ -259,25 +316,94 @@ loop_buffer_async_intel #(
 //--------------------------------------------------------------------------------------
 // Output 
 //--------------------------------------------------------------------------------------
-reg            [RDATA_WIDTH-1: 0]               rx_data_out           =0;
-reg            [   6: 0]                        tx_addr_out           =0;
-reg                                             tvalid_out            =0;
-reg                                             txlast_out            =0;
+reg            [4:0][RDATA_WIDTH-1: 0]          rx_data_out           =0;
+reg            [   4:0][6:0]                    tx_addr_out           =0;
+reg            [   4: 0]                        tvalid_out            =0;
+reg            [   4: 0]                        txlast_out            =0;
+reg            [   9: 0]                        symb_1st_out          =0;
+reg            [3:0][63: 0]                     rd_info_buf           =0;
+reg            [2:0][RADDR_WIDTH-1: 0]          rd_addr_buf           =0;
+reg            [  31: 0]                        fft_agc               =0;
+reg            [   4: 0]                        symb_eop_out          =0;
+wire                                            symb_eop                ;
 
+//--------------------------------------------------------------------------------------
+// debug 
+//--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    rx_data_out <= rd_data[RDATA_WIDTH-1:0];
-    tx_addr_out <= seq_num;
-    tvalid_out  <= rd_en_buf[2];
-    txlast_out  <= data_last;
+    symb_1st_out<= {symb_1st_out[8:0], ~sym1_done};
 end
 
-assign o_tx_data = rx_data_out;
-assign o_tx_addr = tx_addr_out;
-assign o_tvalid  = tvalid_out ;
-assign o_tx_last = txlast_out ;
-assign o_rd_vld  = rd_vld;
-assign o_tready  = (free_size==0) ? 1'b0 : 1'b1;
+always @(posedge i_clk) begin
+    if(seq_num == 3)begin
+        slot_idx_out <= rd_data[18:12];
+        symb_idx_out <= rd_data[11: 8];
+    end
+end
 
+//--------------------------------------------------------------------------------------
+// FFT AGC
+//--------------------------------------------------------------------------------------
+always @(posedge i_clk) begin
+    if(rd_en)
+        rd_info_buf[0] <= rd_info;
+    else
+        rd_info_buf[0] <= rd_info_buf[0];
+
+    for(int i=1; i<4; i=i+1)begin
+        rd_info_buf[i] <= rd_info_buf[i-1];
+    end
+end
+
+
+always @(posedge i_clk) begin
+    rd_addr_buf[0] <= rd_addr;
+    for(int i=1; i<3; i=i+1)begin
+        rd_addr_buf[i] <= rd_addr_buf[i-1];
+    end
+end
+
+always @(posedge i_clk) begin
+    if(rd_addr_buf[2] == 'd4)
+        fft_agc <= rd_data[63:32];
+    else if(rd_addr_buf[2] == 'd1636)
+        fft_agc <= rd_data[63:32];
+end
+
+assign symb_eop = (rd_addr_buf[2] == 'd1631 || rd_addr_buf[2] == 'd3167) ? 1'b1 : 1'b0;
+
+always @(posedge i_clk) begin
+    symb_eop_out <= {symb_eop_out[3:0], symb_eop};
+end
+
+//--------------------------------------------------------------------------------------
+// Ouput delay match 
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    rx_data_out[0] <= rd_data[RDATA_WIDTH-1:0];
+    tx_addr_out[0] <= seq_num;
+    for(int i=1; i<5; i=i+1)begin
+        rx_data_out[i] <= rx_data_out[i-1];
+        tx_addr_out[i] <= tx_addr_out[i-1];
+    end
+
+    tvalid_out  <= {tvalid_out [3:0], rd_en_buf[2]};
+    txlast_out  <= {txlast_out [3:0], data_last};
+end
+
+assign o_tx_data  = rx_data_out[4];
+assign o_tx_addr  = tx_addr_out[4];
+assign o_tvalid   = tvalid_out [4];
+assign o_tx_last  = txlast_out [4];
+assign o_fft_agc  = fft_agc;//rd_info_buf[3];
+assign o_symb_eop = symb_eop_out[4];
+
+assign o_tready   = (free_size==0) ? 1'b0 : 1'b1;
+assign o_rd_vld   = rd_vld;
+
+
+assign o_symb_1st = symb_1st_out[9];
+assign o_symb_clr = symb_clr;
 
 
 endmodule

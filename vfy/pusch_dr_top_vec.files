@@ -1,4 +1,4 @@
-../../tb/pusch_dr_top_tb.sv
+../../tb/pusch_dr_top_vec.sv
 ../../tb/ant_symbol_buffer.sv
 ../../tb/params_list_pkg.sv
 

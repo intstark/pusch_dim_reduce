@@ -27,18 +27,18 @@
 `include "params_list_pkg.sv"
 
 
-module pusch_dr_top_tb;
+module pusch_dr_top_vec;
 
 
 
-parameter                                           FILE_IQDATA0           = "../vector/datain/ul_data_00.txt";
-parameter                                           FILE_IQDATA1           = "../vector/datain/ul_data_01.txt";
-parameter                                           FILE_IQDATA2           = "../vector/datain/ul_data_02.txt";
-parameter                                           FILE_IQDATA3           = "../vector/datain/ul_data_03.txt";
-parameter                                           FILE_IQDATA4           = "../vector/datain/ul_data_04.txt";
-parameter                                           FILE_IQDATA5           = "../vector/datain/ul_data_05.txt";
-parameter                                           FILE_IQDATA6           = "../vector/datain/ul_data_06.txt";
-parameter                                           FILE_IQDATA7           = "../vector/datain/ul_data_07.txt";
+parameter                                           FILE_IQDATA00          = "../vector/datain/LAN1.txt";
+parameter                                           FILE_IQDATA01          = "../vector/datain/LAN2.txt";
+parameter                                           FILE_IQDATA02          = "../vector/datain/LAN3.txt";
+parameter                                           FILE_IQDATA03          = "../vector/datain/LAN4.txt";
+parameter                                           FILE_IQDATA04          = "../vector/datain/LAN5.txt";
+parameter                                           FILE_IQDATA05          = "../vector/datain/LAN6.txt";
+parameter                                           FILE_IQDATA06          = "../vector/datain/LAN7.txt";
+parameter                                           FILE_IQDATA07          = "../vector/datain/LAN8.txt";
 parameter                                           FILE_TX_DATA           = "./des_tx_data.txt";
 parameter                                           FILE_RX_DATA0          = "./des_rx_data0.txt";
 parameter                                           FILE_RX_DATA1          = "./des_rx_data1.txt";
@@ -61,6 +61,7 @@ parameter                                           FILE_BEAMS_PWR         = "./
 parameter                                           FILE_BEAMS_SORT        = "./des_beams_sort.txt";
 parameter                                           FILE_BEAMS_IDX         = "./des_beams_idx.txt";
 parameter                                           FILE_CPRS_DATA         = "compress_data.txt";
+parameter                                           FILE_DRIN_DATA         = "des_dr_datain.txt";
 
 // Parameters
 parameter                                           numSLOT                = 2     ;
@@ -79,12 +80,16 @@ parameter                                           OW                     = 48 
 
 // Signals
 genvar  gi,gj;
-integer fid_iq_data0, fid_iq_data1, fid_iq_data2, fid_iq_data3, fid_iq_data4, fid_iq_data5, fid_iq_data6, fid_iq_data7;
+integer fid_iq_data00, fid_iq_data01, fid_iq_data02, fid_iq_data03, fid_iq_data04, fid_iq_data05, fid_iq_data06, fid_iq_data07;
+integer fid_iq_data10, fid_iq_data11, fid_iq_data12, fid_iq_data13, fid_iq_data14, fid_iq_data15, fid_iq_data16, fid_iq_data17;
+integer fid_iq_data20, fid_iq_data21, fid_iq_data22, fid_iq_data23, fid_iq_data24, fid_iq_data25, fid_iq_data26, fid_iq_data27;
+integer fid_iq_data30, fid_iq_data31, fid_iq_data32, fid_iq_data33, fid_iq_data34, fid_iq_data35, fid_iq_data36, fid_iq_data37;
 integer fid_tx_data, fid_beams_data;
 integer fid_rx_data0,fid_rx_data1,fid_rx_data2,fid_rx_data3,fid_rx_data4,fid_rx_data5,fid_rx_data6,fid_rx_data7;
 integer fid_uzip_data0,fid_uzip_data1,fid_uzip_data2,fid_uzip_data3,fid_uzip_data4,fid_uzip_data5,fid_uzip_data6,fid_uzip_data7;
 integer fid_beams_pwr, fid_beams_sort,fid_beams_idx;
 integer fid_dr_data;
+integer fid_ants_data;
 
 
 // Inputs
@@ -93,10 +98,10 @@ reg                                             reset                 =1;
 reg                                             tx_hfp                =0;
 reg            [   1: 0]                        rbg_size              =2;
 
-wire           [   7: 0]                        iq_rx_vld               ;
-wire           [7:0][63: 0]                     iq_rx_data              ;
-reg            [7:0][6: 0]                      iq_rx_seq             =0;
-wire           [   7: 0]                        cpri_iq_vld           ;
+//wire           [   7: 0]                        iq_rx_vld               ;
+//wire           [7:0][63: 0]                     iq_rx_data              ;
+//reg            [7:0][6: 0]                      iq_rx_seq             =0;
+//wire           [   7: 0]                        cpri_iq_vld           ;
 
 wire           [   7: 0]                        cpri_clk                ;
 wire           [   7: 0]                        cpri_rst                ;
@@ -105,119 +110,23 @@ wire           [   7: 0]                        cpri_rx_vld             ;
 
 
 
-reg            [ 127: 0]                        ul0_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul1_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul2_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul3_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul4_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul5_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul6_data_sim[0: numDL-1];
-reg            [ 127: 0]                        ul7_data_sim[0: numDL-1];
-
-reg            [ 127: 0]                        ul_data_sim[0:7][0:numDL-1];
-
+reg            [7:0][63: 0]                     cpri_datain           =0;
+reg                                             cpri_data_vld         =0;
+reg            [   6: 0]                        chip_num              =0;
+wire                                            cpri_iq_vld             ;
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-initial $readmemh (FILE_IQDATA0, ul0_data_sim);
-initial $readmemh (FILE_IQDATA1, ul1_data_sim);
-initial $readmemh (FILE_IQDATA2, ul2_data_sim);
-initial $readmemh (FILE_IQDATA3, ul3_data_sim);
-initial $readmemh (FILE_IQDATA4, ul4_data_sim);
-initial $readmemh (FILE_IQDATA5, ul5_data_sim);
-initial $readmemh (FILE_IQDATA6, ul6_data_sim);
-initial $readmemh (FILE_IQDATA7, ul7_data_sim);
-
-
-assign ul_data_sim[0] = ul0_data_sim;
-assign ul_data_sim[1] = ul1_data_sim;
-assign ul_data_sim[2] = ul2_data_sim;
-assign ul_data_sim[3] = ul3_data_sim;
-assign ul_data_sim[4] = ul4_data_sim;
-assign ul_data_sim[5] = ul5_data_sim;
-assign ul_data_sim[6] = ul6_data_sim;
-assign ul_data_sim[7] = ul7_data_sim;
-
-
-//------------------------------------------------------------------------------------------
-// DL
-//------------------------------------------------------------------------------------------
-generate for (gi=0; gi<8; gi=gi+1) begin:gen_dl_data 
-    dl_data_gen # (
-        .numDL                                              (numDL                  ) 
-    )dl_data_gen(
-
-        .sys_clk_491_52                                     (i_clk                  ),
-        .sys_rst_491_52                                     (reset                  ),
-        .sys_clk_368_64                                     (i_clk                  ),
-        .sys_rst_368_64                                     (reset                  ),
-        .sys_clk_245_76                                     (reset                  ),
-        .sys_rst_245_76                                     (reset                  ),
-        .fpga_clk_250mhz                                    (i_clk                  ),
-        .fpga_rst_250mhz                                    (reset                  ),
-        .dl_data_sim                                        (ul_data_sim[gi]        )
-    );
-end
-endgenerate
-
-
-assign iq_rx_data[0] = gen_dl_data[0].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [0] = gen_dl_data[0].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[1] = gen_dl_data[1].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [1] = gen_dl_data[1].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[2] = gen_dl_data[2].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [2] = gen_dl_data[2].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[3] = gen_dl_data[3].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [3] = gen_dl_data[3].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[4] = gen_dl_data[4].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [4] = gen_dl_data[4].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[5] = gen_dl_data[5].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [5] = gen_dl_data[5].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[6] = gen_dl_data[6].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [6] = gen_dl_data[6].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-assign iq_rx_data[7] = gen_dl_data[7].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_data;
-assign iq_rx_vld [7] = gen_dl_data[7].dl_data_gen.ant_parallel[0].u_dl_symb_if.o_iq_tx_valid;
-
-
-always @(posedge i_clk) begin
-    for(int i=0; i<8; i++) begin
-        if(iq_rx_seq[i] == 95)
-            iq_rx_seq[i] <= 0;
-        else if(iq_rx_vld[i])
-            iq_rx_seq[i] <= iq_rx_seq[i] + 1;
-        else
-            iq_rx_seq[i] <= 0;
-    end
-end
-
-reg            [  63: 0]                        l1_iq_rx_data           ;
-reg                                             l1_iq_rx_vld            ;
-always @(posedge i_clk) begin
-    l1_iq_rx_data <= iq_rx_data[0];
-    l1_iq_rx_vld <= cpri_iq_vld[0];
-end
-
-generate for (gi=0; gi<8; gi=gi+1) begin: gen_cpri_vld 
-    assign cpri_iq_vld[gi] = (iq_rx_vld[gi] && (iq_rx_seq[gi] == 0)) ? 1'b1 : 1'b0;
-end
-endgenerate
-
-
 
 assign cpri_clk          = {8{i_clk}};
 assign cpri_rst          = {8{reset}};
-//assign cpri_rx_data[0]   = l1_iq_rx_data;
-//assign cpri_rx_vld [0]   = l1_iq_rx_vld;
-assign cpri_rx_data[7:0] = iq_rx_data [7:0];
-assign cpri_rx_vld [7:0] = cpri_iq_vld[7:0];
-//assign cpri_rx_data[7:0] = {8{iq_rx_data [0]}};
-//assign cpri_rx_vld [7:0] = {8{cpri_iq_vld[0]}};
+assign cpri_rx_data[7:0] = cpri_datain; 
+assign cpri_rx_vld [7:0] = {8{cpri_iq_vld}};
 
 
 reg            [  15: 0]                        sim_cnt                 ;
 reg            [   6: 0]                        iq_tx_cnt               ;
 reg                                             iq_tx_enable            ;
-reg            [   8: 0]                        chip_num                ;
 
 
 always @ (posedge i_clk)
@@ -326,10 +235,71 @@ end
 
 
 //------------------------------------------------------------------------------------------
+// Input data file
+//------------------------------------------------------------------------------------------
+initial begin
+    fid_iq_data00   = $fopen(FILE_IQDATA00,"r");
+    fid_iq_data01   = $fopen(FILE_IQDATA01,"r");
+    fid_iq_data02   = $fopen(FILE_IQDATA02,"r");
+    fid_iq_data03   = $fopen(FILE_IQDATA03,"r");
+    fid_iq_data04   = $fopen(FILE_IQDATA04,"r");
+    fid_iq_data05   = $fopen(FILE_IQDATA05,"r");
+    fid_iq_data06   = $fopen(FILE_IQDATA06,"r");
+    fid_iq_data07   = $fopen(FILE_IQDATA07,"r");
+
+    if(fid_iq_data00)
+        $display("succeed open file %s",FILE_TX_DATA);
+
+    #(`SIM_ENDS_TIME);
+    $fclose(fid_iq_data00);
+    $fclose(fid_iq_data01);
+    $fclose(fid_iq_data02);
+    $fclose(fid_iq_data03);
+    $fclose(fid_iq_data04);
+    $fclose(fid_iq_data05);
+    $fclose(fid_iq_data06);
+    $fclose(fid_iq_data07);
+    $stop;
+end
+
+
+
+always @(posedge i_clk) begin
+    if(!reset)begin
+        $fscanf(fid_iq_data00, "%h\n", cpri_datain[0]);
+        $fscanf(fid_iq_data01, "%h\n", cpri_datain[1]);
+        $fscanf(fid_iq_data02, "%h\n", cpri_datain[2]);
+        $fscanf(fid_iq_data03, "%h\n", cpri_datain[3]);
+        $fscanf(fid_iq_data04, "%h\n", cpri_datain[4]);
+        $fscanf(fid_iq_data05, "%h\n", cpri_datain[5]);
+        $fscanf(fid_iq_data06, "%h\n", cpri_datain[6]);
+        $fscanf(fid_iq_data07, "%h\n", cpri_datain[7]);
+
+        cpri_data_vld <= 1'b1;
+
+        if(chip_num == 95)
+            chip_num <= 0;
+        else if(cpri_data_vld)
+            chip_num <= chip_num + 1;
+    end
+end
+
+assign cpri_iq_vld = (cpri_data_vld && chip_num == 0) ? 1'b1 : 1'b0;
+
+reg            [7:0][63: 0]                     fft_agc               =0;
+always @(posedge i_clk) begin
+    for(int i=0; i<8; i++)begin
+        if(chip_num == 4)
+            fft_agc[i] <= cpri_datain[i];
+    end
+end
+
+//------------------------------------------------------------------------------------------
 // Output data file
 //------------------------------------------------------------------------------------------
 initial begin
     fid_tx_data     = $fopen(FILE_TX_DATA,"w");
+    
     fid_rx_data0    = $fopen(FILE_RX_DATA0,"w");
     fid_rx_data1    = $fopen(FILE_RX_DATA1,"w");
     fid_rx_data2    = $fopen(FILE_RX_DATA2,"w");
@@ -338,6 +308,7 @@ initial begin
     fid_rx_data5    = $fopen(FILE_RX_DATA5,"w");
     fid_rx_data6    = $fopen(FILE_RX_DATA6,"w");
     fid_rx_data7    = $fopen(FILE_RX_DATA7,"w");
+    
     fid_uzip_data0  = $fopen(FILE_UZIP_DATA0,"w");
     fid_uzip_data1  = $fopen(FILE_UZIP_DATA1,"w");
     fid_uzip_data2  = $fopen(FILE_UZIP_DATA2,"w");
@@ -346,11 +317,13 @@ initial begin
     fid_uzip_data5  = $fopen(FILE_UZIP_DATA5,"w");
     fid_uzip_data6  = $fopen(FILE_UZIP_DATA6,"w");
     fid_uzip_data7  = $fopen(FILE_UZIP_DATA7,"w");
+    
     fid_beams_data  = $fopen(FILE_BEAMS_DATA,"w");
     fid_beams_pwr   = $fopen(FILE_BEAMS_PWR,"w");
     fid_beams_sort  = $fopen(FILE_BEAMS_SORT,"w");
     fid_beams_idx   = $fopen(FILE_BEAMS_IDX,"w");
     fid_dr_data     = $fopen(FILE_CPRS_DATA, "w");
+    fid_ants_data   = $fopen(FILE_DRIN_DATA, "w");
 
     if(fid_tx_data)
         $display("succeed open file %s",FILE_TX_DATA);
@@ -368,6 +341,8 @@ initial begin
         $display("succeed open file %s",FILE_BEAMS_IDX);
     if(fid_dr_data)
         $display("succeed open file %s",FILE_CPRS_DATA);
+    if(fid_ants_data)
+        $display("succeed open file %s",FILE_DRIN_DATA);
 
     #(`SIM_ENDS_TIME);
     $fclose(fid_tx_data );
@@ -380,8 +355,9 @@ initial begin
     $fclose(fid_beams_sort );
     $fclose(fid_beams_idx  );
     $fclose(fid_dr_data    );
-    $stop;
+    $fclose(fid_ants_data  );
 end
+
 
 //------------------------------------------------------------------------------------------
 // Task iq write to file
@@ -505,6 +481,29 @@ task write_dr_data;
                                 o_dout_re[15][15: 0] , o_dout_im[15][15: 0]
     );
 endtask
+
+//------------------------------------------------------------------------------------------
+// Task iq write to file
+//------------------------------------------------------------------------------------------
+task write_dr_datain;
+    input integer desfid;
+    input valid;
+    input [7:0][127:0] din;
+
+    if(valid)
+        $fwrite(desfid,"%d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d,\
+                        %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d, %d,%d,%d,%d\n", 
+                        din[ 0][0*32+16 +: 16],din[ 0][0*32 +: 16], din[ 0][1*32+16 +: 16],din[ 0][1*32 +: 16], din[ 0][2*32+16 +: 16],din[ 0][2*32 +: 16], din[ 0][3*32+16 +: 16],din[ 0][3*32 +: 16],
+                        din[ 1][0*32+16 +: 16],din[ 1][0*32 +: 16], din[ 1][1*32+16 +: 16],din[ 1][1*32 +: 16], din[ 1][2*32+16 +: 16],din[ 1][2*32 +: 16], din[ 1][3*32+16 +: 16],din[ 1][3*32 +: 16],
+                        din[ 2][0*32+16 +: 16],din[ 2][0*32 +: 16], din[ 2][1*32+16 +: 16],din[ 2][1*32 +: 16], din[ 2][2*32+16 +: 16],din[ 2][2*32 +: 16], din[ 2][3*32+16 +: 16],din[ 2][3*32 +: 16],
+                        din[ 3][0*32+16 +: 16],din[ 3][0*32 +: 16], din[ 3][1*32+16 +: 16],din[ 3][1*32 +: 16], din[ 3][2*32+16 +: 16],din[ 3][2*32 +: 16], din[ 3][3*32+16 +: 16],din[ 3][3*32 +: 16],
+                        din[ 4][0*32+16 +: 16],din[ 4][0*32 +: 16], din[ 4][1*32+16 +: 16],din[ 4][1*32 +: 16], din[ 4][2*32+16 +: 16],din[ 4][2*32 +: 16], din[ 4][3*32+16 +: 16],din[ 4][3*32 +: 16],
+                        din[ 5][0*32+16 +: 16],din[ 5][0*32 +: 16], din[ 5][1*32+16 +: 16],din[ 5][1*32 +: 16], din[ 5][2*32+16 +: 16],din[ 5][2*32 +: 16], din[ 5][3*32+16 +: 16],din[ 5][3*32 +: 16],
+                        din[ 6][0*32+16 +: 16],din[ 6][0*32 +: 16], din[ 6][1*32+16 +: 16],din[ 6][1*32 +: 16], din[ 6][2*32+16 +: 16],din[ 6][2*32 +: 16], din[ 6][3*32+16 +: 16],din[ 6][3*32 +: 16],
+                        din[ 7][0*32+16 +: 16],din[ 7][0*32 +: 16], din[ 7][1*32+16 +: 16],din[ 7][1*32 +: 16], din[ 7][2*32+16 +: 16],din[ 7][2*32 +: 16], din[ 7][3*32+16 +: 16],din[ 7][3*32 +: 16]
+    );
+endtask
+
 
 // rx data after uncompress
 always @(posedge i_clk) begin
@@ -752,6 +751,16 @@ always @(posedge i_clk) begin
                         pusch_dr_top.cpri_rxdata_top.gen_rxdata_unpack[7].cpri_rxdata_unpack_4ant.rb_shift   [3]   
                     );
 end
+//------------------------------------------------------------------------------------------
+// Write dr datain 
+//------------------------------------------------------------------------------------------
+always @(posedge i_clk) 
+    write_dr_datain(
+                        fid_ants_data, 
+                        pusch_dr_top.unpack_iq_vld,
+                        pusch_dr_top.unpack_iq_data
+    );
+
 
 //------------------------------------------------------------------------------------------
 // Write beam power 

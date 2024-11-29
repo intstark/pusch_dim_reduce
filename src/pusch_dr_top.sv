@@ -24,7 +24,7 @@ module pusch_dr_top #(
     input                                           i_reset                 , // reset
 
     input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
-    input          [   1: 0]                        i_dr_mode               ,// re-sort mode
+    input          [   1: 0]                        i_dr_mode               , // re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
     // cpri rxdata
     input                                           i_l0_cpri_clk           , // cpri clkout
@@ -95,12 +95,11 @@ wire           [LANE-1:0][4*32-1: 0]            unpack_iq_data          ;
 wire           [LANE-1: 0]                      unpack_iq_vld           ;
 wire           [LANE-1: 0]                      unpack_iq_last          ;
 wire           [LANE-1:0][63:0]                 unpack_info_0           ;
-wire           [LANE-1:0][63:0]                 unpack_info_1           ;
+wire           [LANE-1:0][ 7:0]                 unpack_info_1           ;
 wire           [   3: 0]                        pkg_type                ;
 wire           [   6: 0]                        slot_idx                ;
 wire           [   3: 0]                        symb_idx                ;
 wire                                            cell_idx                ;
-
 
 wire           [LANE-1: 0]                      w_cpri_clk              ;
 wire           [LANE-1: 0]                      w_cpri_rst              ;
@@ -117,8 +116,9 @@ wire           [   3: 0]                        dr_pkg_type             ;
 wire                                            dr_cell_idx             ;
 wire           [   6: 0]                        dr_slot_idx             ;
 wire           [   3: 0]                        dr_symb_idx             ;
-wire           [  63: 0]                        dr_fft_agc              ;
+wire           [15:0][ 7: 0]                    dr_fft_agc              ;
 wire           [15:0][31: 0]                    dr_beam_pwr             ;
+
 
 //------------------------------------------------------------------------------------------
 // arrange cpri data for 8 lanes
@@ -153,6 +153,7 @@ cpri_rxdata_top                                         cpri_rxdata_top
 
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
+    .i_dr_mode                                          (i_dr_mode              ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
     .i_cpri_clk                                         (w_cpri_clk             ),
     .i_cpri_rst                                         (w_cpri_rst             ),
@@ -163,12 +164,12 @@ cpri_rxdata_top                                         cpri_rxdata_top
     .o_slot_idx                                         (slot_idx               ),
     .o_symb_idx                                         (symb_idx               ),
     .o_cell_idx                                         (cell_idx               ),
-    .o_info_0                                           (unpack_info_0          ),  // IQ HD
-    .o_info_1                                           (unpack_info_1          ),  // FFT AGC
-    .o_iq_addr                                          (unpack_iq_addr         ),  // CPRI IQ addr
-    .o_iq_data                                          (unpack_iq_data         ),  // CPRI IQ data
-    .o_iq_vld                                           (unpack_iq_vld          ),  // CPRI IQ valid
-    .o_iq_last                                          (unpack_iq_last         )   // CPRI IQ last(132prb ends)
+    .o_info_0                                           (unpack_info_0          ),// IQ HD
+    .o_info_1                                           (unpack_info_1          ),// FFT AGC
+    .o_iq_addr                                          (unpack_iq_addr         ),// CPRI IQ addr
+    .o_iq_data                                          (unpack_iq_data         ),// CPRI IQ data
+    .o_iq_vld                                           (unpack_iq_vld          ),// CPRI IQ valid
+    .o_iq_last                                          (unpack_iq_last         ) // CPRI IQ last(132prb ends)
 );
 
 
@@ -180,19 +181,19 @@ pusch_dr_core                                           pusch_dr_core(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
     
-    .i_rbg_size                                         (i_rbg_size             ),
-    .i_dr_mode                                          (i_dr_mode              ),
+    .i_rbg_size                                         (i_rbg_size             ),// default:2'b10 16rb
+    .i_dr_mode                                          (i_dr_mode              ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
     .i_pkg_type                                         (pkg_type               ),
     .i_slot_idx                                         (slot_idx               ),
     .i_symb_idx                                         (symb_idx               ),
     .i_cell_idx                                         (cell_idx               ),
-    .i_info_0                                           (unpack_info_0          ),  // IQ HD
-    .i_info_1                                           (unpack_info_1          ),  // FFT AGC
-    .i_iq_addr                                          (unpack_iq_addr         ),  // 32 ants iq addr
-    .i_iq_data                                          (unpack_iq_data         ),  // 32 ants iq datat
-    .i_iq_vld                                           (unpack_iq_vld          ),  // 32 ants iq vld
-    .i_iq_last                                          (unpack_iq_last         ),  // 32 ants iq last(132prb ends)
+    .i_info_0                                           (unpack_info_0          ),// IQ HD
+    .i_info_1                                           (unpack_info_1          ),// FFT AGC
+    .i_iq_addr                                          (unpack_iq_addr         ),// 32 ants iq addr
+    .i_iq_data                                          (unpack_iq_data         ),// 32 ants iq datat
+    .i_iq_vld                                           (unpack_iq_vld          ),// 32 ants iq vld
+    .i_iq_last                                          (unpack_iq_last         ),// 32 ants iq last(132prb ends)
 
     .o_beam_pwr                                         (dr_beam_pwr            ),
     .o_dr_data                                          (dr_data                ),

@@ -26,6 +26,8 @@ module beam_power_calc # (
     input                                           i_reset                 ,   // reset
 
     input          [   1: 0]                        i_rbg_size              ,   // default:2'b10 16rb
+    input                                           i_symb_clr              ,
+    input                                           i_symb_1st              ,
 
     // cpri rxdata
     input          [BEAM-1:0][IW-1: 0]              i_data_re               ,// 4 ants iq addr
@@ -38,7 +40,8 @@ module beam_power_calc # (
     input          [   7: 0]                        i_rbg_num               ,
     input                                           i_rbg_load              ,
 
-    // output dr data
+
+    // output power
     output         [BEAM-1:0][OW-1: 0]              o_data_sum              ,
     output         [   7: 0]                        o_data_addr             ,
     output                                          o_data_vld              ,
@@ -51,9 +54,18 @@ module beam_power_calc # (
 // PARAMETER
 //--------------------------------------------------------------------------------------
 genvar gi;
+reg            [   5: 0]                        symb_clr_dly          =0;
+reg            [   5: 0]                        symb_1st_dly          =0;
 
 
 
+//------------------------------------------------------------------------------------------
+// delay symb_clr and symb_1st
+//------------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    symb_clr_dly <= {symb_clr_dly[4:0], i_symb_clr};
+    symb_1st_dly <= {symb_1st_dly[4:0], i_symb_1st};
+end
 
 //------------------------------------------------------------------------------------------
 // ABS |I|+|Q|: 2 clock cycle
@@ -112,7 +124,7 @@ always @(posedge i_clk) begin
     beam_tlast_buf <= {beam_tlast_buf[1:0], i_data_eop};
 end
 
-assign iq_abs_vld    = beam_tvalid_buf[1];   // 2 clock cycle delay
+assign iq_abs_vld    = beam_tvalid_buf[1] && symb_1st_dly[5];   // 2 clock cycle delay
 assign rbg_acc_valid = beam_tvalid_buf[4];  // 4 clock cycle delay
 assign rbg_acc_tlast = beam_tlast_buf[2];  // 4 clock cycle delay
 
@@ -211,6 +223,7 @@ always @ (posedge i_clk) begin
     else if(rbg_sum_vld && rbg_sum_wen)
         rbg_abs_addr <= rbg_abs_addr + 8'd1;
 end
+
 
 
 assign o_data_sum  = rbg_sum_abs;

@@ -31,6 +31,8 @@ module beam_sort # (
     input                                           i_enable                ,
     input                                           i_rready                ,
     input                                           i_rvalid                ,
+    input                                           i_symb_clr              ,
+    input                                           i_symb_1st              ,
 
     input          [   7: 0]                        i_rbg_max               ,
     input                                           i_rbg_load              ,
@@ -56,6 +58,7 @@ module beam_sort # (
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
+reg                                             reset_syn             =0;
 wire           [COL-1:0][IW-1: 0]               data                    ;
 reg            [COL-1:0][7: 0]                  score                 =0;
 reg                     [3:0]                   tvalid                =0;
@@ -80,6 +83,17 @@ reg            [3:0][7: 0]                      data_idx              =0;
 reg            [   7: 0]                        data_num              =0;
 reg                                             sym_1st_done          =0;
 
+//--------------------------------------------------------------------------------------
+// data buffer 
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    if(i_reset)
+        reset_syn <= 1'b1;
+    else if(i_symb_clr)
+        reset_syn <= 1'b1;
+    else
+        reset_syn <= 1'b0;
+end
 
 //--------------------------------------------------------------------------------------
 // data buffer 
@@ -127,7 +141,7 @@ generate for(idx=0; idx<4; idx=idx+1) begin: par_compare_x16
         .COL                                                (COL                    ) 
     ) par_compare (
         .i_clk                                              (i_clk                  ),
-        .i_reset                                            (i_reset                ),
+        .i_reset                                            (reset_syn              ),
         .i_data                                             (data_in [idx]          ),
         .i_index                                            (data_idx[idx]          ),
         .i_rready                                           (rready_in              ),
@@ -220,7 +234,7 @@ always @ (posedge i_clk)begin
 end	
 
 always @ (posedge i_clk)begin
-    if(i_reset)
+    if(reset_syn)
         rbg_num <= 'd0;
     else if(enable_buf[27]==0 && enable_buf[26]==1)
         rbg_num <= 'd0;
@@ -228,12 +242,12 @@ always @ (posedge i_clk)begin
         rbg_num <= rbg_num + 'd1;
 end
 
+
 always @ (posedge i_clk)begin
-    if(i_reset)
+    if(reset_syn)
         sort_done <= 'd0;
     else if(sort_vld)
         sort_done <= 'd1;
-
 end
 
 //--------------------------------------------------------------------------------------
@@ -297,7 +311,7 @@ end
 
 
 always @(posedge i_clk) begin
-    if(i_reset)
+    if(reset_syn)
         pwr_rden <= 1'b0;
     else if(rd_init_sop)
         pwr_rden <= 1'b1;
@@ -308,7 +322,7 @@ always @(posedge i_clk) begin
 end 
 
 always @(posedge i_clk) begin
-    if(i_reset)
+    if(reset_syn)
         bram_pwr_raddr <= 'd0;
     else if(sort_done && bram_pwr_rden)begin
         if(bram_pwr_raddr==i_rbg_max)
@@ -353,7 +367,7 @@ assign bram_idx_waddr = {rbg_num[3:0]};
 always @ (posedge i_clk)begin
     wr_wen_buf <= {wr_wen_buf[6:0], wr_wen};
 
-    if(i_reset)
+    if(reset_syn)
         rdout_en <= 1'b0;
     else if(rbg_num==2)
         rdout_en <= 1'b1;
@@ -367,7 +381,7 @@ assign bid_rden_2nd = (sym_1st_done) ? i_rbg_load : rd_init;
 
 
 always @(posedge i_clk) begin
-    if(i_reset)
+    if(reset_syn)
         bram_idx_raddr <= 'd0;
     else if(rd_eop)
         bram_idx_raddr <= 'd0;
@@ -433,10 +447,9 @@ dram_beam_index
 // the first read out 
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    if(i_reset)
+    if(reset_syn)
         sym_1st_done <= 1'b0;
-    else if(rd_init_sop)
-        sym_1st_done <= 1'b0;
+    //else if(rd_init_sop)
     else if(rd_eop)
         sym_1st_done <= 1'b1;
 end
@@ -452,11 +465,14 @@ end
 always @ (posedge i_clk)begin
     rdout_en_buf[2:0] <=  {rdout_en_buf[1:0], rdout_en};
 
-    if(rdout_en_buf[2])begin
+    if(!rdout_en)begin
+        rd_init     <= 0;
+        rd_init_sop <= 0;
+    end else if(rdout_en_buf[2])begin
+        rd_init     <= fifo_rdout;
         rd_init_sop <= 0;   
-        rd_init <= fifo_rdout;
     end else begin
-        rd_init <= 0;
+        rd_init     <= 0;
         rd_init_sop <= fifo_rdout;
     end
 end
@@ -465,7 +481,7 @@ FIFO_SYNC_XPM_intel #(
     .NUMWORDS                                           (512                    ),
     .DATA_WIDTH                                         (1                      ) 
 )fifo_sync_rdinit(                                                                   
-    .rst                                                (i_reset                ),
+    .rst                                                (reset_syn              ),
     .clk                                                (i_clk                  ),
     .wr_en                                              (sort_done              ),
     .din                                                (bid_rden_1st           ),
@@ -493,7 +509,10 @@ reg            [   3: 0]                        sym_1st_done_buf      =0;
 
 
 always @ (posedge i_clk)begin
-    rbg_sop_out <= rd_init_sop;
+    if(sym_1st_done)
+        rbg_sop_out <= i_rbg_load;
+    else
+        rbg_sop_out <= rd_init_sop;
 end
 
 always @ (posedge i_clk)begin
@@ -514,6 +533,15 @@ end
 always @(posedge i_clk) begin
     for(int i=0; i<16; i=i+1) begin: index_out_vec
         beam_index_out[i] <= bram_idx_rdata[i*8 +: 8];
+    end
+end
+reg            [15:0][7: 0]                     beam_index_out2       =0;
+always @(posedge i_clk) begin
+    for(int i=0; i<16; i=i+1) begin: index_out_vec
+        if(!sym_1st_done)
+            beam_index_out2[i] <= bram_idx_rdata[i*8 +: 8];
+        else if(i_rbg_load)
+            beam_index_out2[i] <= bram_idx_rdata[i*8 +: 8];
     end
 end
 

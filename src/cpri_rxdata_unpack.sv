@@ -31,13 +31,16 @@ module cpri_rxdata_unpack # (
     input                                           i_cpri_last             ,
     input                                           i_cpri_vld              ,
 
+    input          [   7: 0]                        i_fft_agc               ,
+    input          [  31: 0]                        i_fft_shift             ,
+
     output                                          o_tready                ,
     output         [   3: 0]                        o_pkg_type              ,
     output         [   6: 0]                        o_slot_idx              ,
     output         [   3: 0]                        o_symb_idx              ,
     output                                          o_cell_idx              ,
-    output         [  63: 0]                        o_info_0                ,
-    output         [  63: 0]                        o_info_1                ,
+    output         [  63: 0]                        o_info_0                ,//IQ HD
+    output         [   7: 0]                        o_info_1                ,//FFT AGC
     output         [  10: 0]                        o_iq_addr               ,
     output         [ANT*32-1: 0]                    o_iq_data               ,
     output                                          o_iq_vld                ,
@@ -79,6 +82,8 @@ reg            [ANT-1:0][7: 0]                  raddr                 =0;
 
 reg                                             prb_reached_132       =0;
 
+wire           [   7: 0]                        fft_agc_base            ;
+wire           [  31: 0]                        fft_agc_shift           ;
 wire           [ 255: 0]                        cpri_rx_info            ;
 wire           [  63: 0]                        cpri_iq_data            ;
 reg            [  63: 0]                        cpri_iq_data_r1       =0;
@@ -87,6 +92,7 @@ wire                                            unpack_ready            ;
 reg            [   1: 0]                        unpack_vld_buf        =0;
 reg                                             ant_package_valid     =0;
 reg                                             data_unpack_vld       =0;
+reg                                             data_fft_uncprs_vld   =0;
 reg            [3:0][13: 0]                     ant_package           ='{default:0};
 reg            [3:0][3: 0]                      rb_shift              ='{default:0};
 reg            [   2: 0]                        prb_cnt_cycle         =0;
@@ -102,12 +108,20 @@ cpri_rx_gen                                             u_cpri_rx_gen
     .wr_rst                                             (i_reset                ),
     .rd_clk                                             (i_clk                  ),
     .rd_rst                                             (i_reset                ),
+
     .i_cpri_wen                                         (i_cpri_vld             ),
     .i_cpri_waddr                                       (i_cpri_addr            ),
     .i_cpri_wdata                                       (i_cpri_data            ),
     .i_cpri_wlast                                       (i_cpri_last            ),
+
+    .i_fft_agc                                          (i_fft_agc              ),
+    .i_fft_shift                                        (i_fft_shift            ),
     .i_rready                                           (unpack_ready           ),
     .i_rx_enable                                        (1'b1                   ),
+
+    .o_fft_agc                                          (fft_agc_base           ),
+    .o_fft_shift                                        (fft_agc_shift          ),
+
     .o_tvalid                                           (cpri_iq_vld            ),
     .o_tready                                           (o_tready               ),
     .o_iq_raddr                                         (cpri_iq_raddr          ),
@@ -252,6 +266,12 @@ generate
     end
 endgenerate
 
+always @(posedge i_clk) begin
+    unpack_vld_buf      <= {unpack_vld_buf[0],ant_package_valid};
+    data_unpack_vld     <= unpack_vld_buf[1];
+end
+
+
 
 
 //--------------------------------------------------------------------------------------
@@ -259,11 +279,50 @@ endgenerate
 //--------------------------------------------------------------------------------------
 wire           [  63: 0]                        header_info_0           ;
 wire           [  63: 0]                        header_info_1           ;
-reg            [4:0][63:0]                      dout_info0            =0;
-reg            [4:0][63:0]                      dout_info1            =0;
+reg            [5:0][63: 0]                     dout_info0            =0;
+reg            [5:0][ 7: 0]                     dout_info1            =0;
+reg            [3:0][31: 0]                     fft_agc_shift_buf     =0;
+wire           [  31: 0]                        fft_agc_shift_val       ;
 
-assign header_info_0 = cpri_rx_info[63:0];
+assign header_info_0 = cpri_rx_info[63:0];      // DW3 IQ HD
 assign header_info_1 = cpri_rx_info[127:64];
+
+always @(posedge i_clk) begin
+    fft_agc_shift_buf[0] <= fft_agc_shift;
+    for(int i=1; i<4; i++)begin
+        fft_agc_shift_buf[i] <= fft_agc_shift_buf[i-1];
+    end
+end
+
+assign fft_agc_shift_val = fft_agc_shift_buf[3];
+
+
+//--------------------------------------------------------------------------------------
+// FFT AGC decompress 
+//--------------------------------------------------------------------------------------
+wire           [3:0][31: 0]                     data_fft_uncprs         ;
+reg            [3:0][15: 0]                     data_fft_uncprs_i     =0;
+reg            [3:0][15: 0]                     data_fft_uncprs_q     =0;
+
+generate for(ant=0; ant<4; ant++) begin: fft_agc_decompress
+    always @(posedge i_clk) begin
+        if(data_unpack_vld)begin
+            data_fft_uncprs_i[ant] <= 16'(signed'(data_unpack_i[ant]) << fft_agc_shift_val[ant*8 +: 8]);
+            data_fft_uncprs_q[ant] <= 16'(signed'(data_unpack_q[ant]) << fft_agc_shift_val[ant*8 +: 8]);
+        end
+    end
+
+    assign data_fft_uncprs[ant] = {data_fft_uncprs_i[ant],data_fft_uncprs_q[ant]};
+end
+endgenerate
+
+
+always @(posedge i_clk) begin
+    data_fft_uncprs_vld <= data_unpack_vld;
+end
+
+
+
 
 
 //--------------------------------------------------------------------------------------
@@ -277,16 +336,11 @@ always @ (posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    unpack_vld_buf  <= {unpack_vld_buf[0],ant_package_valid};
-    data_unpack_vld <= unpack_vld_buf[1];
-end
-
-always @(posedge i_clk) begin
     if(i_reset)
         iq_addr <= 0;
     else if(iq_addr == 'd1583)
         iq_addr <= 0;
-    else if(data_unpack_vld)
+    else if(data_fft_uncprs_vld)
         iq_addr <= iq_addr + 'd1;
     else
         iq_addr <= iq_addr;
@@ -304,14 +358,14 @@ reg            [  10: 0]                        iq_addr_out           =0;
 
 always @(posedge i_clk) begin
     for(int i=0; i<ANT; i++)begin
-        if(data_unpack_vld) begin
-            iq_data_out[i*32 +: 32] <= data_unpack[i];
+        if(data_fft_uncprs_vld) begin
+            iq_data_out[i*32 +: 32] <= data_fft_uncprs[i];
         end
     end
 end
 
 always @(posedge i_clk) begin
-    iq_vld_out  <= data_unpack_vld;
+    iq_vld_out  <= data_fft_uncprs_vld;
     iq_addr_out <= iq_addr;
     if(iq_addr == 'd1583)
         iq_last_out <= 1;
@@ -320,9 +374,9 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    dout_info0[0] <= header_info_0;
-    dout_info1[0] <= header_info_1;
-    for(int i=1; i<5; i++)begin
+    dout_info0[0] <= header_info_0; // IQ HD
+    dout_info1[0] <= fft_agc_base;  // FFT AGC
+    for(int i=1; i<6; i++)begin
         dout_info0[i] <= dout_info0[i-1];
         dout_info1[i] <= dout_info1[i-1];
     end
@@ -334,10 +388,10 @@ reg            [   6: 0]                        slot_idx_out          =0;
 reg            [   3: 0]                        symb_idx_out          =0;
 
 always @(posedge i_clk) begin
-    pkg_type_out <= dout_info0[3][39:36];
-    cell_idx_out <= dout_info0[3][19];
-    slot_idx_out <= dout_info0[3][18:12];
-    symb_idx_out <= dout_info0[3][11:8];
+    pkg_type_out <= dout_info0[4][39:36];
+    cell_idx_out <= dout_info0[4][19];
+    slot_idx_out <= dout_info0[4][18:12];
+    symb_idx_out <= dout_info0[4][11:8];
 end
 
 
@@ -345,8 +399,8 @@ assign o_iq_data  = iq_data_out;
 assign o_iq_addr  = iq_addr_out;
 assign o_iq_vld   = iq_vld_out;
 assign o_iq_last  = iq_last_out;
-assign o_info_0   = dout_info0[4];
-assign o_info_1   = dout_info1[4];
+assign o_info_0   = dout_info0[5];  // IQ HD
+assign o_info_1   = dout_info1[5];  // FFT AGC
 assign o_pkg_type = pkg_type_out;
 assign o_cell_idx = cell_idx_out;
 assign o_slot_idx = slot_idx_out;
