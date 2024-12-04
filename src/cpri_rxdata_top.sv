@@ -63,7 +63,7 @@ wire           [LANE-1: 0]                      symb_eop                ;
 wire                                            rx_buf_rden             ;
 wire           [LANE-1:0]                       cpri_rx_ready           ;
 wire           [LANE-1:0][63: 0]                cpri_data_buf           ;
-wire           [LANE-1:0][31: 0]                fft_agc_buf             ;
+wire           [LANE-1:0][63: 0]                fft_agc_buf             ;
 
 wire           [LANE-1:0][6: 0]                 cpri_addr_buf           ;
 wire           [LANE-1: 0]                      cpri_buf_last           ;
@@ -86,8 +86,8 @@ wire           [LANE-1:0][6: 0]                 tx_addr                 ;
 wire           [LANE-1: 0]                      tx_last                 ;
 wire           [LANE-1: 0]                      tx_vld                  ;
 wire           [LANE-1: 0]                      tx_rdy                  ;
-wire           [   7: 0]                        fft_agc_base            ;
-wire           [LANE-1:0][31: 0]                fft_agc_shift           ;
+wire           [   15: 0]                       fft_agc_base            ;
+wire           [LANE-1:0][63: 0]                fft_agc_shift           ;
 
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer

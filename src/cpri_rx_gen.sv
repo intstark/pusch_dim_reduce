@@ -25,14 +25,14 @@ module cpri_rx_gen
     input  wire    [  63: 0]                        i_cpri_wdata            ,
     input  wire                                     i_cpri_wlast            ,
 
-    input          [   7: 0]                        i_fft_agc               ,
-    input          [  31: 0]                        i_fft_shift             ,
+    input          [  15: 0]                        i_fft_agc               ,
+    input          [  63: 0]                        i_fft_shift             ,
     
     input  wire                                     i_rready                ,
     input  wire                                     i_rx_enable             ,
 
-    output         [   7: 0]                        o_fft_agc               ,
-    output         [  31: 0]                        o_fft_shift             ,
+    output         [  15: 0]                        o_fft_agc               ,
+    output         [  63: 0]                        o_fft_shift             ,
     output wire                                     o_tvalid                ,
     output wire                                     o_tready                ,
     output wire    [ 255: 0]                        o_rx_info               ,
@@ -51,9 +51,9 @@ localparam  RDATA_WIDTH        =  64   ;
 localparam  RADDR_WIDTH        =  7    ; 
 localparam  READ_LATENCY       =  3    ; 
 localparam  FIFO_DEPTH         =  8    ; 
-localparam  FIFO_WIDTH         =  296  ; 
+localparam  FIFO_WIDTH         =  336  ; 
 localparam  LOOP_WIDTH         =  10   ; 
-localparam  INFO_WIDTH         =  296  ; 
+localparam  INFO_WIDTH         =  336  ; 
 localparam  RAM_TYPE           =  1    ; 
 localparam  FFT_AGC_WIDTH      =  40   ; 
 localparam  FFT_AGC_DEPTH      =  LOOP_WIDTH-WADDR_WIDTH; 
@@ -269,8 +269,8 @@ assign o_iq_rx_data = cpri_rdata;
 assign o_rx_info    = cpri_rinfo_d3[255:0];
 assign o_tvalid     = cpri_rvld_dly[2];
 assign o_tready     = (free_size==0) ? 1'b0 : 1'b1;
-assign o_fft_agc    = cpri_rinfo_d3[295:288];
-assign o_fft_shift  = cpri_rinfo_d3[287:256];
+assign o_fft_agc    = cpri_rinfo_d3[335:320];//[295:288]
+assign o_fft_shift  = cpri_rinfo_d3[319:256];//[287:256]
 
                    
 endmodule

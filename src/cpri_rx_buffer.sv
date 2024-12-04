@@ -46,7 +46,7 @@ module cpri_rx_buffer#(
     output                                          o_symb_clr              ,
     output                                          o_symb_eop              ,
 
-    output         [  31: 0]                        o_fft_agc               ,// fft agc
+    output         [  63: 0]                        o_fft_agc               ,// fft agc
     output         [RDATA_WIDTH-1: 0]               o_tx_data               ,// cpri data
     output         [   6: 0]                        o_tx_addr               ,// cpri chip addr
     output                                          o_tx_last               ,// cpri chip last
@@ -366,8 +366,8 @@ end
 always @(posedge i_clk) begin
     if(rd_addr_buf[2] == 'd4)
         fft_agc <= rd_data[63:32];
-    else if(rd_addr_buf[2] == 'd1636)
-        fft_agc <= rd_data[63:32];
+    else if(rd_addr_buf[2] == 'd1540) //1636
+        fft_agc <= rd_data[31: 0];
 end
 
 assign symb_eop = (rd_addr_buf[2] == 'd1631 || rd_addr_buf[2] == 'd3167) ? 1'b1 : 1'b0;
@@ -391,12 +391,18 @@ always @ (posedge i_clk)begin
     txlast_out  <= {txlast_out [3:0], data_last};
 end
 
-assign o_tx_data  = rx_data_out[4];
-assign o_tx_addr  = tx_addr_out[4];
-assign o_tvalid   = tvalid_out [4];
-assign o_tx_last  = txlast_out [4];
-assign o_fft_agc  = fft_agc;//rd_info_buf[3];
-assign o_symb_eop = symb_eop_out[4];
+//assign o_tx_data  = rx_data_out[4];
+//assign o_tx_addr  = tx_addr_out[4];
+//assign o_tvalid   = tvalid_out [4];
+//assign o_tx_last  = txlast_out [4];
+//assign o_fft_agc  = fft_agc;//rd_info_buf[3];
+//assign o_symb_eop = symb_eop_out[4];
+assign o_tx_data  = rx_data_out[0];
+assign o_tx_addr  = tx_addr_out[0];
+assign o_tvalid   = tvalid_out [0];
+assign o_tx_last  = txlast_out [0];
+assign o_fft_agc  = rd_info_buf[3];
+assign o_symb_eop = symb_eop_out[0];
 
 assign o_tready   = (free_size==0) ? 1'b0 : 1'b1;
 assign o_rd_vld   = rd_vld;

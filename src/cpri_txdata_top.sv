@@ -146,6 +146,16 @@ cpri_tx_lane                                            cpri_tx_lane_0
     .i_if_re_info2                                      (tx0_pkg_info[2]        ),
     .i_if_re_info3                                      (tx0_pkg_info[3]        ),
 
+    .i_if_ch_type0                                      (tx0_pkg_type           ),
+    .i_if_ch_type1                                      (tx0_pkg_type           ),
+    .i_if_ch_type2                                      (tx0_pkg_type           ),
+    .i_if_ch_type3                                      (tx0_pkg_type           ),
+
+    .i_if_cell_idx0                                     (tx0_cell_idx           ),
+    .i_if_cell_idx1                                     (tx0_cell_idx           ),
+    .i_if_cell_idx2                                     (tx0_cell_idx           ),
+    .i_if_cell_idx3                                     (tx0_cell_idx           ),
+    
     .i_rbg_idx                                          (tx0_rbg_idx            ),
     .i_fft_agc                                          (tx0_fft_agc            ),
 
@@ -221,6 +231,16 @@ cpri_tx_lane                                            cpri_tx_lane_1
     .i_if_re_info2                                      (tx1_pkg_info[2]        ),
     .i_if_re_info3                                      (tx1_pkg_info[3]        ),
 
+    .i_if_ch_type0                                      (tx1_pkg_type           ),
+    .i_if_ch_type1                                      (tx1_pkg_type           ),
+    .i_if_ch_type2                                      (tx1_pkg_type           ),
+    .i_if_ch_type3                                      (tx1_pkg_type           ),
+
+    .i_if_cell_idx0                                     (tx1_cell_idx           ),
+    .i_if_cell_idx1                                     (tx1_cell_idx           ),
+    .i_if_cell_idx2                                     (tx1_cell_idx           ),
+    .i_if_cell_idx3                                     (tx1_cell_idx           ),
+    
     .i_rbg_idx                                          (tx1_rbg_idx            ),
     .i_fft_agc                                          (tx1_fft_agc            ),
 

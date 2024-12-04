@@ -29,12 +29,12 @@ module agc_unpack (
     input          [   7: 0]                        i_rvalid                ,
     input                                           i_rready                ,
 
-    input          [7:0][31: 0]                     i_fft_agc               ,
+    input          [7:0][63: 0]                     i_fft_agc               ,
     input          [   7: 0]                        i_symb_eop              ,
 
 
-    output         [   7: 0]                        o_fft_agc_base          ,
-    output         [7:0][31: 0]                     o_fft_agc_shift         ,
+    output         [  15: 0]                        o_fft_agc_base          ,
+    output         [7:0][63: 0]                     o_fft_agc_shift         ,
 
     output         [7:0][63: 0]                     o_tx_data               ,
     output         [7:0][6: 0]                      o_tx_addr               ,
@@ -57,9 +57,12 @@ genvar i;
 reg            [   4: 0]                        rvalid_buf            =0;
 reg            [   4: 0]                        rx_eop_buf            =0;
 reg            [31:0][7: 0]                     data_cmp_0            =0;
+reg            [31:0][7: 0]                     data_cmp_1            =0;
 reg            [   6: 0]                        data_cnt              =0;
 reg            [   7: 0]                        temp_data_0           =8'hFF;
+reg            [   7: 0]                        temp_data_1           =8'hFF;
 reg            [7:0][31: 0]                     shift_num_0           =0;
+reg            [7:0][31: 0]                     shift_num_1           =0;
 reg            [DATA_DEPTH+2: 0]                rvld_buf              =0;
 
 //--------------------------------------------------------------------------------------
@@ -77,6 +80,7 @@ always @ (posedge i_clk)begin
     for(int i=0;i<8;i++) begin
         for(int j=0;j<4;j++)begin
             data_cmp_0[i*4 + j] <= i_fft_agc[i][ 0+j*8 +: 8]; // even
+            data_cmp_1[i*4 + j] <= i_fft_agc[i][32+j*8 +: 8]; // odd 
         end
     end
 end
@@ -105,6 +109,18 @@ always @ (posedge i_clk)begin
 end
 
 //--------------------------------------------------------------------------------------
+// find odd ants min agc data 
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    if(i_reset)
+        temp_data_1 <= 8'hFF;
+    else if(rx_eop)
+        temp_data_1 <= 8'hFF;
+    else if(rvalid && (data_cmp_1[data_cnt] < temp_data_1))
+        temp_data_1 <= data_cmp_1[data_cnt];
+end
+
+//--------------------------------------------------------------------------------------
 // calculate the difference between the smallest data
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
@@ -115,12 +131,25 @@ always @ (posedge i_clk)begin
     end
 end
 
+//--------------------------------------------------------------------------------------
+// calculate the difference between the smallest data of odd ants
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    for(int i=0;i<8;i++) begin
+        for(int j=0;j<4;j++)begin
+            shift_num_1[i][j*8 +: 8] <= data_cmp_1[i*4 + j] - temp_data_1;
+        end
+    end
+end
+
 reg                                             sft_num_vld           =0;
 reg                                             sft_num_vld_d1        =0;
 reg            [7:0][31: 0]                     shift_num0_d1         =0;
+reg            [7:0][31: 0]                     shift_num1_d1         =0;
 reg            [   7: 0]                        fft_agc0_d1           =0;
-reg            [7:0][31: 0]                     shift_num_out         =0;
-reg            [   7: 0]                        fft_agc_out           =0;
+reg            [   7: 0]                        fft_agc1_d1           =0;
+reg            [7:0][63: 0]                     shift_num_out         =0;
+reg            [  15: 0]                        fft_agc_out           =0;
 
 
 //--------------------------------------------------------------------------------------
@@ -145,6 +174,9 @@ always @ (posedge i_clk)begin
     if(sft_num_vld_d1)begin
         shift_num0_d1 <= shift_num_0;
         fft_agc0_d1   <= temp_data_0;
+
+        shift_num1_d1 <= shift_num_1;
+        fft_agc1_d1   <= temp_data_1;
     end
 end
 
@@ -152,12 +184,11 @@ end
 // output buffer to match delay
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    fft_agc_out   <= fft_agc0_d1;
+    fft_agc_out   <= {fft_agc1_d1, fft_agc0_d1};
     for(int i=0;i<8;i++) begin
-        shift_num_out[i] = shift_num0_d1[i];
+        shift_num_out[i] = {shift_num1_d1[i], shift_num0_d1[i]};
     end
 end
-
 
 //--------------------------------------------------------------------------------------
 // store input data to match process delay

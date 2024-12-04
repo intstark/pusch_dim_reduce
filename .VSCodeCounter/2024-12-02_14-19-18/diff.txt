@@ -1,0 +1,155 @@
+Date : 2024-12-02 14:19:18
+Directory : e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab
+Total : 118 files,  223635 codes, -3049 comments, 776 blanks, all 221362 lines
+
+Languages
++---------------+------------+------------+------------+------------+------------+
+| language      | files      | code       | comment    | blank      | total      |
++---------------+------------+------------+------------+------------+------------+
+| MATLAB        |         56 |    237,182 |          0 |      3,360 |    240,542 |
+| SystemVerilog |         31 |     -6,311 |     -1,417 |     -1,354 |     -9,082 |
+| Verilog       |         31 |     -7,236 |     -1,632 |     -1,230 |    -10,098 |
++---------------+------------+------------+------------+------------+------------+
+
+Directories
++-----------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                        | files      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                           |        118 |    223,635 |     -3,049 |        776 |    221,362 |
+| . (Files)                                                                                                                   |         33 |    207,122 |          0 |      3,195 |    210,317 |
+| ..                                                                                                                          |         62 |    -13,547 |     -3,049 |     -2,584 |    -19,180 |
+| ..\src                                                                                                                      |         62 |    -13,547 |     -3,049 |     -2,584 |    -19,180 |
+| ..\src (Files)                                                                                                              |         32 |     -6,274 |     -1,287 |     -1,270 |     -8,831 |
+| ..\src\cpri_package_tx_zyl                                                                                                  |         23 |     -5,209 |     -1,351 |       -963 |     -7,523 |
+| ..\src\cpri_package_tx_zyl (Files)                                                                                          |         16 |     -4,451 |     -1,198 |       -825 |     -6,474 |
+| ..\src\cpri_package_tx_zyl\intel_xpm                                                                                        |          7 |       -758 |       -153 |       -138 |     -1,049 |
+| ..\src\cpri_package_tx_zyl\intel_xpm\common                                                                                 |          7 |       -758 |       -153 |       -138 |     -1,049 |
+| ..\src\dl_symb_cmpr                                                                                                         |          7 |     -2,064 |       -411 |       -351 |     -2,826 |
+| data                                                                                                                        |          5 |      6,981 |          0 |         52 |      7,033 |
+| data64ants                                                                                                                  |         18 |     23,079 |          0 |        113 |     23,192 |
++-----------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-----------------------------------------------------------------------------------------------------------------------------+---------------+------------+------------+------------+------------+
+| filename                                                                                                                    | language      | code       | comment    | blank      | total      |
++-----------------------------------------------------------------------------------------------------------------------------+---------------+------------+------------+------------+------------+
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\AntDataRead128.mat                                                  | MATLAB        |    145,173 |          0 |        722 |    145,895 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\BeamIndex0.mat                                                      | MATLAB        |          2 |          0 |          0 |          2 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\BeamIndexRead128.mat                                                | MATLAB        |          4 |          0 |          0 |          4 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\BeamPowerRead128.mat                                                | MATLAB        |         17 |          0 |          0 |         17 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\BeamPwr0.mat                                                        | MATLAB        |          8 |          0 |          0 |          8 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\alaw_sim.m                                                          | MATLAB        |         13 |          0 |          5 |         18 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\ant_data_read.mat                                                   | MATLAB        |     36,514 |          0 |        178 |     36,692 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\beams_time_interleaved_sim.m                                        | MATLAB        |         75 |          0 |         54 |        129 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\comb_ants_script.m                                                  | MATLAB        |        163 |          0 |         76 |        239 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\comb_vector_script.m                                                | MATLAB        |        223 |          0 |         90 |        313 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\cpri_data_gen.m                                                     | MATLAB        |         50 |          0 |         36 |         86 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\cpri_rxdata_8lanes_sim.m                                            | MATLAB        |         77 |          0 |         51 |        128 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\cpri_verctor_vfy.m                                                  | MATLAB        |        534 |          0 |        198 |        732 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\antData.mat                                              | MATLAB        |     10,756 |          0 |         70 |     10,826 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\antData_fix.mat                                          | MATLAB        |      2,817 |          0 |         18 |      2,835 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\ant_data.mat                                             | MATLAB        |          6 |          0 |          0 |          6 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\beam_data.mat                                            | MATLAB        |         14 |          0 |          0 |         14 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\beam_data_even.mat                                       | MATLAB        |          9 |          0 |          0 |          9 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\beam_data_odd.mat                                        | MATLAB        |         20 |          0 |          0 |         20 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\codeWord.mat                                             | MATLAB        |        126 |          0 |          1 |        127 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\codeWord64.mat                                           | MATLAB        |        454 |          0 |          1 |        455 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\codeWord64_fix.mat                                       | MATLAB        |        128 |          0 |          0 |        128 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\codeWord_fix.mat                                         | MATLAB        |         28 |          0 |          0 |         28 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\compress_data.mat                                        | MATLAB        |      1,522 |          0 |          4 |      1,526 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_beams_data.mat                                       | MATLAB        |      7,063 |          0 |         16 |      7,079 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_beams_idx.mat                                        | MATLAB        |          6 |          0 |          0 |          6 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_beams_pwr.mat                                        | MATLAB        |         24 |          0 |          0 |         24 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_beams_sort.mat                                       | MATLAB        |         13 |          0 |          0 |         13 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_rx_data.mat                                          | MATLAB        |         35 |          0 |          3 |         38 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_tx_data.mat                                          | MATLAB        |         49 |          0 |          0 |         49 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data64ants\des_unzip_data.mat                                       | MATLAB        |          9 |          0 |          0 |          9 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data\antData.mat                                                    | MATLAB        |      5,380 |          0 |         43 |      5,423 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data\antData_fix.mat                                                | MATLAB        |      1,487 |          0 |          9 |      1,496 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data\codeWord.mat                                                   | MATLAB        |         57 |          0 |          0 |         57 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data\codeWord_fix.mat                                               | MATLAB        |         19 |          0 |          0 |         19 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\data\sim_beam.mat                                                   | MATLAB        |         38 |          0 |          0 |         38 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dim_reduction_64ants_sim.m                                          | MATLAB        |         91 |          0 |         45 |        136 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dim_reduction_sim.m                                                 | MATLAB        |         64 |          0 |         45 |        109 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dl_beams.m                                                          | MATLAB        |        188 |          0 |        103 |        291 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dl_beams_abs2_pwr.m                                                 | MATLAB        |        281 |          0 |        140 |        421 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dl_beams_pwr.m                                                      | MATLAB        |        294 |          0 |        137 |        431 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dl_sim.m                                                            | MATLAB        |        157 |          0 |         89 |        246 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dr128_vector_vfy.m                                                  | MATLAB        |        530 |          0 |        201 |        731 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dr_data_read.mat                                                    | MATLAB        |     20,519 |          0 |         90 |     20,609 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dr_vector_vfy.m                                                     | MATLAB        |        380 |          0 |        156 |        536 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\dynamic_truncation.m                                                | MATLAB        |         14 |          0 |         12 |         26 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\gen_rom_mif.m                                                       | MATLAB        |         11 |          0 |          9 |         20 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\pdsch_dr_core_vfy.m                                                 | MATLAB        |        341 |          0 |        165 |        506 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\pdsch_dr_vfy.m                                                      | MATLAB        |        285 |          0 |        148 |        433 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\rec_vfy.m                                                           | MATLAB        |        497 |          0 |        187 |        684 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\untitled.m                                                          | MATLAB        |         75 |          0 |         43 |        118 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\untitled2222.m                                                      | MATLAB        |        495 |          0 |        185 |        680 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\w0_data_read.mat                                                    | MATLAB        |          4 |          0 |          0 |          4 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\w1_data_read.mat                                                    | MATLAB        |          2 |          0 |          0 |          2 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\write_hex2mif.m                                                     | MATLAB        |         21 |          0 |         12 |         33 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\matlab\write_mif.m                                                         | MATLAB        |         20 |          0 |         18 |         38 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\agc_unpack.sv                                                          | SystemVerilog |       -135 |        -50 |        -34 |       -219 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\ant_data_buffer.sv                                                     | SystemVerilog |       -210 |        -43 |        -47 |       -300 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\beam_buffer.sv                                                         | SystemVerilog |       -209 |        -46 |        -37 |       -292 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\beam_power_calc.sv                                                     | SystemVerilog |       -159 |        -40 |        -36 |       -235 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\beam_sort.sv                                                           | SystemVerilog |       -421 |        -73 |        -92 |       -586 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\beams_mem_pick.sv                                                      | SystemVerilog |       -352 |        -53 |        -66 |       -471 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\beams_pick_top.sv                                                      | SystemVerilog |       -103 |        -27 |        -23 |       -153 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\code_word_rev.sv                                                       | SystemVerilog |       -142 |        -29 |        -38 |       -209 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\compress_bit.v                                                         | Verilog       |       -275 |        -56 |        -31 |       -362 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\compress_matrix.sv                                                     | SystemVerilog |       -227 |        -43 |        -44 |       -314 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\compress_shift.sv                                                      | SystemVerilog |       -118 |        -18 |        -25 |       -161 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\Simple_Dual_Port_URAM_XPM.v                        | Verilog       |        -63 |       -281 |        -25 |       -369 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\compress_bit.v                                     | Verilog       |       -275 |        -56 |        -31 |       -362 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\compress_data.v                                    | Verilog       |       -139 |        -12 |         -9 |       -160 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\cpri_tx_gen.v                                      | Verilog       |       -116 |        -18 |        -23 |       -157 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\cpri_tx_pkg.v                                      | Verilog       |       -176 |        -47 |        -47 |       -270 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\dl_data_gen.sv                                     | SystemVerilog |       -365 |       -179 |       -130 |       -674 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\dl_data_gen_old.v                                  | Verilog       |       -366 |       -177 |       -132 |       -675 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\dl_sym_if.v                                        | Verilog       |       -164 |        -13 |        -22 |       -199 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\ASYNC_Dual_Port_BRAM_XPM_intel.v  | Verilog       |        -83 |        -26 |         -6 |       -115 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\FIFO_ASYNC_XPM_intel.v            | Verilog       |        -56 |        -12 |         -3 |        -71 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\FIFO_SYNC_XPM_intel.v             | Verilog       |        -52 |        -10 |         -3 |        -65 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\Simple_Dual_Port_BRAM_XPM_intel.v | Verilog       |        -80 |        -25 |         -5 |       -110 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\loop_buffer2_sync_intel.v         | Verilog       |       -175 |        -25 |        -47 |       -247 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\loop_buffer_async_intel.v         | Verilog       |       -159 |        -28 |        -32 |       -219 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\intel_xpm\common\loop_buffer_sync_intel.v          | Verilog       |       -153 |        -27 |        -42 |       -222 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\loop_buffer_async.v                                | Verilog       |       -162 |        -25 |        -37 |       -224 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\loop_buffer_sync.v                                 | Verilog       |       -156 |        -25 |        -38 |       -219 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\package_data.v                                     | Verilog       |       -495 |        -64 |        -64 |       -623 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\package_data_intel.v                               | Verilog       |       -471 |       -104 |        -65 |       -640 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\pcie_bf_para.v                                     | Verilog       |       -165 |        -21 |        -38 |       -224 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\ul_compress_data.sv                                | SystemVerilog |       -186 |        -21 |        -20 |       -227 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\ul_package_data.v                                  | Verilog       |       -585 |        -58 |        -72 |       -715 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_package_tx_zyl\ul_package_data111.v                               | Verilog       |       -567 |        -97 |        -72 |       -736 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_rx_buffer.sv                                                      | SystemVerilog |       -300 |        -53 |        -56 |       -409 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_rx_gen.sv                                                         | SystemVerilog |       -165 |        -73 |        -38 |       -276 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_rxdata_top.sv                                                     | SystemVerilog |       -130 |        -37 |        -33 |       -200 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_rxdata_unpack.sv                                                  | SystemVerilog |       -277 |        -64 |        -69 |       -410 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_tx_gen.v                                                          | Verilog       |       -116 |        -18 |        -23 |       -157 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_tx_lane.sv                                                        | SystemVerilog |       -198 |        -13 |        -30 |       -241 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\cpri_txdata_top.sv                                                     | SystemVerilog |       -175 |        -28 |        -39 |       -242 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\decompress_bit.v                                                       | Verilog       |        -37 |        -12 |         -7 |        -56 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\compress_bit.v                                            | Verilog       |       -265 |        -47 |        -30 |       -342 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\compress_data.v                                           | Verilog       |       -139 |        -12 |         -9 |       -160 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\cpri_tx_gen.v                                             | Verilog       |       -100 |        -18 |        -18 |       -136 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\dl_data_gen.v                                             | Verilog       |       -366 |       -179 |       -132 |       -677 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\dl_package_data.sv                                        | SystemVerilog |       -521 |        -76 |        -71 |       -668 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\dl_symb_if.v                                              | Verilog       |       -164 |        -13 |        -22 |       -199 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\dl_symb_cmpr\package_data.v                                            | Verilog       |       -509 |        -66 |        -69 |       -644 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\lp_buffer_syn.sv                                                       | SystemVerilog |        -70 |        -34 |        -21 |       -125 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\mac_ants.sv                                                            | SystemVerilog |       -114 |        -50 |        -35 |       -199 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\mac_beams.sv                                                           | SystemVerilog |       -171 |        -49 |        -40 |       -260 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\mem_streams.sv                                                         | SystemVerilog |        -82 |        -38 |        -25 |       -145 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\mem_streams_ram.sv                                                     | SystemVerilog |        -96 |        -38 |        -29 |       -163 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\par_compare.sv                                                         | SystemVerilog |        -72 |        -42 |        -24 |       -138 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\pusch_dr_core.sv                                                       | SystemVerilog |       -411 |        -64 |        -82 |       -557 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\pusch_dr_top.sv                                                        | SystemVerilog |       -161 |        -39 |        -43 |       -243 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\register_shift.sv                                                      | SystemVerilog |        -18 |          0 |         -8 |        -26 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\search_max.sv                                                          | SystemVerilog |        -90 |        -27 |        -18 |       -135 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\txdata_queue.sv                                                        | SystemVerilog |       -445 |        -49 |        -80 |       -574 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\ul_compress_data.sv                                                    | SystemVerilog |       -188 |        -21 |        -21 |       -230 |
+| e:\Openlab\gitlib\project\pusch\pusch_dim_reduce\src\ul_package_data.v                                                      | Verilog       |       -607 |        -60 |        -76 |       -743 |
+| Total                                                                                                                       |               |    223,635 |     -3,049 |        776 |    221,362 |
++-----------------------------------------------------------------------------------------------------------------------------+---------------+------------+------------+------------+------------+

@@ -34,6 +34,16 @@ module cpri_tx_lane
     input  wire    [   7: 0]                        i_if_re_info2           ,
     input  wire    [   7: 0]                        i_if_re_info3           ,
 
+    input  wire    [   3: 0]                        i_if_ch_type0           ,
+    input  wire    [   3: 0]                        i_if_ch_type1           ,
+    input  wire    [   3: 0]                        i_if_ch_type2           ,
+    input  wire    [   3: 0]                        i_if_ch_type3           ,
+
+    input  wire                                     i_if_cell_idx0          ,
+    input  wire                                     i_if_cell_idx1          ,
+    input  wire                                     i_if_cell_idx2          ,
+    input  wire                                     i_if_cell_idx3          ,
+
     input  wire    [   3: 0]                        i_rbg_idx               ,
     input  wire    [  31: 0]                        i_fft_agc               ,
                 
@@ -69,6 +79,10 @@ wire           [   3: 0]                        m_channel_type0         ;
 wire           [   3: 0]                        m_channel_type1         ;
 wire           [   3: 0]                        m_channel_type2         ;
 wire           [   3: 0]                        m_channel_type3         ;
+wire                                            m_pkg0_cell_idx         ;
+wire                                            m_pkg1_cell_idx         ;
+wire                                            m_pkg2_cell_idx         ;
+wire                                            m_pkg3_cell_idx         ;
 wire           [   7: 0]                        m_info0                 ;
 wire           [   7: 0]                        m_info1                 ;
 wire           [   7: 0]                        m_info2                 ;
@@ -105,10 +119,14 @@ ul_compress_data                                        ul_compress_data
     .i_prb_idx                                          (i_if_re_prb_idx        ),
     .i_rbg_idx                                          (i_rbg_idx              ),
     .i_fft_agc                                          (i_fft_agc              ),
-    .i_channel_type0                                    (4'd8                   ),
-    .i_channel_type1                                    (4'd8                   ),
-    .i_channel_type2                                    (4'd8                   ),
-    .i_channel_type3                                    (4'd8                   ),
+    .i_channel_type0                                    (i_if_ch_type0          ),
+    .i_channel_type1                                    (i_if_ch_type1          ),
+    .i_channel_type2                                    (i_if_ch_type2          ),
+    .i_channel_type3                                    (i_if_ch_type3          ),
+    .i_cell_idx0                                        (i_if_cell_idx0         ),
+    .i_cell_idx1                                        (i_if_cell_idx1         ),
+    .i_cell_idx2                                        (i_if_cell_idx2         ),
+    .i_cell_idx3                                        (i_if_cell_idx3         ),
     .i_info0                                            (i_if_re_info0          ),
     .i_info1                                            (i_if_re_info1          ),
     .i_info2                                            (i_if_re_info2          ),
@@ -138,6 +156,10 @@ ul_compress_data                                        ul_compress_data
     .o_channel_type1                                    (m_channel_type1        ),
     .o_channel_type2                                    (m_channel_type2        ),
     .o_channel_type3                                    (m_channel_type3        ),
+    .o_cell_idx0                                        (m_pkg0_cell_idx        ),
+    .o_cell_idx1                                        (m_pkg1_cell_idx        ),
+    .o_cell_idx2                                        (m_pkg2_cell_idx        ),
+    .o_cell_idx3                                        (m_pkg3_cell_idx        ),
     .o_info0                                            (m_info0                ),
     .o_info1                                            (m_info1                ),
     .o_info2                                            (m_info2                ),
@@ -161,7 +183,7 @@ ul_package_data                                         ul_package_data
     .i_sop                                              (m_sop                  ),
     .i_eop                                              (m_eop                  ),
     .i_pkg0_ch_type                                     (m_channel_type0        ),
-    .i_pkg0_cell_idx                                    (1'd0                   ),
+    .i_pkg0_cell_idx                                    (m_pkg0_cell_idx        ),
     .i_pkg0_ant_idx                                     (2'd0                   ),
     .i_pkg0_slot_idx                                    (m_slot_idx             ),
     .i_pkg0_sym_idx                                     (m_symb_idx             ),
@@ -170,7 +192,7 @@ ul_package_data                                         ul_package_data
     .i_pkg0_data                                        (m_data_ant0            ),
     .i_pkg0_shift                                       (m_shift0               ),
     .i_pkg1_ch_type                                     (m_channel_type1        ),
-    .i_pkg1_cell_idx                                    (1'd0                   ),
+    .i_pkg1_cell_idx                                    (m_pkg1_cell_idx        ),
     .i_pkg1_ant_idx                                     (2'd1                   ),
     .i_pkg1_slot_idx                                    (m_slot_idx             ),
     .i_pkg1_sym_idx                                     (m_symb_idx             ),
@@ -179,7 +201,7 @@ ul_package_data                                         ul_package_data
     .i_pkg1_data                                        (m_data_ant1            ),
     .i_pkg1_shift                                       (m_shift1               ),
     .i_pkg2_ch_type                                     (m_channel_type2        ),
-    .i_pkg2_cell_idx                                    (1'd0                   ),
+    .i_pkg2_cell_idx                                    (m_pkg2_cell_idx        ),
     .i_pkg2_ant_idx                                     (2'd2                   ),
     .i_pkg2_slot_idx                                    (m_slot_idx             ),
     .i_pkg2_sym_idx                                     (m_symb_idx             ),
@@ -188,7 +210,7 @@ ul_package_data                                         ul_package_data
     .i_pkg2_data                                        (m_data_ant2            ),
     .i_pkg2_shift                                       (m_shift2               ),
     .i_pkg3_ch_type                                     (m_channel_type3        ),
-    .i_pkg3_cell_idx                                    (1'd0                   ),
+    .i_pkg3_cell_idx                                    (m_pkg3_cell_idx        ),
     .i_pkg3_ant_idx                                     (2'd3                   ),
     .i_pkg3_slot_idx                                    (m_slot_idx             ),
     .i_pkg3_sym_idx                                     (m_symb_idx             ),

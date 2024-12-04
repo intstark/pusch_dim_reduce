@@ -34,6 +34,10 @@ module ul_compress_data
     input  wire    [   3: 0]                        i_channel_type1         ,
     input  wire    [   3: 0]                        i_channel_type2         ,
     input  wire    [   3: 0]                        i_channel_type3         ,
+    input  wire                                     i_cell_idx0             ,
+    input  wire                                     i_cell_idx1             ,
+    input  wire                                     i_cell_idx2             ,
+    input  wire                                     i_cell_idx3             ,
     input  wire    [   7: 0]                        i_info0                 ,
     input  wire    [   7: 0]                        i_info1                 ,
     input  wire    [   7: 0]                        i_info2                 ,
@@ -65,6 +69,10 @@ module ul_compress_data
     output wire    [   3: 0]                        o_channel_type1         ,
     output wire    [   3: 0]                        o_channel_type2         ,
     output wire    [   3: 0]                        o_channel_type3         ,
+    output wire                                     o_cell_idx0             ,
+    output wire                                     o_cell_idx1             ,
+    output wire                                     o_cell_idx2             ,
+    output wire                                     o_cell_idx3             ,
     output wire    [   7: 0]                        o_info0                 ,
     output wire    [   7: 0]                        o_info1                 ,
     output wire    [   7: 0]                        o_info2                 ,
@@ -223,7 +231,40 @@ assign o_pkg1_power = ant_pwr_dly[1];
 assign o_pkg2_power = ant_pwr_dly[2];   
 assign o_pkg3_power = ant_pwr_dly[3];   
 
+register_shift # (
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (19                     ) 
+)u_dly_cell_idx0(                                        
+    .clk                                                (clk                    ),
+    .in                                                 (i_cell_idx0            ),
+    .out                                                (o_cell_idx0            ) 
+);
 
+register_shift # (
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (19                     ) 
+)u_dly_cell_idx1(                                        
+    .clk                                                (clk                    ),
+    .in                                                 (i_cell_idx1            ),
+    .out                                                (o_cell_idx1            ) 
+);
 
+register_shift # (
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (19                     ) 
+)u_dly_cell_idx2(                                        
+    .clk                                                (clk                    ),
+    .in                                                 (i_cell_idx2            ),
+    .out                                                (o_cell_idx2            ) 
+);
+
+register_shift # (
+    .WIDTH                                              (1                      ),
+    .DEPTH                                              (19                     ) 
+)u_dly_cell_idx3(                                        
+    .clk                                                (clk                    ),
+    .in                                                 (i_cell_idx3            ),
+    .out                                                (o_cell_idx3            ) 
+);
 
 endmodule

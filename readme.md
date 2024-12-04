@@ -10,11 +10,27 @@
 [TOC]
 
 ## Introduction
+### 背景介绍
+在通信领域中，发射机通过对发送信号进行处理后将信号发射，通过多天线信道，接收机在接收到信号后，需要对其进行译码，才能获知其中传输的内容。在译码前上行接收机通常需要对天线接收到的信号进行相关处理，如信道估计、信道均衡等，而随着大规模MIMO场景下天线规模的增大，使得上行接收机接收到的数据信号维度也增大，在进行相关处理时，将面临大量高维度的矩阵运算，由于运算量呈几何倍数增加，从而降低了上行接收机的工作效率，功耗也将增大。
+
+因此，基于此问题，我们对大规模MIMO场景下上行接收机的数据进行降维处理，旨在降低接收信号数据维度的同时，最大限度的保留数据信号的特征，以便接收机进行信号处理时，以牺牲一定性能的代价，大幅降低运算复杂度，节省成本。而本问题场景下，我们采用的是基于固定离散傅里叶变换(Discrete Fourier Transform, DFT)码本的数据降维方法，该方法本质上属于线性降维方法。
+
+### 算法方案
+不进行降维处理的上行接收机处理流程图如图 2 1所示。上行发射信号经过射频传输之后，基站对接收到的数据做快速傅里叶变换(Fast Fourier Transform, FFT)映射到频域后，经过信道估计与信道均衡后，进行信号的译码。
+<div align="center"><img src="./上行-不降维.jpg" width=800></div>
+
+不进行降维处理的上行接收机处理流程图如图 2 1所示。上行发射信号经过射频传输之后，基站对接收到的数据做快速傅里叶变换(Fast Fourier Transform, FFT)映射到频域后，经过信道估计与信道均衡后，进行信号的译码。
+<div align="center"><img src="./上行-降维.jpg" width=800></div>
+
+PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据接收、降维计算、数据发送。各个模块的主要功能为：
++ 频域数据接收：接收CPRI数据，进行解包、解压缩处理；
++ 降维计算：对收到的64天线数据进行降维计算，输出降维后16天线数据；
++ 数据发送：将降维后16天线数据进行压缩、并打包成CPRI数据格式发送出去。
 
 <div align="center"><img src="./AIU上行处理流程.png" width=800></div>
 
 ### 功能介绍
-
+下图为降维核心算法的内部结构，主要包括码本选择，矩阵运算，能量计算，能量排序，动态定标以及一些缓存和数据对齐的模块。
 <div align="center"><img src="./AIU降维处理流程.png" width=800></div>
 
 ### 目录介绍
@@ -26,6 +42,7 @@
   + pusch_dr_top.sv：顶层模块,接收CPRI数据，并将降维数据通过CPRI发出
     + cpri_rxdata_top.sv: 接收CPRI数据，并解析info和iq_data字段
       + cpri_rx_buffer.sv：缓存CPRI数据，对齐不同Lane延时差
+      + agc_unpack.sv：寻找偶/奇天线FFT AGC基值，并计算用于拉齐的移位值
       + cpri_rxdata_unpack.sv：解析IQ_HD和AGC_FFT字段
         + cpri_rx_gen.sv：按4RB缓存数据
         + decompress_bit.sv：解压7比特数据到16比特数据
@@ -124,3 +141,17 @@
 + 波束能量值打包输出按前4A和后4A的方式打包，涉及的模块包括：
   + txdata_queue：将8天线能量值处理成4天线偶/奇天线
   + dl_package_data：每4RB采样能量值放置在DW5字段中
+
+
+### 2024.12.03
+
++ 修改FFT AGC解析为奇偶天线并行输出，涉及模块包括：
+  + cpri_rx_bufer: 在buffer输入端获取奇偶AGC值，并行输出
+  + agc_unpack：并行寻找奇偶AGC基值和差值
+  + cpri_rxdata_unpack：ant_sel区分奇偶天线，选取AGC值
++ FFT AGC恢复方式修改：
+  + cpri_rxdata_unpack：算术右移
+ + 完善打包信息，增加pkg_type和cell_idx：
+   + cpri_tx_lane：增加pkg_type和cell_idx端口连接
+   + dl_compress_data: 增加pkg_type和cell_idx延时
+  
