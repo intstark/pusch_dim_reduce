@@ -62,6 +62,11 @@ parameter                                           FILE_BEAMS_SORT        = "./
 parameter                                           FILE_BEAMS_IDX         = "./des_beams_idx.txt";
 parameter                                           FILE_CPRS_DATA         = "compress_data.txt";
 parameter                                           FILE_DRIN_DATA         = "des_dr_datain.txt";
+parameter                                           FILE_CPRS_OUT0         = "./des_tx_cpri0.txt";
+parameter                                           FILE_CPRS_OUT1         = "./des_tx_cpri1.txt";
+parameter                                           FILE_DROUT0_HEX        = "./des_dr_out0.txt";
+parameter                                           FILE_DROUT15_HEX       = "./des_dr_out15.txt";
+
 
 // Parameters
 parameter                                           numSLOT                = 2     ;
@@ -90,6 +95,8 @@ integer fid_uzip_data0,fid_uzip_data1,fid_uzip_data2,fid_uzip_data3,fid_uzip_dat
 integer fid_beams_pwr, fid_beams_sort,fid_beams_idx;
 integer fid_dr_data;
 integer fid_ants_data;
+integer fid_tx_cpri0, fid_tx_cpri1;
+integer fid_drout0_hex, fid_drout15_hex;
 
 
 // Inputs
@@ -97,11 +104,6 @@ reg                                             i_clk                 =0;
 reg                                             reset                 =1;
 reg                                             tx_hfp                =0;
 reg            [   1: 0]                        rbg_size              =2;
-
-//wire           [   7: 0]                        iq_rx_vld               ;
-//wire           [7:0][63: 0]                     iq_rx_data              ;
-//reg            [7:0][6: 0]                      iq_rx_seq             =0;
-//wire           [   7: 0]                        cpri_iq_vld           ;
 
 wire           [   7: 0]                        cpri_clk                ;
 wire           [   7: 0]                        cpri_rst                ;
@@ -114,6 +116,10 @@ reg            [7:0][63: 0]                     cpri_datain           =0;
 reg                                             cpri_data_vld         =0;
 reg            [   6: 0]                        chip_num              =0;
 wire                                            cpri_iq_vld             ;
+
+wire           [1:0][63: 0]                     cpri_tx_data            ;
+wire           [   1: 0]                        cpri_tx_vld             ;
+
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
@@ -167,6 +173,7 @@ pusch_dr_top                                            pusch_dr_top(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (reset                  ),
     
+    .i_aiu_idx                                          (2'b00                  ),
     .i_rbg_size                                         (rbg_size               ),
     .i_dr_mode                                          (2'b10                  ),
 
@@ -211,10 +218,10 @@ pusch_dr_top                                            pusch_dr_top(
     .i_l7_cpri_rx_vld                                   (cpri_rx_vld [7]        ),
 	 
     .i_iq_tx_enable                                     (iq_tx_enable           ),
-    .o_cpri0_tx_data                                    (                       ),
-    .o_cpri0_tx_vld                                     (                       ),
-    .o_cpri1_tx_data                                    (                       ),
-    .o_cpri1_tx_vld                                     (                       ) 
+    .o_cpri0_tx_data                                    (cpri_tx_data[0]        ),
+    .o_cpri0_tx_vld                                     (cpri_tx_vld [0]        ),
+    .o_cpri1_tx_data                                    (cpri_tx_data[1]        ),
+    .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
 );
 
 
@@ -295,6 +302,54 @@ always @(posedge i_clk) begin
 end
 
 //------------------------------------------------------------------------------------------
+// Output data check 
+//------------------------------------------------------------------------------------------
+reg            [1:0][7: 0]                      cpri_tx_num           =0;
+reg            [1:0][63: 0]                     iq_hd_out             =0;
+reg            [1:0][63: 0]                     fft_agc_out           =0;
+reg            [1:0][127: 0]                    rb_agc_out            =0;
+reg            [1:0][7: 0]                      cprio_rbg_num         =0;
+reg            [1:0][6: 0]                      cprio_slot_num        =0;
+reg            [1:0][3: 0]                      cprio_symb_num        =0;
+reg            [1:0][1: 0]                      cprio_aiu_num         =0;
+reg            [1:0][2: 0]                      cprio_lane_num        =0;
+reg            [1:0][3: 0]                      cprio_pkg_type        =0;
+
+always @(posedge i_clk) begin
+    for(int i=0; i<2; i++)begin
+        if(cpri_tx_num[i]==95)
+            cpri_tx_num[i] <= 0;
+        else if(cpri_tx_vld[i])begin
+            cpri_tx_num[i] <= cpri_tx_num[i] + 1;
+        end
+    end
+end
+
+always @(posedge i_clk) begin
+    for(int i=0; i<2; i++)begin
+        if(cpri_tx_num[i]==3)
+            iq_hd_out[i] <= cpri_tx_data[i];
+        else if(cpri_tx_num[i]==4)
+            fft_agc_out[i] <= cpri_tx_data[i];
+        else if(cpri_tx_num[i]==5)
+            rb_agc_out[i][63:0] <= cpri_tx_data[i];
+        else if(cpri_tx_num[i]==6)
+            rb_agc_out[i][127:64] <= cpri_tx_data[i];
+    end
+end
+
+always @(posedge i_clk) begin
+    for(int i=0; i<2; i++)begin
+        cprio_rbg_num[i] <= iq_hd_out[i][52:45];
+        cprio_aiu_num[i] <= iq_hd_out[i][44:43];
+        cprio_lane_num[i] <= iq_hd_out[i][42:40];
+        cprio_pkg_type[i] <= iq_hd_out[i][39:36];
+        cprio_slot_num[i] <= iq_hd_out[i][18:12];
+        cprio_symb_num[i] <= iq_hd_out[i][11:8];
+    end
+end
+
+//------------------------------------------------------------------------------------------
 // Output data file
 //------------------------------------------------------------------------------------------
 initial begin
@@ -325,6 +380,12 @@ initial begin
     fid_dr_data     = $fopen(FILE_CPRS_DATA, "w");
     fid_ants_data   = $fopen(FILE_DRIN_DATA, "w");
 
+    fid_tx_cpri0    = $fopen(FILE_CPRS_OUT0, "w");
+    fid_tx_cpri1    = $fopen(FILE_CPRS_OUT1, "w");
+
+    fid_drout0_hex  = $fopen(FILE_DROUT0_HEX, "w");
+    fid_drout15_hex = $fopen(FILE_DROUT15_HEX, "w");
+    
     if(fid_tx_data)
         $display("succeed open file %s",FILE_TX_DATA);
     if(fid_rx_data0)
@@ -343,6 +404,10 @@ initial begin
         $display("succeed open file %s",FILE_CPRS_DATA);
     if(fid_ants_data)
         $display("succeed open file %s",FILE_DRIN_DATA);
+    if(fid_tx_cpri0)
+        $display("succeed open file %s",FILE_CPRS_OUT0);
+    if(fid_tx_cpri1)
+        $display("succeed open file %s",FILE_CPRS_OUT1);
 
     #(`SIM_ENDS_TIME);
     $fclose(fid_tx_data );
@@ -356,6 +421,9 @@ initial begin
     $fclose(fid_beams_idx  );
     $fclose(fid_dr_data    );
     $fclose(fid_ants_data  );
+    $fclose(fid_tx_cpri0   );
+    $fclose(fid_tx_cpri1   );
+    $fclose(fid_drout0_hex );$fclose(fid_drout15_hex );
 end
 
 
@@ -793,6 +861,37 @@ always @(posedge i_clk)
                         pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_re,
                         pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_im
     );
+
+// Lane0 tx cpri data
+always @(posedge i_clk) begin
+    if(pusch_dr_top.o_cpri0_tx_vld)begin
+        $fwrite(fid_tx_cpri0, "%h\n", pusch_dr_top.o_cpri0_tx_data);
+    end
+end
+
+// Lane1 tx cpri data
+always @(posedge i_clk) begin
+    if(pusch_dr_top.o_cpri1_tx_vld)begin
+        $fwrite(fid_tx_cpri1, "%h\n", pusch_dr_top.o_cpri1_tx_data);
+    end
+end
+
+
+// Dr data output by beams in hex format
+always @(posedge i_clk) begin
+    if(pusch_dr_top.pusch_dr_core.compress_matrix.o_vld)begin
+        $fwrite(fid_drout0_hex, "%h\n", {pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_re[0],pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_im[0]});
+    end
+end
+
+// Dr data output by beams in hex format
+always @(posedge i_clk) begin
+    if(pusch_dr_top.pusch_dr_core.compress_matrix.o_vld)begin
+        $fwrite(fid_drout15_hex, "%h\n", {pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_re[15],pusch_dr_top.pusch_dr_core.compress_matrix.o_dout_im[15]});
+    end
+end
+
+
 
 
 endmodule

@@ -154,4 +154,21 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
  + 完善打包信息，增加pkg_type和cell_idx：
    + cpri_tx_lane：增加pkg_type和cell_idx端口连接
    + dl_compress_data: 增加pkg_type和cell_idx延时
-  
+
+
+  ### 2024.12.06
+
++ 修复FFT AGC相关问题，涉及模块包括：
+  + cpri_rx_bufer: o_symb_eop只在31678处产生
+  + agc_unpack：修改FFT AGC按照有符号数进行判断
+
++ 修复降维输出在重新进入分组计算码本索引时，仍会产生无效输出数据和Valid的问题，涉及模块包括有： 
+  + pusch_dr_core：将dr_mode相关逻辑纳入纳入ant_data_buffer 
+  + ant_data_buffer：增加dr_mode相关逻辑，并且将symb_clr提前rbg_load
+  + beam_sort：修改一些状态的复位条件，用i_symb_clr而不是同步后的reset_syn
+
++ 完善IQ_HD信息，增加了[44:40]字段的信息，涉及的模块包括：
+  + cpri_txdata_top：增加i_aiu_idx接口等
+  + txdata_queue：增加了lane_idx输出
+  + cpri_tx_lane：增加了i_aiu_idx和i_lane_idx接口
+  + ul_compress_data：增加了i_aiu_idx和i_lane_idx接口以及[44:40]字段的填入

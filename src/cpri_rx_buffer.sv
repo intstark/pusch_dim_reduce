@@ -370,7 +370,7 @@ always @(posedge i_clk) begin
         fft_agc <= rd_data[31: 0];
 end
 
-assign symb_eop = (rd_addr_buf[2] == 'd1631 || rd_addr_buf[2] == 'd3167) ? 1'b1 : 1'b0;
+assign symb_eop = (rd_addr_buf[2] == 'd3167) ? 1'b1 : 1'b0;
 
 always @(posedge i_clk) begin
     symb_eop_out <= {symb_eop_out[3:0], symb_eop};
@@ -407,8 +407,7 @@ assign o_symb_eop = symb_eop_out[0];
 assign o_tready   = (free_size==0) ? 1'b0 : 1'b1;
 assign o_rd_vld   = rd_vld;
 
-
-assign o_symb_1st = symb_1st_out[9];
+assign o_symb_1st = symb_1st_out[5];
 assign o_symb_clr = symb_clr;
 
 

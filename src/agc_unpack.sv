@@ -59,8 +59,8 @@ reg            [   4: 0]                        rx_eop_buf            =0;
 reg            [31:0][7: 0]                     data_cmp_0            =0;
 reg            [31:0][7: 0]                     data_cmp_1            =0;
 reg            [   6: 0]                        data_cnt              =0;
-reg            [   7: 0]                        temp_data_0           =8'hFF;
-reg            [   7: 0]                        temp_data_1           =8'hFF;
+reg            [   7: 0]                        temp_data_0           =8'h7F;
+reg            [   7: 0]                        temp_data_1           =8'h7F;
 reg            [7:0][31: 0]                     shift_num_0           =0;
 reg            [7:0][31: 0]                     shift_num_1           =0;
 reg            [DATA_DEPTH+2: 0]                rvld_buf              =0;
@@ -101,10 +101,10 @@ end
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
     if(i_reset)
-        temp_data_0 <= 8'hFF;
+        temp_data_0 <= 8'h7F;
     else if(rx_eop)
-        temp_data_0 <= 8'hFF;
-    else if(rvalid && (data_cmp_0[data_cnt] < temp_data_0))
+        temp_data_0 <= 8'h7F;
+    else if(rvalid && (signed'(data_cmp_0[data_cnt]) < signed'(temp_data_0)))
         temp_data_0 <= data_cmp_0[data_cnt];
 end
 
@@ -113,10 +113,10 @@ end
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
     if(i_reset)
-        temp_data_1 <= 8'hFF;
+        temp_data_1 <= 8'h7F;
     else if(rx_eop)
-        temp_data_1 <= 8'hFF;
-    else if(rvalid && (data_cmp_1[data_cnt] < temp_data_1))
+        temp_data_1 <= 8'h7F;
+    else if(rvalid && (signed'(data_cmp_1[data_cnt]) < signed'(temp_data_1)))
         temp_data_1 <= data_cmp_1[data_cnt];
 end
 
@@ -126,7 +126,7 @@ end
 always @ (posedge i_clk)begin
     for(int i=0;i<8;i++) begin
         for(int j=0;j<4;j++)begin
-            shift_num_0[i][j*8 +: 8] <= data_cmp_0[i*4 + j] - temp_data_0;
+            shift_num_0[i][j*8 +: 8] <= signed'(data_cmp_0[i*4 + j]) - signed'(temp_data_0);
         end
     end
 end
@@ -137,7 +137,7 @@ end
 always @ (posedge i_clk)begin
     for(int i=0;i<8;i++) begin
         for(int j=0;j<4;j++)begin
-            shift_num_1[i][j*8 +: 8] <= data_cmp_1[i*4 + j] - temp_data_1;
+            shift_num_1[i][j*8 +: 8] <= signed'(data_cmp_1[i*4 + j]) - signed'(temp_data_1);
         end
     end
 end

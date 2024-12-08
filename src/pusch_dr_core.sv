@@ -23,6 +23,7 @@ module pusch_dr_core #(
     input                                           i_clk                   ,// data clock
     input                                           i_reset                 ,// reset
 
+    input          [   1: 0]                        i_aiu_idx               ,// AIU index 0-3
     input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
     input          [   1: 0]                        i_dr_mode               ,// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
@@ -78,6 +79,7 @@ wire           [LANE-1:0][4*32-1: 0]            ant_even                ;
 wire           [LANE-1:0][4*32-1: 0]            ant_odd                 ;
 wire           [LANE-1:0][11-1: 0]              ant_addr                ;
 wire           [LANE-1: 0]                      ant_tvalid              ;
+wire           [LANE-1: 0]                      ant_symb_clr            ;
 wire           [LANE-1: 0]                      ant_sop                 ;
 wire           [LANE-1: 0]                      ant_eop                 ;
 
@@ -131,6 +133,8 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: ant_data_buffer
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
 
+        .i_dr_mode                                          (i_dr_mode              ),
+
         .i_info_0                                           (i_info_0      [gi]     ),  // IQ HD
         .i_info_1                                           (i_info_1      [gi]     ),  // FFT AGC
 
@@ -149,7 +153,8 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: ant_data_buffer
         .o_ant_addr                                         (ant_addr      [gi]     ),
         .o_ant_sop                                          (ant_sop       [gi]     ), 
         .o_ant_eop                                          (ant_eop       [gi]     ), 
-        .o_tvalid                                           (ant_tvalid    [gi]     ) 
+        .o_tvalid                                           (ant_tvalid    [gi]     ),
+        .o_symb_clr                                         (ant_symb_clr  [gi]     ) 
     );
 
     // arrange data for even and odd ants
@@ -166,42 +171,15 @@ reg                                             symb_is_1st           =1;
 reg            [   7: 0]                        ant_buffer_sym        =0;
 
 wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
-
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
-
-reg                                             aiu_idx               =0;
 reg            [   7: 0]                        re_num                =0;
 reg            [   7: 0]                        rbg_num               =0;
 reg            [   7: 0]                        re_num_per_rbg        =0;
 wire           [   7: 0]                        rbg_num_max             ;
-
-reg                                             symb_1st_d1           =0;
-reg                                             symb_1st_d2           =0;
 wire                                            symb_clr                ;
 
-
-always @ (posedge i_clk)begin
-    symb_1st_d2 <= symb_1st_d1;
-    case(i_dr_mode)
-        2'b00:  symb_1st_d1 <= 1'b0;
-        2'b01:  begin // every slot 0 & symbol 0
-                    if(ant_symb_idx[0] == 0 && ant_slot_idx[0] == 0)
-                        symb_1st_d1 <= 1'b1;
-                    else
-                        symb_1st_d1 <= 1'b0;
-                end
-        2'b10:  begin // every symbol 0
-                    if(ant_symb_idx[0] == 0)
-                        symb_1st_d1 <= 1'b1;
-                    else
-                        symb_1st_d1 <= 1'b0;
-                end
-        default:symb_1st_d1 <= 1'b0;
-    endcase
-end
-
-assign symb_clr = symb_1st_d1 && (~symb_1st_d2);
+assign symb_clr = ant_symb_clr[0];
 
 always @(posedge i_clk) begin
     if(i_reset)
@@ -216,6 +194,8 @@ end
 
 always @(posedge i_clk) begin
     if(i_reset)
+        symb_is_1st <= 'd1;
+    else if(symb_clr)
         symb_is_1st <= 'd1;
     else if(ant_buffer_sym < 'd4)
         symb_is_1st <= 'd1;
@@ -234,17 +214,17 @@ always @ (posedge i_clk) begin
     case(i_rbg_size)
         2'b00:  re_num_per_rbg <= 'd48;    // rbG=4 PRRs
         2'b01:  begin
-                    if(aiu_idx==0 && rbg_num==0)
+                    if(i_aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd96;     // rbG=8 PRRs
                 end
         2'b10:  begin
-                    if(aiu_idx==0 && rbg_num==0)
+                    if(i_aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd192;    // rbG=16 PRRs
@@ -423,7 +403,7 @@ beam_sort # (
     .i_rready                                           (1'b1                   ),
     .i_rvalid                                           (rbg_buffer_vld         ),
     
-    .i_symb_clr                                         (beams_symb_clr         ),
+    .i_symb_clr                                         (symb_clr               ),
     .i_symb_1st                                         (beams_symb_1st         ),
 
     .i_rbg_max                                          (rbg_num_max            ),

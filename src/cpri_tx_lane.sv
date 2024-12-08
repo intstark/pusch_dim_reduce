@@ -44,6 +44,8 @@ module cpri_tx_lane
     input  wire                                     i_if_cell_idx2          ,
     input  wire                                     i_if_cell_idx3          ,
 
+    input  wire    [   1: 0]                        i_aiu_idx               ,// const
+    input  wire    [   2: 0]                        i_lane_idx              ,// const
     input  wire    [   3: 0]                        i_rbg_idx               ,
     input  wire    [  31: 0]                        i_fft_agc               ,
                 
@@ -218,7 +220,9 @@ ul_package_data                                         ul_package_data
     .i_pkg3_info                                        (m_info3                ),
     .i_pkg3_data                                        (m_data_ant3            ),
     .i_pkg3_shift                                       (m_shift3               ),
-    
+
+    .i_aiu_idx                                          (i_aiu_idx              ),      
+    .i_lane_idx                                         (i_lane_idx             ),  
     .i_rbg_idx                                          (m_rbg_idx              ),
     .i_fft_agc                                          (m_fft_agc              ),
 

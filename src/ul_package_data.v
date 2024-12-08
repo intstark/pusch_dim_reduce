@@ -15,61 +15,63 @@
 
 module ul_package_data
 (
-    input   wire            clk               ,
-    input   wire            rst               ,
-    input   wire            i_sel             ,
-    input   wire            i_vld             ,
-    input   wire            i_sop             ,
-    input   wire            i_eop             ,
-    input   wire  [3:0]     i_pkg0_ch_type    ,
-    input   wire            i_pkg0_cell_idx   ,
-    input   wire  [1:0]     i_pkg0_ant_idx    ,
-    input   wire  [6:0]     i_pkg0_slot_idx   ,
-    input   wire  [3:0]     i_pkg0_sym_idx    ,
-    input   wire  [8:0]     i_pkg0_prb_idx    ,
-    input   wire  [7:0]     i_pkg0_info       ,
-    input   wire  [13:0]    i_pkg0_data       ,
-    input   wire  [3:0]     i_pkg0_shift      ,
-    input   wire  [3:0]     i_pkg1_ch_type    ,
-    input   wire            i_pkg1_cell_idx   ,
-    input   wire  [1:0]     i_pkg1_ant_idx    ,
-    input   wire  [6:0]     i_pkg1_slot_idx   ,
-    input   wire  [3:0]     i_pkg1_sym_idx    ,
-    input   wire  [8:0]     i_pkg1_prb_idx    ,
-    input   wire  [7:0]     i_pkg1_info       ,
-    input   wire  [13:0]    i_pkg1_data       ,
-    input   wire  [3:0]     i_pkg1_shift      ,
-    input   wire  [3:0]     i_pkg2_ch_type    ,
-    input   wire            i_pkg2_cell_idx   ,
-    input   wire  [1:0]     i_pkg2_ant_idx    ,
-    input   wire  [6:0]     i_pkg2_slot_idx   ,
-    input   wire  [3:0]     i_pkg2_sym_idx    ,
-    input   wire  [8:0]     i_pkg2_prb_idx    ,
-    input   wire  [7:0]     i_pkg2_info       ,
-    input   wire  [13:0]    i_pkg2_data       ,
-    input   wire  [3:0]     i_pkg2_shift      ,
-    input   wire  [3:0]     i_pkg3_ch_type    ,
-    input   wire            i_pkg3_cell_idx   ,
-    input   wire  [1:0]     i_pkg3_ant_idx    ,
-    input   wire  [6:0]     i_pkg3_slot_idx   ,
-    input   wire  [3:0]     i_pkg3_sym_idx    ,
-    input   wire  [8:0]     i_pkg3_prb_idx    ,
-    input   wire  [7:0]     i_pkg3_info       ,
-    input   wire  [13:0]    i_pkg3_data       ,
-    input   wire  [3:0]     i_pkg3_shift      ,      
+    input  wire                                     clk                     ,
+    input  wire                                     rst                     ,
+    input  wire                                     i_sel                   ,
+    input  wire                                     i_vld                   ,
+    input  wire                                     i_sop                   ,
+    input  wire                                     i_eop                   ,
+    input  wire    [   3: 0]                        i_pkg0_ch_type          ,
+    input  wire                                     i_pkg0_cell_idx         ,
+    input  wire    [   1: 0]                        i_pkg0_ant_idx          ,
+    input  wire    [   6: 0]                        i_pkg0_slot_idx         ,
+    input  wire    [   3: 0]                        i_pkg0_sym_idx          ,
+    input  wire    [   8: 0]                        i_pkg0_prb_idx          ,
+    input  wire    [   7: 0]                        i_pkg0_info             ,
+    input  wire    [  13: 0]                        i_pkg0_data             ,
+    input  wire    [   3: 0]                        i_pkg0_shift            ,
+    input  wire    [   3: 0]                        i_pkg1_ch_type          ,
+    input  wire                                     i_pkg1_cell_idx         ,
+    input  wire    [   1: 0]                        i_pkg1_ant_idx          ,
+    input  wire    [   6: 0]                        i_pkg1_slot_idx         ,
+    input  wire    [   3: 0]                        i_pkg1_sym_idx          ,
+    input  wire    [   8: 0]                        i_pkg1_prb_idx          ,
+    input  wire    [   7: 0]                        i_pkg1_info             ,
+    input  wire    [  13: 0]                        i_pkg1_data             ,
+    input  wire    [   3: 0]                        i_pkg1_shift            ,
+    input  wire    [   3: 0]                        i_pkg2_ch_type          ,
+    input  wire                                     i_pkg2_cell_idx         ,
+    input  wire    [   1: 0]                        i_pkg2_ant_idx          ,
+    input  wire    [   6: 0]                        i_pkg2_slot_idx         ,
+    input  wire    [   3: 0]                        i_pkg2_sym_idx          ,
+    input  wire    [   8: 0]                        i_pkg2_prb_idx          ,
+    input  wire    [   7: 0]                        i_pkg2_info             ,
+    input  wire    [  13: 0]                        i_pkg2_data             ,
+    input  wire    [   3: 0]                        i_pkg2_shift            ,
+    input  wire    [   3: 0]                        i_pkg3_ch_type          ,
+    input  wire                                     i_pkg3_cell_idx         ,
+    input  wire    [   1: 0]                        i_pkg3_ant_idx          ,
+    input  wire    [   6: 0]                        i_pkg3_slot_idx         ,
+    input  wire    [   3: 0]                        i_pkg3_sym_idx          ,
+    input  wire    [   8: 0]                        i_pkg3_prb_idx          ,
+    input  wire    [   7: 0]                        i_pkg3_info             ,
+    input  wire    [  13: 0]                        i_pkg3_data             ,
+    input  wire    [   3: 0]                        i_pkg3_shift            ,
 
-    input   wire  [3:0]     i_rbg_idx         ,      
-    input   wire  [31:0]    i_fft_agc         ,      
+    input  wire    [   1: 0]                        i_aiu_idx               ,// const[44:43]
+    input  wire    [   2: 0]                        i_lane_idx              ,// const[42:40]
+    input  wire    [   3: 0]                        i_rbg_idx               ,
+    input  wire    [  31: 0]                        i_fft_agc               ,
     
-    input   wire  [31:0]    i_pkg0_power      ,
-    input   wire  [31:0]    i_pkg1_power      ,
-    input   wire  [31:0]    i_pkg2_power      ,
-    input   wire  [31:0]    i_pkg3_power      ,
+    input  wire    [  31: 0]                        i_pkg0_power            ,
+    input  wire    [  31: 0]                        i_pkg1_power            ,
+    input  wire    [  31: 0]                        i_pkg2_power            ,
+    input  wire    [  31: 0]                        i_pkg3_power            ,
 
-    output  reg             o_cpri_wen        ,
-    output  reg   [6:0]     o_cpri_waddr      ,
-    output  reg   [63:0]    o_cpri_wdata      ,
-    output  reg             o_cpri_wlast      
+    output reg                                      o_cpri_wen              ,
+    output reg     [   6: 0]                        o_cpri_waddr            ,
+    output reg     [  63: 0]                        o_cpri_wdata            ,
+    output reg                                      o_cpri_wlast             
 );
 
 
@@ -141,52 +143,56 @@ always @ (posedge clk)
 //--common
 always @ (posedge clk)
     begin
-        if(i_sop  && (pkg_sel_1 == 3'd0))//
+        if(i_sop  && (pkg_sel_1 == 3'd0))                           //
           begin
-            pkg_head[39:36]    <= {i_pkg0_ch_type};
-            pkg_head[19:8]     <= {i_pkg0_cell_idx,i_pkg0_slot_idx,i_pkg0_sym_idx};
-          end  
+            pkg_head[44:43]  <= {i_aiu_idx};
+            pkg_head[42:40]  <= {i_lane_idx};
+            pkg_head[39:36]  <= {i_pkg0_ch_type};
+            pkg_head[19:8]   <= {i_pkg0_cell_idx,i_pkg0_slot_idx,i_pkg0_sym_idx};
+          end
         else
-          begin        
-            pkg_head[39:36]    <= pkg_head[39:36] ;
-            pkg_head[19:8]     <= pkg_head[19:8]  ;    
-          end                                      
+          begin
+            pkg_head[44:43]  <= pkg_head[44:43];
+            pkg_head[42:40]  <= pkg_head[42:40];
+            pkg_head[39:36]  <= pkg_head[39:36];
+            pkg_head[19:8]   <= pkg_head[19: 8];
+          end
     end
     
 //--group-0-prb_idx    
 always @ (posedge clk)
     begin
-        if(i_sop  && (pkg_sel_1 == 3'd0))//
-          begin         
-            pkg_head[48:40]  <= {i_rbg_idx,5'd0};
-            pkg_head[35:28]  <= {i_pkg0_prb_idx};
+        if(i_sop  && (pkg_sel_1 == 3'd0))                           //
+          begin
+            pkg_head[48:45]  <= i_rbg_idx;
+            pkg_head[35:28]  <= i_pkg0_prb_idx;
             pkg_head[7:4]    <= i_pkg0_info[7:4];
-          end  
-        else 
-          begin        
-            pkg_head[48:40]  <= pkg_head[48:40];
+          end
+        else
+          begin
+            pkg_head[48:45]  <= pkg_head[48:45];
             pkg_head[35:28]  <= pkg_head[35:28];
-            pkg_head[7:4]    <= pkg_head[7:4];            
-          end  
+            pkg_head[7:4]    <= pkg_head[7:4];
+          end
     end
 
     
 //--group-1-prb_idx      
 always @ (posedge clk)
     begin
-        if(i_sop  && (pkg_sel_1 ==3'd4))//
-          begin         
+        if(i_sop  && (pkg_sel_1 ==3'd4))                            //
+          begin
             pkg_head[63:49]  <= {11'd0,i_rbg_idx};
             pkg_head[27:20]  <= {i_pkg0_prb_idx};
-            pkg_head[3:0]    <= i_pkg0_info[7:4];            
-          end  
+            pkg_head[3:0]    <= i_pkg0_info[7:4];
+          end
         else
-          begin        
+          begin
             pkg_head[63:49]  <= pkg_head[63:49];
             pkg_head[27:20]  <= pkg_head[27:20];
-            pkg_head[3:0]    <= pkg_head[3:0] ;            
-          end  
-    end        
+            pkg_head[3:0]    <= pkg_head[3:0] ;
+          end
+    end
     
 // ant power
 reg            [  63: 0]                        pkg0_power            =0;
@@ -197,24 +203,24 @@ reg            [  63: 0]                        fft_agc               =0;
 
 always @ (posedge clk)
 begin
-    if(i_sop && i_vld  && (pkg_sel_1 ==3'd0))begin         
+    if(i_sop && i_vld  && (pkg_sel_1 ==3'd0))begin
         pkg0_power <= {i_pkg1_power,i_pkg0_power};
         pkg1_power <= {i_pkg3_power,i_pkg2_power};
-    end else begin        
+    end else begin
         pkg0_power <= pkg0_power;
         pkg1_power <= pkg1_power;
-    end  
+    end
 end
 
 always @ (posedge clk)
 begin
-    if(i_sop && i_vld  && (pkg_sel_1 ==3'd4))begin         
+    if(i_sop && i_vld  && (pkg_sel_1 ==3'd4))begin
         pkg2_power <= {i_pkg1_power,i_pkg0_power};
         pkg3_power <= {i_pkg3_power,i_pkg2_power};
     end else begin
         pkg2_power <= pkg2_power;
         pkg3_power <= pkg3_power;
-    end  
+    end
 end
 
 assign wr_power = {pkg3_power, pkg2_power, pkg1_power, pkg0_power};
@@ -254,7 +260,7 @@ always @ (posedge clk)
             {1'd0,2'd0}    : ant0_shift[3:0]   <= i_pkg0_shift;
             {1'd0,2'd1}    : ant0_shift[7:4]   <= i_pkg0_shift;
             {1'd0,2'd2}    : ant0_shift[11:8]  <= i_pkg0_shift;
-            {1'd0,2'd3}    : ant0_shift[15:12] <= i_pkg0_shift;           
+            {1'd0,2'd3}    : ant0_shift[15:12] <= i_pkg0_shift;
             default        : ant0_shift[15:0]  <= ant0_shift[15:0];
         endcase
     end
@@ -277,7 +283,7 @@ always @ (posedge clk)
             {1'd0,2'd0}    : ant1_shift[3:0]   <= i_pkg1_shift;
             {1'd0,2'd1}    : ant1_shift[7:4]   <= i_pkg1_shift;
             {1'd0,2'd2}    : ant1_shift[11:8]  <= i_pkg1_shift;
-            {1'd0,2'd3}    : ant1_shift[15:12] <= i_pkg1_shift;           
+            {1'd0,2'd3}    : ant1_shift[15:12] <= i_pkg1_shift;
             default        : ant1_shift[15:0]  <= ant1_shift[15:0];
         endcase
     end
@@ -300,7 +306,7 @@ always @ (posedge clk)
             {1'd0,2'd0}    : ant2_shift[3:0]   <= i_pkg2_shift;
             {1'd0,2'd1}    : ant2_shift[7:4]   <= i_pkg2_shift;
             {1'd0,2'd2}    : ant2_shift[11:8]  <= i_pkg2_shift;
-            {1'd0,2'd3}    : ant2_shift[15:12] <= i_pkg2_shift;           
+            {1'd0,2'd3}    : ant2_shift[15:12] <= i_pkg2_shift;
             default        : ant2_shift[15:0]  <= ant2_shift[15:0];
         endcase
     end
@@ -323,7 +329,7 @@ always @ (posedge clk)
             {1'd0,2'd0}    : ant3_shift[3:0]   <= i_pkg3_shift;
             {1'd0,2'd1}    : ant3_shift[7:4]   <= i_pkg3_shift;
             {1'd0,2'd2}    : ant3_shift[11:8]  <= i_pkg3_shift;
-            {1'd0,2'd3}    : ant3_shift[15:12] <= i_pkg3_shift;           
+            {1'd0,2'd3}    : ant3_shift[15:12] <= i_pkg3_shift;
             default        : ant3_shift[15:0]  <= ant3_shift[15:0];
         endcase
     end
@@ -353,15 +359,16 @@ always @ (posedge clk)
                     pkg_waddr <= pkg_waddr + 7'd1;
             end
         else
-            pkg_waddr <= pkg_waddr;    
+            pkg_waddr <= pkg_waddr;
     end
 
-always @ (posedge clk)
- if (pkg_waddr == 7'd94)
-       pkg_last <= 1'd1;  
- else
-       pkg_last <= 1'd0; 
-                        
+always @ (posedge clk)begin
+    if (pkg_waddr == 7'd94)
+        pkg_last <= 1'd1;
+    else
+        pkg_last <= 1'd0;
+end
+
 //assign pkg_last = (i_vld && i_eop && (pkg_waddr == 7'd95))? 1'd1 : 1'd0;
 
 loop_buffer_sync_intel #
@@ -431,7 +438,7 @@ always @ (posedge clk)
             cpri_power <= rd_power;
         else
             cpri_power <= 256'd0;
-    end 
+    end
 
 
 //-----------------------------------------------------------------------------
@@ -452,16 +459,16 @@ always @ (posedge clk)
                     pkg_raddr <= 7'd0;
                 else
                     pkg_raddr <= pkg_raddr + 7'd1;
-            end           
+            end
         else
             pkg_raddr <= 7'd0;
     end
     
 always @ (posedge clk)
  if (pkg_rvld && (pkg_raddr == 7'd94))
-       pkg_rdy <= 1'd1;  
+       pkg_rdy <= 1'd1;
  else
-       pkg_rdy <= 1'd0;    
+       pkg_rdy <= 1'd0;
 
 
 always @ (posedge clk)
@@ -478,23 +485,23 @@ always @ (posedge clk)
         if(pkg_rvld)
             cpri_head3 <= pkg_rinfo[63:0];
         else
-            cpri_head3 <= 64'd0;    
-    end 
+            cpri_head3 <= 64'd0;
+    end
 
 always @ (posedge clk)
     begin
         if(pkg_rvld)
             cpri_head2 <= pkg_rinfo[127:64];
         else
-            cpri_head2 <= 64'd0;    
-    end 
+            cpri_head2 <= 64'd0;
+    end
 
 always @ (posedge clk)
     begin
         if(pkg_rvld)
             cpri_head1 <= pkg_rinfo[191:128];
         else
-            cpri_head1 <= 64'd0;    
+            cpri_head1 <= 64'd0;
     end
     
 always @ (posedge clk)
@@ -502,8 +509,8 @@ always @ (posedge clk)
         if(pkg_rvld)
             cpri_head0 <= pkg_rinfo[255:192];
         else
-            cpri_head0 <= 64'd0;    
-    end 
+            cpri_head0 <= 64'd0;
+    end
         
 //-----------------------------------------------------------------------------
 //8DW = a group
@@ -514,7 +521,7 @@ always @ (posedge clk)
             re_cnt <= re_cnt + 3'd1;
         else
             re_cnt <= 3'd0;
-    end    
+    end
 
 always @ (posedge clk)
     begin
@@ -542,8 +549,8 @@ always @ (posedge clk)
                             group_cnt <= group_cnt + 4'd1;
                     end
                 else
-                    group_cnt <= group_cnt;               
-            end            
+                    group_cnt <= group_cnt;
+            end
         else
             group_cnt <= 4'd0;
     end

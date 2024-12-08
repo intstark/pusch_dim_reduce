@@ -234,7 +234,9 @@ always @ (posedge i_clk)begin
 end	
 
 always @ (posedge i_clk)begin
-    if(reset_syn)
+    if(i_reset)
+        rbg_num <= 'd0;
+    else if(i_symb_clr)
         rbg_num <= 'd0;
     else if(enable_buf[27]==0 && enable_buf[26]==1)
         rbg_num <= 'd0;
@@ -244,7 +246,9 @@ end
 
 
 always @ (posedge i_clk)begin
-    if(reset_syn)
+    if(i_reset)
+        sort_done <= 'd0;
+    else if(i_symb_clr)
         sort_done <= 'd0;
     else if(sort_vld)
         sort_done <= 'd1;
@@ -447,9 +451,10 @@ dram_beam_index
 // the first read out 
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    if(reset_syn)
+    if(i_reset)
         sym_1st_done <= 1'b0;
-    //else if(rd_init_sop)
+    else if(i_symb_clr)
+        sym_1st_done <= 1'b0;
     else if(rd_eop)
         sym_1st_done <= 1'b1;
 end

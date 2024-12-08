@@ -34,7 +34,8 @@ module cpri_txdata_top
     input  wire    [15:0][31: 0]                    i_ant_pwr               ,
 
 
-    input          [   3: 0]                        i_rbg_idx               ,
+    input          [   1: 0]                        i_aiu_idx               , // [44:43]
+    input          [   3: 0]                        i_rbg_idx               , // [48:45]
     input          [   3: 0]                        i_pkg_type              ,
     input                                           i_cell_idx              ,
     input          [   6: 0]                        i_slot_idx              ,
@@ -71,6 +72,8 @@ wire           [   3: 0]                        tx0_symb_idx            ;
 wire           [  31: 0]                        tx0_fft_agc             ;
 wire           [  8: 0]                         tx0_prb_idx             ;
 wire           [3:0][7: 0]                      tx0_pkg_info            ;
+wire           [   2: 0]                        tx0_lane_idx            ;
+
 
 wire           [3:0][31: 0]                     tx1_ant_pwr             ;
 wire           [   3: 0]                        tx1_rbg_idx             ;
@@ -81,7 +84,7 @@ wire           [   3: 0]                        tx1_symb_idx            ;
 wire           [  31: 0]                        tx1_fft_agc             ;
 wire           [  8: 0]                         tx1_prb_idx             ;
 wire           [3:0][7: 0]                      tx1_pkg_info            ;
-
+wire           [   2: 0]                        tx1_lane_idx            ;
 
 
 //------------------------------------------------------------------------------------------
@@ -121,7 +124,8 @@ txdata_queue                                            txdata_queue_0
     .o_symb_idx                                         (tx0_symb_idx           ),
     .o_fft_agc                                          (tx0_fft_agc            ),
     .o_pkg_info                                         (tx0_pkg_info           ),
-    .o_prb_idx                                          (tx0_prb_idx            ) 
+    .o_prb_idx                                          (tx0_prb_idx            ),
+    .o_lane_idx                                         (tx0_lane_idx           ) 
 );
 
 cpri_tx_lane                                            cpri_tx_lane_0
@@ -156,6 +160,8 @@ cpri_tx_lane                                            cpri_tx_lane_0
     .i_if_cell_idx2                                     (tx0_cell_idx           ),
     .i_if_cell_idx3                                     (tx0_cell_idx           ),
     
+    .i_aiu_idx                                          (i_aiu_idx              ),      
+    .i_lane_idx                                         (tx0_lane_idx           ),   
     .i_rbg_idx                                          (tx0_rbg_idx            ),
     .i_fft_agc                                          (tx0_fft_agc            ),
 
@@ -206,7 +212,8 @@ txdata_queue                                            txdata_queue_1
     .o_symb_idx                                         (tx1_symb_idx           ),
     .o_fft_agc                                          (tx1_fft_agc            ),
     .o_pkg_info                                         (tx1_pkg_info           ),
-    .o_prb_idx                                          (tx1_prb_idx            )
+    .o_prb_idx                                          (tx1_prb_idx            ),
+    .o_lane_idx                                         (tx1_lane_idx           ) 
 );
 
 cpri_tx_lane                                            cpri_tx_lane_1
@@ -240,7 +247,9 @@ cpri_tx_lane                                            cpri_tx_lane_1
     .i_if_cell_idx1                                     (tx1_cell_idx           ),
     .i_if_cell_idx2                                     (tx1_cell_idx           ),
     .i_if_cell_idx3                                     (tx1_cell_idx           ),
-    
+
+    .i_aiu_idx                                          (i_aiu_idx              ),   
+    .i_lane_idx                                         (tx1_lane_idx           ),   
     .i_rbg_idx                                          (tx1_rbg_idx            ),
     .i_fft_agc                                          (tx1_fft_agc            ),
 

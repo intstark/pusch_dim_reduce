@@ -58,6 +58,7 @@ module txdata_queue #(
     output         [  31: 0]                        o_fft_agc               ,
     output         [3:0][ 7: 0]                     o_pkg_info              ,
     output         [   8: 0]                        o_prb_idx               ,
+    output         [   2: 0]                        o_lane_idx              ,
 
     output         [3:0][31: 0]                     o_tx_data               ,
     output                                          o_tx_vld                , 
@@ -290,6 +291,7 @@ reg            [   3: 0]                        ant_group_idx         =0;
 reg            [3:0][7: 0]                      pkg_info              =0;
 reg            [  83: 0]                        dinfo_out             =0;
 reg            [  83: 0]                        dinfo_out_dly         =0;
+reg            [   2: 0]                        lane_idx              =0;
 
 
 always @ (posedge i_clk)begin
@@ -338,7 +340,12 @@ always @ (posedge i_clk)begin
     dinfo_out_dly <= dinfo_out;
 end
 
-
+always @ (posedge i_clk)begin
+    if(i_ant0_idx==0)
+        lane_idx <= 'd0;    // ant 0- 7 IQ_HD[42:40]
+    else
+        lane_idx <= 'd1;    // ant 8-15 IQ_HD[42:40]
+end
 
 //--------------------------------------------------------------------------------------
 // 
@@ -565,6 +572,7 @@ assign o_cell_idx   = dinfo_out_dly[11];
 assign o_slot_idx   = dinfo_out_dly[10: 4];
 assign o_symb_idx   = dinfo_out_dly[3: 0];
 assign o_ant_pwr    = rd_beam_pwr_out;
+assign o_lane_idx   = lane_idx;
 
 
 

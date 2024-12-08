@@ -34,6 +34,8 @@ module ant_data_buffer #(
     input                                           i_clk                   ,
     input                                           i_reset                 ,
 
+    input          [   1: 0]                        i_dr_mode               ,// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+
     // header info
     input          [  63: 0]                        i_info_0                ,// IQ HD 
     input          [   7: 0]                        i_info_1                ,// FFT AGC
@@ -53,7 +55,8 @@ module ant_data_buffer #(
     output         [RADDR_WIDTH-1: 0]               o_ant_addr              ,
     output                                          o_ant_sop               ,
     output                                          o_ant_eop               ,
-    output                                          o_tvalid                 
+    output                                          o_tvalid                ,
+    output                                          o_symb_clr
 );
 
 
@@ -269,6 +272,48 @@ always @(posedge i_clk) begin
     end
 end
 
+
+//------------------------------------------------------------------------------------------
+// clear flag for dr re-calculation 
+//------------------------------------------------------------------------------------------
+reg                                             symb_1st_d1           =0;
+reg                                             symb_1st_d2           =0;
+wire                                            symb_clr                ;
+wire           [   6: 0]                        slot_idx_pre            ;
+wire           [   3: 0]                        symb_idx_pre            ;
+
+
+
+assign slot_idx_pre = dout_info0[0][18:12]  ;
+assign symb_idx_pre = dout_info0[0][11:8]   ;
+
+always @ (posedge i_clk)begin
+    symb_1st_d2 <= symb_1st_d1;
+    case(i_dr_mode)
+        2'b00:  symb_1st_d1 <= 1'b0;
+        2'b01:  begin // every slot 0 & symbol 0
+                    if(symb_idx_pre == 0 && slot_idx_pre == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        2'b10:  begin // every symbol 0
+                    if(symb_idx_pre == 0)
+                        symb_1st_d1 <= 1'b1;
+                    else
+                        symb_1st_d1 <= 1'b0;
+                end
+        default:symb_1st_d1 <= 1'b0;
+    endcase
+end
+
+assign symb_clr = symb_1st_d1 && (~symb_1st_d2);
+
+
+
+//------------------------------------------------------------------------------------------
+// Debug signal
+//------------------------------------------------------------------------------------------
 wire           [   3: 0]                        pkg_type_out            ;
 wire                                            cell_idx_out            ;
 wire           [   6: 0]                        slot_idx_out            ;
@@ -283,17 +328,20 @@ assign slot_idx_out = dout_info0[2][18:12]  ;
 assign symb_idx_out = dout_info0[2][11:8]   ;
 assign fft_agc_out  = dout_info0[2][127:64] ;
 
-
+//------------------------------------------------------------------------------------------
+// Ouptut assignment
+//------------------------------------------------------------------------------------------
 assign o_ant_even = even_rdata      ;
 assign o_ant_odd  = odd_rdata       ;
 assign o_tvalid   = tvalid_out[2]   ;
-assign o_ant_sop  = tsop_out[1]     ;
-assign o_ant_eop  = teop_out[2]     ;
+assign o_ant_sop  = tsop_out  [1]   ;
+assign o_ant_eop  = teop_out  [2]   ;
 
 assign o_info_0   = dout_info0[2][63: 0];
 assign o_info_1   = dout_fft_agc[1];
 assign o_symb_idx = symb_idx_out;
 assign o_slot_idx = slot_idx_out;
+assign o_symb_clr = symb_clr;
 
 
 endmodule

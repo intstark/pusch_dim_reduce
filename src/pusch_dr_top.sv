@@ -23,6 +23,7 @@ module pusch_dr_top #(
     input                                           i_clk                   , // data clock
     input                                           i_reset                 , // reset
 
+    input          [   1: 0]                        i_aiu_idx               , // AIU index 0-3
     input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
     input          [   1: 0]                        i_dr_mode               , // re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
@@ -180,7 +181,8 @@ cpri_rxdata_top                                         cpri_rxdata_top
 pusch_dr_core                                           pusch_dr_core(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
-    
+
+    .i_aiu_idx                                          (i_aiu_idx              ),
     .i_rbg_size                                         (i_rbg_size             ),// default:2'b10 16rb
     .i_dr_mode                                          (i_dr_mode              ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
@@ -217,13 +219,17 @@ pusch_dr_core                                           pusch_dr_core(
 cpri_txdata_top                                         cpri_txdata_top(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
+
     .i_rx_sel                                           (1'b0                   ),
     .i_rx_vld                                           (dr_vld                 ),
     .i_rx_sop                                           (dr_sop                 ),
     .i_rx_eop                                           (dr_eop                 ),
+
     .i_rbg_load                                         (dr_rbg_load            ),
     .i_ant_data                                         (dr_data                ),
     .i_ant_pwr                                          (dr_beam_pwr            ),
+
+    .i_aiu_idx                                          (i_aiu_idx              ),
     .i_rbg_idx                                          (dr_rbg_idx             ),
     .i_pkg_type                                         (dr_pkg_type            ),
     .i_cell_idx                                         (dr_cell_idx            ),

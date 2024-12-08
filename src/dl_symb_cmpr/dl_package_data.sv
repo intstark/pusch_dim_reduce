@@ -179,7 +179,7 @@ wire           [  31: 0]                        fft_agc_sel             ;
 reg            [  63: 0]                        pkg_agc               =0;
 
 assign fft_agc_sel =    (i_pkg0_sym_idx==0 && i_pkg0_info[7:4]==0) ? 32'h04030201 : 
-                        (i_pkg0_sym_idx==0 && i_pkg1_info[7:4]==1) ? 32'h08070605 :
+                        (i_pkg0_sym_idx==0 && i_pkg1_info[7:4]==1) ? 32'hFF070605 :
                         (i_pkg0_sym_idx==1 && i_pkg0_info[7:4]==0) ? 32'h04030201 : 
                         (i_pkg0_sym_idx==1 && i_pkg1_info[7:4]==1) ? 32'h08070605 :
                         (i_pkg0_sym_idx==2 && i_pkg1_info[7:4]==0) ? 32'h02020505 :
