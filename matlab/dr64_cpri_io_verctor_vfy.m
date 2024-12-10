@@ -35,8 +35,8 @@ symbol_id= 14;
 SymbolXCompare = 1;
 
 
-vector_dir = '../AlgoVec/ulrxDimRedu-1203-v1';
-fpga_dir   = '../vfy/pusch_dr_top_vec_work';
+vector_dir = '../AlgoVec/ulrxDimRedu-1209';
+fpga_dir   = '../git/pusch_dim_reduce/vfy/pusch_dr_top_vec_work';
 
 
 
@@ -93,10 +93,12 @@ fprintf('---------------------------------------------\n');
 fprintf('原始数据检查比对\n');
 fprintf('---------------------------------------------\n');
 
-load('dr_mat/rx_data_freq_fixed_compressed');
-load('dr_mat/rx_data_decompressed');
-load('dr_mat/DecomExponent_tv');
-load('dr_mat/dataout_RRU1_AIU1');
+load(sprintf('%s/matlab文件/rx_data_freq_fixed_compressed',vector_dir));
+load(sprintf('%s/matlab文件/rx_data_decompressed',vector_dir));
+load(sprintf('%s/matlab文件/DecomExponent_tv',vector_dir));
+load(sprintf('%s/matlab文件/dataout_RRU1_AIU1',vector_dir));
+load(sprintf('%s/matlab文件/data_equl_fixed_compressed',vector_dir));
+
 
 rx_cprs_symb1_eve=squeeze(rx_data_freq_fixed_compressed(1:1584,1,1:2:64)).';
 rx_cprs_symb1_odd=squeeze(rx_data_freq_fixed_compressed(1:1584,1,2:2:64)).';
@@ -124,6 +126,14 @@ err_rx_agc= rb_agc_read(:,1:264)-rx_rb_agc;
 
 err_rx_agc_max=max(abs(err_rx_agc),[],[1,2]);
 fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_agc_max=\t%d\n',err_rx_agc_max);
+
+
+
+rx_cpriout_cprs_eve=squeeze(data_equl_fixed_compressed(:,:,1:2:16,1));
+rx_cpriout_cprs_odd=squeeze(data_equl_fixed_compressed(:,:,2:2:16,1));
+% rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
+
+
 
 
 for ii=1:14
@@ -523,6 +533,16 @@ end
 rbgout_cprs_reverse = 9-rbgout_cprs;
 
 
+for ii=1:2
+    data_in = sprintf('%s/DimRedu164To16/pusch_group%d/LAN%d.txt',vector_dir,(aau_idx+aiu_idx),ii);
+    fprintf('读取文件:\t%s\n',data_in);
+    [uncprs_cpriout_read((ii-1)*4+1:ii*4,:), cprs_cpriout_read((ii-1)*4+1:ii*4,:),...
+     rb_agc_cpriout_read((ii-1)*4+1:ii*4,:), fft_agc_cpriout_read((ii-1)*4+1:ii*4,:)]=ReadCpriData(data_in,7);
+end
+
+
+
+
 % 读取CPRI输入数据
 for ii=1:2
     data_in = sprintf('%s/des_tx_cpri%d.txt',fpga_dir,ii-1);
@@ -781,16 +801,19 @@ end
 % 动态定标截断
 function [dataout_sft_fix,factor_shift]=dynamic_truncation(datain,OW,varargin)
 
-    datain_i = real(datain);
-    datain_q = imag(datain);
+%     datain_i = real(datain);
+%     datain_q = imag(datain); 
+%     abs_data_i = abs(datain_i);
+%     abs_data_q = abs(datain_q);
+%     i_max = max(abs_data_i,[],[1,2]);
+%     q_max = max(abs_data_q,[],[1,2]);
+%     iq_max = max([i_max q_max]);
     
-    abs_data_i = abs(datain_i);
-    abs_data_q = abs(datain_q);
-    
-    i_max = max(abs_data_i,[],[1,2]);
-    q_max = max(abs_data_q,[],[1,2]);
-    
-    iq_max = max([i_max q_max]);
+    maxV = max([real(datain);imag(datain)]);
+    minV = min([real(datain);imag(datain)]);
+    iq_max = max([maxV, abs(minV)-1]);
+
+
     
     idx = floor(log2(iq_max)+1);
     
