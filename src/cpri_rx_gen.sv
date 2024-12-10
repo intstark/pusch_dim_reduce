@@ -203,7 +203,7 @@ always @ (posedge rd_clk)
 //skip head-0-1-2
 always @ (posedge rd_clk)
     begin
-        if(rd_valid)begin
+        if(rd_valid && cpri_rvld)begin
             if(cpri_raddr == 7'd90 && i_rready)
                 cpri_raddr <= 7'd7;
             else if(i_rready)
@@ -237,7 +237,7 @@ end
 
 always @ (posedge rd_clk)
 begin
-    cpri_rvld_dly  <= {cpri_rvld_dly[12:0], rd_valid};
+    cpri_rvld_dly  <= {cpri_rvld_dly[12:0], rd_valid & cpri_rvld};
 end
 
 always @ (posedge rd_clk)

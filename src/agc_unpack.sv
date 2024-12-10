@@ -231,9 +231,15 @@ mem_streams # (
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int i=0;i<8;i++) begin
-        data_out[i] = rd_data[i][63:0];
-        addr_out[i] = rd_data[i][70:64];
-        last_out[i] = rd_data[i][71];
+        if(rvld_buf[DATA_DEPTH+1])begin
+            data_out[i] = rd_data[i][63:0];
+            addr_out[i] = rd_data[i][70:64];
+            last_out[i] = rd_data[i][71];
+        end else begin
+            data_out[i] = 'd0; 
+            addr_out[i] = 'd0; 
+            last_out[i] = 'd0; 
+        end
     end
 end
 

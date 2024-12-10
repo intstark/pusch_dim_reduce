@@ -89,38 +89,69 @@ wire                                            raddr_full              ;
 wire                                            raddr_least_2           ;
 wire                                            raddr_almost_full       ;
 
-reg            [   3: 0]                        rx_vld_buf            =0;
+reg            [   4: 0]                        rx_vld_buf            =0;
+reg            [4:0][63: 0]                     rx_data_buf           =0;
 reg            [   6: 0]                        slot_idx              =0;
 reg            [   3: 0]                        symb_idx              =0;
 reg                                             rx_vld                =0;
-reg            [3:0][63: 0]                     rx_data_buf           =0;
 reg            [  63: 0]                        cpri_rx_data          =0;
 reg                                             cpri_rx_vld           =0;
 reg            [   6: 0]                        slot_idx_out          =0;
 reg            [   3: 0]                        symb_idx_out          =0;
+reg                                             pusch_en              =0;
 
 
 //--------------------------------------------------------------------------------------
-// From Symbol 0 
+// Input data filter 
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    rx_vld_buf[3:0] <= {rx_vld_buf[2:0],i_rvalid};
+    rx_vld_buf[4:0] <= {rx_vld_buf[3:0],i_rvalid};
     if(rx_vld_buf[2])begin
         slot_idx <= i_rx_data[18:12];
         symb_idx <= i_rx_data[11: 8];
     end
 end
 
+// filter up-stream slots
 always @(posedge i_clk) begin
-    cpri_rx_vld <= rx_vld_buf[3];
-    if(symb_idx ==0 && rx_vld_buf[3])
-        rx_vld <= 1'b1;
+    case(slot_idx)
+        7'd4    :   pusch_en <= 1'b1;
+        7'd9    :   pusch_en <= 1'b1;
+        7'd14   :   pusch_en <= 1'b1;
+        7'd19   :   pusch_en <= 1'b1;
+        7'd24   :   pusch_en <= 1'b1;
+        7'd29   :   pusch_en <= 1'b1;
+        7'd34   :   pusch_en <= 1'b1;
+        7'd39   :   pusch_en <= 1'b1;
+        7'd44   :   pusch_en <= 1'b1;
+        7'd49   :   pusch_en <= 1'b1;
+        7'd54   :   pusch_en <= 1'b1;
+        7'd59   :   pusch_en <= 1'b1;
+        7'd64   :   pusch_en <= 1'b1;
+        7'd69   :   pusch_en <= 1'b1;
+        7'd74   :   pusch_en <= 1'b1;
+        7'd79   :   pusch_en <= 1'b1;
+        default :   pusch_en <= 1'b0;
+    endcase
 end
 
+// generate cpri valid
+always @(posedge i_clk) begin
+    //cpri_rx_vld <= rx_vld_buf[3];
+    if(!pusch_en)begin // TODO
+        if(symb_idx == 0 && rx_vld_buf[4])
+            cpri_rx_vld <= 1'b1;
+        else
+            cpri_rx_vld <= cpri_rx_vld;
+    end else
+        cpri_rx_vld <= 1'b0;
+end
+
+// generate cpri data
 always @(posedge i_clk) begin
     rx_data_buf[0] <= i_rx_data;
-    cpri_rx_data   <= rx_data_buf[3];
-    for(int i=1; i<4; i=i+1)begin
+    cpri_rx_data   <= rx_data_buf[4];
+    for(int i=1; i<5; i=i+1)begin
         rx_data_buf[i] <= rx_data_buf[i-1];
     end 
 end
@@ -163,8 +194,8 @@ assign symb_clr = symb_1st_d1 && (~symb_1st_d2);
 always @ (posedge i_clk)begin
     if(i_reset)
         wr_wen <= 1'b0;
-    else if(cpri_rx_vld)
-        wr_wen <= 1'b1;
+    else
+        wr_wen <= cpri_rx_vld;
 end
 
 always @ (posedge i_clk)begin
@@ -178,7 +209,9 @@ always @ (posedge i_clk)begin
     else if(wr_addr==DATA_DEPTH)
         wr_addr <= 'd0;
     else if(wr_wen)
-        wr_addr <= wr_addr + 'd1;    
+        wr_addr <= wr_addr + 'd1;
+    else
+        wr_addr <= 'd0;
 end
 
 always @ (posedge i_clk)begin

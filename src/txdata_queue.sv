@@ -40,7 +40,7 @@ module txdata_queue #(
     input                                           i_rbg_load              ,
     input                                           i_rready                ,
 
-    input          [   3: 0]                        i_ant0_idx              ,
+    input          [   3: 0]                        i_lane_idx              ,
 
     input          [   3: 0]                        i_rbg_idx               ,
     input          [   3: 0]                        i_pkg_type              ,
@@ -305,18 +305,18 @@ end
 always @ (posedge i_clk)begin
     case(rd_ren_buf[2])
     2'd1:   begin
-                ant0_idx <= i_ant0_idx + 4'd0;
-                ant1_idx <= i_ant0_idx + 4'd2;
-                ant2_idx <= i_ant0_idx + 4'd4;
-                ant3_idx <= i_ant0_idx + 4'd6;
-                ant_group_idx <=4'd0;
+                ant0_idx <= (i_lane_idx<<3) + 4'd0;
+                ant1_idx <= (i_lane_idx<<3) + 4'd2;
+                ant2_idx <= (i_lane_idx<<3) + 4'd4;
+                ant3_idx <= (i_lane_idx<<3) + 4'd6;
+                ant_group_idx <= (i_lane_idx<<1) + 4'd0;
             end
     2'd2:   begin
-                ant0_idx <= i_ant0_idx + 4'd1;
-                ant1_idx <= i_ant0_idx + 4'd3;
-                ant2_idx <= i_ant0_idx + 4'd5;
-                ant3_idx <= i_ant0_idx + 4'd7;
-                ant_group_idx <=4'd1;             
+                ant0_idx <= (i_lane_idx<<3) + 4'd1;
+                ant1_idx <= (i_lane_idx<<3) + 4'd3;
+                ant2_idx <= (i_lane_idx<<3) + 4'd5;
+                ant3_idx <= (i_lane_idx<<3) + 4'd7;
+                ant_group_idx <=(i_lane_idx<<1) + 4'd1;             
             end
     default:begin
                 ant0_idx <= 4'd0;
@@ -341,7 +341,7 @@ always @ (posedge i_clk)begin
 end
 
 always @ (posedge i_clk)begin
-    if(i_ant0_idx==0)
+    if(i_lane_idx==0)
         lane_idx <= 'd0;    // ant 0- 7 IQ_HD[42:40]
     else
         lane_idx <= 'd1;    // ant 8-15 IQ_HD[42:40]

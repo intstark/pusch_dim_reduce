@@ -65,7 +65,7 @@ begin
    	        if(!i_din[31])
 	        	abs_i <= i_din[31:16];
    	        else
-	        	abs_i <= ~i_din[31:16]+'d1;
+	        	abs_i <= ~i_din[31:16];
         end
     else
        abs_i <= 16'b0;
@@ -78,7 +78,7 @@ begin
 	        if(!i_din[15])
 	        	abs_q <= i_din[15:0];
             else
-            abs_q <= ~i_din[15:0]+'d1;  
+            abs_q <= ~i_din[15:0]; 
         end
     else
         abs_q <= 16'b0;

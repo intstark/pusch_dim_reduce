@@ -164,13 +164,13 @@ always @ (posedge clk)
     begin
         if(i_sop  && (pkg_sel_1 == 3'd0))                           //
           begin
-            pkg_head[48:45]  <= i_rbg_idx;
-            pkg_head[35:28]  <= i_pkg0_prb_idx;
+            pkg_head[63:49]  <= {11'd0,i_rbg_idx};
+            pkg_head[35:28]  <= i_pkg0_prb_idx[7:0];
             pkg_head[7:4]    <= i_pkg0_info[7:4];
           end
         else
           begin
-            pkg_head[48:45]  <= pkg_head[48:45];
+            pkg_head[63:49]  <= pkg_head[63:49];
             pkg_head[35:28]  <= pkg_head[35:28];
             pkg_head[7:4]    <= pkg_head[7:4];
           end
@@ -182,13 +182,13 @@ always @ (posedge clk)
     begin
         if(i_sop  && (pkg_sel_1 ==3'd4))                            //
           begin
-            pkg_head[63:49]  <= {11'd0,i_rbg_idx};
-            pkg_head[27:20]  <= {i_pkg0_prb_idx};
+            pkg_head[48:45]  <= i_rbg_idx;
+            pkg_head[27:20]  <= i_pkg0_prb_idx[7:0];
             pkg_head[3:0]    <= i_pkg0_info[7:4];
           end
         else
           begin
-            pkg_head[63:49]  <= pkg_head[63:49];
+            pkg_head[48:45]  <= pkg_head[48:45];
             pkg_head[27:20]  <= pkg_head[27:20];
             pkg_head[3:0]    <= pkg_head[3:0] ;
           end
@@ -733,7 +733,7 @@ always @ (posedge clk)
         else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd10))
             o_cpri_wdata <= cpri_power[64*3 +: 64];
         else if(pkg_rvld_d4_2 && (re_cnt_d4_2 == 3'd0) && (group_cnt_d4_2 == 4'd11))
-            o_cpri_wdata <= 64'd95;  
+            o_cpri_wdata <= 64'd0;  
         else
             o_cpri_wdata <= {a3_pkg_data,a2_pkg_data,a1_pkg_data,a0_pkg_data};
     end

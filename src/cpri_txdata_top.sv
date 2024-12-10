@@ -103,7 +103,7 @@ txdata_queue                                            txdata_queue_0
     .i_rbg_load                                         (i_rbg_load             ),
     .i_rready                                           (1'b1                   ),
     
-    .i_ant0_idx                                         (4'd0                   ), // ant0-7
+    .i_lane_idx                                         (4'd0                   ), // ant0-7
     .i_rbg_idx                                          (i_rbg_idx              ),
     .i_pkg_type                                         (i_pkg_type             ),
     .i_cell_idx                                         (i_cell_idx             ),
@@ -189,9 +189,10 @@ txdata_queue                                            txdata_queue_1
     .i_rx_vld                                           (i_rx_vld               ),
     .i_rx_sop                                           (i_rx_sop               ),
     .i_rx_eop                                           (i_rx_eop               ),
+    .i_rbg_load                                         (i_rbg_load             ),
     .i_rready                                           (1'b1                   ),
     
-    .i_ant0_idx                                         (4'd8                   ),// ant8-15
+    .i_lane_idx                                         (4'd1                   ),// ant8-15
     .i_rbg_idx                                          (i_rbg_idx              ),
     .i_pkg_type                                         (i_pkg_type             ),
     .i_cell_idx                                         (i_cell_idx             ),

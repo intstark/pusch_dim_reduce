@@ -144,7 +144,7 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 
 
 ### 2024.12.03
-
+**此版本，通过了从CPRI输入到降维后16Bit数据的向量比对**。
 + 修改FFT AGC解析为奇偶天线并行输出，涉及模块包括：
   + cpri_rx_bufer: 在buffer输入端获取奇偶AGC值，并行输出
   + agc_unpack：并行寻找奇偶AGC基值和差值
@@ -156,7 +156,7 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
    + dl_compress_data: 增加pkg_type和cell_idx延时
 
 
-  ### 2024.12.06
+### 2024.12.06
 
 + 修复FFT AGC相关问题，涉及模块包括：
   + cpri_rx_bufer: o_symb_eop只在31678处产生
@@ -172,3 +172,14 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + txdata_queue：增加了lane_idx输出
   + cpri_tx_lane：增加了i_aiu_idx和i_lane_idx接口
   + ul_compress_data：增加了i_aiu_idx和i_lane_idx接口以及[44:40]字段的填入
+
+### 2024.12.10
+**此版本，通过了从CPRI输入到降维后CPRI输出的向量比对**。
++ 修复打包中IQ_HD字段问题：
+  + 第1/2组rbg号bit位填反的问题
+  + cpri_tx_gen最后输出valid问题
+  + Lane1中IQ_HD字段[7:0]修改：8/10/12/14为天线组2，9/11/13/15为天线组3
+  + Lane1中power值为0问题(i_rbg_load没接)
+  + cpri_rx_buffer中对slot号过滤
+  + cpri_rx_gen中rd_valid & cpri_rvld
+  + compress_bit里面负数绝对值暂时不加1，后续待定(*包括matlab相应的修改*)

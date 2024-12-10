@@ -56,27 +56,6 @@ wire         [LOOP_WIDTH-WADDR_WIDTH:0] free_size ;
    
 //-----------------------------------------------------------------------------
 //--
-reg    [15:0]  sim_cnt=0;
-reg            stop     ;
-
-
-always @ (posedge wr_clk )
- begin 
-   if (i_cpri_wen ==1'd1)  
-     sim_cnt <= sim_cnt + 1;    
-   else
-     sim_cnt <= sim_cnt;   
- end
-
-
-always @ (posedge wr_clk )
- begin 
-     if (sim_cnt >=16'd5000 && sim_cnt <=16'd6000 )  
-         stop <=1'd0; 
-      else 
-         stop <=1'd1; 
- end
-
 
 loop_buffer_async_intel #
 //loop_buffer_async #
@@ -128,26 +107,26 @@ always @ (posedge rd_clk)
 always @ (posedge rd_clk)
     begin
         if(rd_valid && cpri_rvld)
-            if(cpri_raddr == 7'd98)
-                cpri_raddr <= 7'd3;
+            if(cpri_raddr == 7'd95)
+                cpri_raddr <= 7'd0;
             else
                 cpri_raddr <= cpri_raddr + 7'd1;
         else
-                cpri_raddr <= 7'd3;                                                        
+                cpri_raddr <= 7'd0;                                                        
     end
 
 always @ (posedge rd_clk)
- if (cpri_rvld && (cpri_raddr == 7'd97))
+ if (cpri_rvld && (cpri_raddr == 7'd94))
        cpri_rdy <= 1'd1;  
  else
        cpri_rdy <= 1'd0;  
 
 assign    o_iq_tx_data  = cpri_rdata;
-assign    o_iq_tx_valid = rd_valid  ;
+assign    o_iq_tx_valid = cpri_rvld_d3;
 
 always @ (posedge rd_clk)
   begin
-    cpri_rvld_d1  <= rd_valid   ;
+    cpri_rvld_d1  <= rd_valid && cpri_rvld;
     cpri_rvld_d2  <= cpri_rvld_d1;
     cpri_rvld_d3  <= cpri_rvld_d2;
   end
