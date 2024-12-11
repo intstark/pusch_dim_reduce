@@ -183,3 +183,12 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + cpri_rx_buffer中对slot号过滤
   + cpri_rx_gen中rd_valid & cpri_rvld
   + compress_bit里面负数绝对值暂时不加1，后续待定(*包括matlab相应的修改*)
+
+### 2024.12.11
+**此版本，通过了从CPRI输入到降维后CPRI输出的向量比对(FFT AGC加入动态定标值)**。
++ 在FFT AGC中加入了动态定标的标值，涉及的模块包括：
+  + compress_matrix：输出的FFT AGC加上了shift_num
+
++ Slot号过滤正式启用，涉及的模块包括：
+  + cpri_rx_buffer：pusch_en=1时使能vld，以及slot=4时重新计算
+  + ant_data_buffer：slot=4时重新计算

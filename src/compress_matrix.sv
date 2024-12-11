@@ -73,6 +73,7 @@ reg            [  39: 0]                        max_value_iq          =0;
 reg            [   4: 0]                        max_shift_dly1        =0;
 reg            [   4: 0]                        max_shift_dly2        =0;
 reg            [   4: 0]                        max_shift_dly3        =0;
+reg            [   4: 0]                        lsb_right_shift       =0;
 
 wire           [15:0][IW-1: 0]                  max_dout                ;
 reg            [ 7:0][IW-1: 0]                  max_val_0               ;
@@ -213,6 +214,12 @@ begin
     o_shift        <= max_shift_dly3;
 end
 
+always@(posedge clk)
+begin
+    lsb_right_shift <= 5'd24 - max_shift_dly2;
+end
+
+
 //--------------------------------------------------------------------------------------------
 // info_0 
 //--------------------------------------------------------------------------------------------
@@ -229,6 +236,10 @@ assign symb_idx  = i_info_0[11:8];
 //--------------------------------------------------------------------------------------------
 // Delay match 
 //--------------------------------------------------------------------------------------------
+wire                                            rbg_load_dly            ;
+wire           [15:0][7: 0]                     fft_agc                 ;
+reg            [15:0][7: 0]                     fft_agc_out           =0;
+
 register_shift # (
     .WIDTH                                              (4                      ),
     .DEPTH                                              (TOT_CYCLE              ) 
@@ -259,12 +270,20 @@ register_shift # (
 generate for(gb=0;gb<16;gb=gb+1)begin : dly_info1 
     register_shift # (
         .WIDTH                                              (8                      ),
-        .DEPTH                                              (TOT_CYCLE              ) 
+        .DEPTH                                              (TOT_CYCLE-1            ) 
     )u_dly_info_1(
         .clk                                                (clk                    ),
         .in                                                 (i_info_1[gb]           ),
-        .out                                                (o_fft_agc[gb]          ) 
+        .out                                                (fft_agc [gb]           ) 
     );
+
+    always @ (posedge clk)
+    begin
+        fft_agc_out[gb] <= fft_agc[gb] + max_shift_dly3; //lsb_right_shift
+    end
+
+    assign o_fft_agc[gb] = fft_agc_out[gb];
+
 end
 endgenerate
 

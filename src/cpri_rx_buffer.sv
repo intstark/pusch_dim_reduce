@@ -138,7 +138,7 @@ end
 // generate cpri valid
 always @(posedge i_clk) begin
     //cpri_rx_vld <= rx_vld_buf[3];
-    if(!pusch_en)begin // TODO
+    if(pusch_en)begin // TODO
         if(symb_idx == 0 && rx_vld_buf[4])
             cpri_rx_vld <= 1'b1;
         else
@@ -168,8 +168,8 @@ always @ (posedge i_clk)begin
     symb_1st_d2 <= symb_1st_d1;
     case(i_dr_mode)
         2'b00:  symb_1st_d1 <= 1'b0;
-        2'b01:  begin // every slot 0 & symbol 0
-                    if(symb_idx_out == 0 && slot_idx_out == 0)
+        2'b01:  begin // every slot 4 & symbol 0
+                    if(symb_idx_out == 0 && slot_idx_out == 4)
                         symb_1st_d1 <= 1'b1;
                     else
                         symb_1st_d1 <= 1'b0;

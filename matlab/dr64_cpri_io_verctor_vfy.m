@@ -25,18 +25,19 @@ numSymbols = 14;
 aau_idx = 0;    % AAU编号识别
 aiu_idx = 0;    % AIU编号识别
 
-ReadFile  = 0;
+ReadFile  = 1;
 MergeFile = 0;
 WriteCodeMif = 0;
 WriteDrVector = 0;
 
 numSlot  = 2;
 symbol_id= 14;
+InputDataCheck = 0;
 SymbolXCompare = 1;
 
 
-vector_dir = '../AlgoVec/ulrxDimRedu-1209';
-fpga_dir   = '../git/pusch_dim_reduce/vfy/pusch_dr_top_vec_work';
+vector_dir = '../../../AlgoVec/ulrxDimRedu-1211';
+fpga_dir   = '../vfy/pusch_dr_top_vec_work';
 
 
 
@@ -93,6 +94,7 @@ fprintf('---------------------------------------------\n');
 fprintf('原始数据检查比对\n');
 fprintf('---------------------------------------------\n');
 
+if InputDataCheck
 load(sprintf('%s/matlab文件/rx_data_freq_fixed_compressed',vector_dir));
 load(sprintf('%s/matlab文件/rx_data_decompressed',vector_dir));
 load(sprintf('%s/matlab文件/DecomExponent_tv',vector_dir));
@@ -114,18 +116,18 @@ err_rx_cprs = cprs_data_read(:,1:3168)-rx_cprs_symb1;
 err_rx_decprs = unfft_data_read(:,1:3168)-rx_decprs_symb1;
 
 err_rx_cprs_max=max(abs(err_rx_cprs),[],[1,2]);
-fprintf('压缩数据读取与Mat数据比对误差:\t err_rx_cprs_max=\t%d\n',err_rx_cprs_max);
+fprintf('压缩数据读取与Mat数据比对误差:\t err_rx_cprs_max\t= %d\n',err_rx_cprs_max);
 
 err_rx_decprs_max=max(abs(err_rx_decprs),[],[1,2]);
-fprintf('解压数据读取与Mat数据比对误差:\t err_rx_decprs_max=\t%d\n',err_rx_decprs_max);
+fprintf('解压数据读取与Mat数据比对误差:\t err_rx_decprs_max\t= %d\n',err_rx_decprs_max);
 
 rx_rb_agc_eve=squeeze(DecomExponent_tv(1:132,1,1:2:64)).';
 rx_rb_agc_odd=squeeze(DecomExponent_tv(1:132,1,2:2:64)).';
 rx_rb_agc = [rx_rb_agc_eve rx_rb_agc_odd];
 err_rx_agc= rb_agc_read(:,1:264)-rx_rb_agc;
 
-err_rx_agc_max=max(abs(err_rx_agc),[],[1,2]);
-fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_agc_max=\t%d\n',err_rx_agc_max);
+err_rx_rbagc_max=max(abs(err_rx_agc),[],[1,2]);
+fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_rbagc_max\t= %d\n',err_rx_rbagc_max);
 
 
 
@@ -140,7 +142,7 @@ for ii=1:14
     rx_dr_data((ii-1)*1584+1 : ii*1584,:) = squeeze(dataout_RRU1_AIU1(:,ii,:));
 end
 
-
+end
 
 if ReadFile
     % 读取天线数据
@@ -174,17 +176,17 @@ if ReadFile
     fprintf('读取文件:\t%s\n',data_in);
     w1_data_read=ReadHexData(data_in,16);
 
-    save('dr_data_read','dr_data_read');
-    save('BeamPwr0','BeamPwr0'); 
-    save('BeamIndex0','BeamIndex0'); 
-    save('w0_data_read','w0_data_read');
-    save('w1_data_read','w1_data_read');
+    save('data/dr_data_read','dr_data_read');
+    save('data/BeamPwr0','BeamPwr0'); 
+    save('data/BeamIndex0','BeamIndex0'); 
+    save('data/w0_data_read','w0_data_read');
+    save('data/w1_data_read','w1_data_read');
 else
-    load('dr_data_read.mat');
-    load('w0_data_read.mat');
-    load('w1_data_read.mat');
-    load('BeamPwr0.mat');
-    load('BeamIndex0.mat');
+    load('data/dr_data_read.mat');
+    load('data/w0_data_read.mat');
+    load('data/w1_data_read.mat');
+    load('data/BeamPwr0.mat');
+    load('data/BeamIndex0.mat');
 end
 
 w0_data_read=conj(w0_data_read);
@@ -367,12 +369,12 @@ fprintf('---------------------------------------------\n');
 err_uzip = sim_unzip_data((sim_symb-1)*numCarriers*2+1 : (sim_symb)*numCarriers*2,Vants)-(uncprs_data_read(Vants,(sim_symb-1)*numCarriers*2+1 : (sim_symb)*numCarriers*2)).';
 err_uzip_max=max(abs(err_uzip),[],[1,2]);
 find(err_uzip~=0);
-fprintf('解压数据误差分析(MAX):\t err_uzip_max=\t%d\n',err_uzip_max);
+fprintf('解压数据误差分析(MAX):\t err_uzip_max\t= %d\n',err_uzip_max);
 
 
 err_cmps = sim_rx_cmps((sim_symb-1)*numCarriers*2+1 : (sim_symb)*numCarriers*2,Vants)-(cprs_data_read(Vants,(sim_symb-1)*numCarriers*2+1 : (sim_symb)*numCarriers*2)).';
 err_cmps_max=max(abs(err_cmps),[],[1,2]);
-fprintf('压缩数据误差分析(MAX):\t err_cmps_max=\t%d\n',err_cmps_max);
+fprintf('压缩数据误差分析(MAX):\t err_cmps_max\t= %d\n',err_cmps_max);
 
 
 for ii=1:32
@@ -384,22 +386,22 @@ end
 
 err_agc = sim_rx_agc((sim_symb-1)*numCarriers*2+1 : (sim_symb)*numCarriers*2,Vants)-(re_agc_read((1-1)*numCarriers*2+1 : (1)*numCarriers*2,Vants));
 err_agc_max=max(abs(err_agc),[],[1,2]);
-fprintf('RB AGC误差分析(MAX):\t err_agc_max=\t%d\n',err_agc_max);
+fprintf('RB AGC误差分析(MAX):\t err_agc_max\t= %d\n',err_agc_max);
 
 err_unfft = unfft_data_read(:,1:3168)-sim_ants_data(1:3168,:).';
 err_unfft_max=max(abs(err_unfft),[],[1,2]);
-fprintf('拉齐FFT误差分析(MAX):\t err_unfft_max=\t%d\n',err_unfft_max);
+fprintf('拉齐FFT误差分析(MAX):\t err_unfft_max\t= %d\n',err_unfft_max);
 
 err_sort_idx = BeamIndex-sim_beams_idx(1:9,:);
-fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx,[1,2,3]));
+fprintf("rbG波束序号的误差和:\t err_sort_idx\t= %d\n",sum(err_sort_idx,[1,2,3]));
 
 
 err_beam_sort = BeamPower-sim_beams_sort(1:9,:);
-fprintf("rbG波束能量值误差和:\t err_beam_sort= %d\n",sum(err_beam_sort,[1,2,3]));
+fprintf("rbG波束能量值误差和:\t err_beam_sort\t= %d\n",sum(err_beam_sort,[1,2,3]));
 
 err_cprs = sim_compress_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:)-beams_sum_sft_fix;
 err_cprs_sum=sum(err_cprs,[1,2,3]);
-fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
+fprintf('压缩后降维数据误差和:\t err_cprs_sum\t= %d\n',err_cprs_sum);
 
 
 % FPGA与向量文本比较
@@ -409,20 +411,20 @@ fprintf('---------------------------------------------\n');
 
 err_unfft2 = sim_ants_data(1:3168,:).' - dr_din_read(:,1:3168);
 err_unfft2_max=max(abs(err_unfft2),[],[1,2]);
-fprintf('拉齐FFT误差分析(MAX):\t err_unfft_max=\t%d\n',err_unfft2_max);
+fprintf('拉齐FFT误差分析(MAX):\t err_unfft_max\t= %d\n',err_unfft2_max);
 
 
 err_sort_idx2 = sim_beams_idx(1:9,:) - BeamIndex0;
-fprintf("rbG波束序号的误差和:\t err_beam_sort=\t%d\n",sum(err_sort_idx2,[1,2]));
+fprintf("rbG波束序号的误差和:\t err_beam_sort\t= %d\n",sum(err_sort_idx2,[1,2]));
 
 err_beam_pwr2 = sim_beams_sort(1:9,:) - BeamPwr0;
-fprintf("rbG波束能量值误差和:\t err_beam_pwr=\t%d\n",sum(err_beam_pwr2,[1,2]));
+fprintf("rbG波束能量值误差和:\t err_beam_pwr\t= %d\n",sum(err_beam_pwr2,[1,2]));
 pct_err_pwr2 = err_beam_pwr2/BeamPwr0;
-fprintf("rbG波束能量值误差比:\t err_pwr_pct=\t%d\n",max(abs(pct_err_pwr2),[],[1,2]));
+fprintf("rbG波束能量值误差比:\t err_pwr_pct\t= %d\n",max(abs(pct_err_pwr2),[],[1,2]));
 
 err_cprs2 = sim_compress_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:)-rx_dr_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:);
 err_cprs2_sum=sum(err_cprs2,[1,2]);
-fprintf('压缩后降维数据误差和:\t err_cprs2_sum=\t%d\n',err_cprs2_sum);
+fprintf('压缩后降维数据误差和:\t err_cprs2_sum\t= %d\n',err_cprs2_sum);
 
 
 %% 后续符号对比
@@ -510,7 +512,7 @@ fprintf('---------------------------------------------\n');
 
 %% 输出CPRI验证
 % 压缩
-fprintf('压缩...\n');
+fprintf('压缩');
 for ss=1:14
     for aa = 1:16
         for rb = 1:132
@@ -519,8 +521,9 @@ for ss=1:14
             [dr_symb_cprs(ss,aa,(rb-1)*12+1 :rb*12), rb_agc_cprs(ss,aa,rb)] = dynamic_truncation(dr_symb,7);
         end
     end
+    fprintf('.');
 end
-
+fprintf('\n');
 
 for ii=1:14
     drout_cprs(1:8,(ii-1)*3168+1 : (ii-1)*3168+1584) = squeeze(dr_symb_cprs(ii,1:2:16,:)); % eve
@@ -559,11 +562,11 @@ fprintf('---------------------------------------------\n');
 
 err_CpriOut = drout_cprs - cprs_cpri_out;
 err_CpriOut_Max=max(abs(err_CpriOut),[],[1,2]);
-fprintf('CPRI输出压缩数据比较(MAX):\t err_CpriOut_Max=\t%d\n',err_CpriOut_Max);
+fprintf('CPRI输出压缩数据比较(MAX):\t err_CpriOut_Max\t= %d\n',err_CpriOut_Max);
 
-err_CpriOut_RbAgc = rbgout_cprs_reverse - rb_agc_cpri_out;
-err_CpriOut_RbAgc_max=max(abs(err_CpriOut_RbAgc),[],[1,2]);
-fprintf('CPRI输出RB AGC比较(MAX):\t err_CpriOut_RbAgc_max=\t%d\n',err_CpriOut_RbAgc_max);
+err_CpriRbAgc = rbgout_cprs_reverse - rb_agc_cpri_out;
+err_CpriRbAgc_max=max(abs(err_CpriRbAgc),[],[1,2]);
+fprintf('CPRI输出RB AGC比较(MAX):\t err_CpriRbAgc_max\t= %d\n',err_CpriRbAgc_max);
 
 
 
@@ -800,7 +803,6 @@ end
 
 % 动态定标截断
 function [dataout_sft_fix,factor_shift]=dynamic_truncation(datain,OW,varargin)
-
 %     datain_i = real(datain);
 %     datain_q = imag(datain); 
 %     abs_data_i = abs(datain_i);

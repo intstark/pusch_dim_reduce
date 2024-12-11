@@ -291,8 +291,8 @@ always @ (posedge i_clk)begin
     symb_1st_d2 <= symb_1st_d1;
     case(i_dr_mode)
         2'b00:  symb_1st_d1 <= 1'b0;
-        2'b01:  begin // every slot 0 & symbol 0
-                    if(symb_idx_pre == 0 && slot_idx_pre == 0)
+        2'b01:  begin // every slot 4 & symbol 0
+                    if(symb_idx_pre == 0 && slot_idx_pre == 4)
                         symb_1st_d1 <= 1'b1;
                     else
                         symb_1st_d1 <= 1'b0;
