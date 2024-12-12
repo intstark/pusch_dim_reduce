@@ -309,21 +309,21 @@ always @ (posedge i_clk)begin
                 ant1_idx <= (i_lane_idx<<3) + 4'd2;
                 ant2_idx <= (i_lane_idx<<3) + 4'd4;
                 ant3_idx <= (i_lane_idx<<3) + 4'd6;
-                ant_group_idx <= (i_lane_idx<<1) + 4'd0;
+                ant_group_idx <= 4'd0;
             end
     2'd2:   begin
                 ant0_idx <= (i_lane_idx<<3) + 4'd1;
                 ant1_idx <= (i_lane_idx<<3) + 4'd3;
                 ant2_idx <= (i_lane_idx<<3) + 4'd5;
                 ant3_idx <= (i_lane_idx<<3) + 4'd7;
-                ant_group_idx <=(i_lane_idx<<1) + 4'd1;             
+                ant_group_idx <= 4'd1;
             end
     default:begin
                 ant0_idx <= 4'd0;
                 ant1_idx <= 4'd0;
                 ant2_idx <= 4'd0;
-                ant3_idx <= 4'd0; 
-                ant_group_idx <=4'd0;             
+                ant3_idx <= 4'd0;
+                ant_group_idx <= 4'd0;
             end
     endcase
 end

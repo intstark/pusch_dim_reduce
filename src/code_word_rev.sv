@@ -32,6 +32,7 @@ module code_word_rev # (
 
     input          [BEAM-1:0][7: 0]                 i_beam_idx              ,
     input          [   7: 0]                        i_symb_idx              ,
+    input                                           i_symb_clr              ,
     input                                           i_symb_1st              ,
     
     output         [BEAM-1:0][WIDTH*ANTS-1: 0]      o_cw_even               ,
@@ -152,14 +153,22 @@ end
 
 always @(posedge i_clk) begin
     for(int i=0;i<BEAM;i=i+1) begin
-        symb_1st_vec[i] <= i_symb_1st;
-        symb_phx_vec[i] <= symb_phx;
+        if(i_symb_clr)begin
+            symb_1st_vec[i] <= 1'b1;
+            symb_phx_vec[i] <= 2'b0;
+        end else begin
+            symb_1st_vec[i] <= i_symb_1st;
+            symb_phx_vec[i] <= symb_phx;
+        end
     end
 end
 
 always @(posedge i_clk) begin
     for(int i=0;i<BEAM;i=i+1) begin
-        if(symb_1st_vec[i])begin
+        if(i_symb_clr)begin
+                code_word_even[i]  <= codeword_map_0[i];
+                code_word_odd [i]  <= codeword_map_1[i];
+        end else if(symb_1st_vec[i])begin
             case(symb_phx_vec[i])
                 2'd0:   begin
                             code_word_even[i]  <= codeword_map_0[i];

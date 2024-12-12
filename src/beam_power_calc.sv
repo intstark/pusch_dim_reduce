@@ -124,7 +124,7 @@ always @(posedge i_clk) begin
     beam_tlast_buf <= {beam_tlast_buf[1:0], i_data_eop};
 end
 
-assign iq_abs_vld    = beam_tvalid_buf[1] && symb_1st_dly[5];   // 2 clock cycle delay
+assign iq_abs_vld    = beam_tvalid_buf[1] && symb_1st_dly[1];   // 2 clock cycle delay
 assign rbg_acc_valid = beam_tvalid_buf[4];  // 4 clock cycle delay
 assign rbg_acc_tlast = beam_tlast_buf[2];  // 4 clock cycle delay
 

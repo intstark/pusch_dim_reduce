@@ -192,3 +192,12 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 + Slot号过滤正式启用，涉及的模块包括：
   + cpri_rx_buffer：pusch_en=1时使能vld，以及slot=4时重新计算
   + ant_data_buffer：slot=4时重新计算
+
+### 2024.12.12
+**此版本，通过了4个Slot(DUDU)从CPRI输入到降维后CPRI输出的向量比对**。
++ 修复了从空闲Slot进入重新计算码本序号的Slot时，码本选择和能量计算不正确问题，涉及的模块包括：
+  + code_word_rev：增加了i_symb_clr接口，用于清除码本选择相关状态
+  + beam_power_calc：iq_abs_valid修复
+
++ 修改IQ_HD字段[7:0]信息：天线组只有0/1，涉及的模块包括：
+  + txdata_queue：将IQ_HD字段[7:0]修改为0/1

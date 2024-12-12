@@ -25,18 +25,18 @@ numSymbols = 14;
 aau_idx = 0;    % AAU编号识别
 aiu_idx = 0;    % AIU编号识别
 
-ReadFile  = 1;
+ReadFile  = 0;
 MergeFile = 0;
 WriteCodeMif = 0;
 WriteDrVector = 0;
 
-numSlot  = 2;
+numSlot  = 1;
 symbol_id= 14;
 InputDataCheck = 0;
 SymbolXCompare = 1;
 
 
-vector_dir = '../../../AlgoVec/ulrxDimRedu-1211';
+vector_dir = '../../../AlgoVec/ulrxDimRedu-1212';
 fpga_dir   = '../vfy/pusch_dr_top_vec_work';
 
 
@@ -95,61 +95,66 @@ fprintf('原始数据检查比对\n');
 fprintf('---------------------------------------------\n');
 
 if InputDataCheck
-load(sprintf('%s/matlab文件/rx_data_freq_fixed_compressed',vector_dir));
-load(sprintf('%s/matlab文件/rx_data_decompressed',vector_dir));
-load(sprintf('%s/matlab文件/DecomExponent_tv',vector_dir));
-load(sprintf('%s/matlab文件/dataout_RRU1_AIU1',vector_dir));
-load(sprintf('%s/matlab文件/data_equl_fixed_compressed',vector_dir));
-
-
-rx_cprs_symb1_eve=squeeze(rx_data_freq_fixed_compressed(1:1584,1,1:2:64)).';
-rx_cprs_symb1_odd=squeeze(rx_data_freq_fixed_compressed(1:1584,1,2:2:64)).';
-rx_cprs_symb1 = [rx_cprs_symb1_eve rx_cprs_symb1_odd];
-
-
-rx_decprs_symb1_eve=squeeze(rx_data_decompressed(1:1584,1,1:2:64)).';
-rx_decprs_symb1_odd=squeeze(rx_data_decompressed(1:1584,1,2:2:64)).';
-rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
-
-
-err_rx_cprs = cprs_data_read(:,1:3168)-rx_cprs_symb1;
-err_rx_decprs = unfft_data_read(:,1:3168)-rx_decprs_symb1;
-
-err_rx_cprs_max=max(abs(err_rx_cprs),[],[1,2]);
-fprintf('压缩数据读取与Mat数据比对误差:\t err_rx_cprs_max\t= %d\n',err_rx_cprs_max);
-
-err_rx_decprs_max=max(abs(err_rx_decprs),[],[1,2]);
-fprintf('解压数据读取与Mat数据比对误差:\t err_rx_decprs_max\t= %d\n',err_rx_decprs_max);
-
-rx_rb_agc_eve=squeeze(DecomExponent_tv(1:132,1,1:2:64)).';
-rx_rb_agc_odd=squeeze(DecomExponent_tv(1:132,1,2:2:64)).';
-rx_rb_agc = [rx_rb_agc_eve rx_rb_agc_odd];
-err_rx_agc= rb_agc_read(:,1:264)-rx_rb_agc;
-
-err_rx_rbagc_max=max(abs(err_rx_agc),[],[1,2]);
-fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_rbagc_max\t= %d\n',err_rx_rbagc_max);
-
-
-
-rx_cpriout_cprs_eve=squeeze(data_equl_fixed_compressed(:,:,1:2:16,1));
-rx_cpriout_cprs_odd=squeeze(data_equl_fixed_compressed(:,:,2:2:16,1));
-% rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
-
-
-
-
-for ii=1:14
-    rx_dr_data((ii-1)*1584+1 : ii*1584,:) = squeeze(dataout_RRU1_AIU1(:,ii,:));
+    load(sprintf('%s/matlab文件/rx_data_freq_fixed_compressed',vector_dir));
+    load(sprintf('%s/matlab文件/rx_data_decompressed',vector_dir));
+    load(sprintf('%s/matlab文件/DecomExponent_tv',vector_dir));
+    load(sprintf('%s/matlab文件/dataout_RRU1_AIU1',vector_dir));
+    load(sprintf('%s/matlab文件/data_equl_fixed_compressed',vector_dir));
+    
+    
+    rx_cprs_symb1_eve=squeeze(rx_data_freq_fixed_compressed(1:1584,1,1:2:64)).';
+    rx_cprs_symb1_odd=squeeze(rx_data_freq_fixed_compressed(1:1584,1,2:2:64)).';
+    rx_cprs_symb1 = [rx_cprs_symb1_eve rx_cprs_symb1_odd];
+    
+    
+    rx_decprs_symb1_eve=squeeze(rx_data_decompressed(1:1584,1,1:2:64)).';
+    rx_decprs_symb1_odd=squeeze(rx_data_decompressed(1:1584,1,2:2:64)).';
+    rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
+    
+    
+    err_rx_cprs = cprs_data_read(:,1:3168)-rx_cprs_symb1;
+    err_rx_decprs = unfft_data_read(:,1:3168)-rx_decprs_symb1;
+    
+    err_rx_cprs_max=max(abs(err_rx_cprs),[],[1,2]);
+    fprintf('压缩数据读取与Mat数据比对误差:\t err_rx_cprs_max\t= %d\n',err_rx_cprs_max);
+    
+    err_rx_decprs_max=max(abs(err_rx_decprs),[],[1,2]);
+    fprintf('解压数据读取与Mat数据比对误差:\t err_rx_decprs_max\t= %d\n',err_rx_decprs_max);
+    
+    rx_rb_agc_eve=squeeze(DecomExponent_tv(1:132,1,1:2:64)).';
+    rx_rb_agc_odd=squeeze(DecomExponent_tv(1:132,1,2:2:64)).';
+    rx_rb_agc = [rx_rb_agc_eve rx_rb_agc_odd];
+    err_rx_agc= rb_agc_read(:,1:264)-rx_rb_agc;
+    
+    err_rx_rbagc_max=max(abs(err_rx_agc),[],[1,2]);
+    fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_rbagc_max\t= %d\n',err_rx_rbagc_max);
+    
+    
+    
+    rx_cpriout_cprs_eve=squeeze(data_equl_fixed_compressed(:,:,1:2:16,1));
+    rx_cpriout_cprs_odd=squeeze(data_equl_fixed_compressed(:,:,2:2:16,1));
+    % rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
+    
+    
+    for ii=1:14
+        rx_dr_data((ii-1)*1584+1 : ii*1584,:) = squeeze(dataout_RRU1_AIU1(:,ii,:));
+    end
 end
 
-end
 
 if ReadFile
-    % 读取天线数据
+    % 读取降维数据
     for ii=1:16
         data_in = sprintf('%s/data_out/beam%d.txt',vector_dir,ii-1);
         fprintf('读取文件:\t%s\n',data_in);
         dr_data_read(:,ii)=ReadHexData(data_in,16);
+    end
+
+    % 读取降维数据
+    for ii=1:16
+        data_in = sprintf('%s/data_out_rru1/beam%d.txt',vector_dir,ii-1);
+        fprintf('读取文件:\t%s\n',data_in);
+        dr_aau1_read(:,ii)=ReadHexData(data_in,16);
     end
 
     % 读取序号
@@ -166,23 +171,27 @@ if ReadFile
 
 
     % 读取W0
-    data_in = sprintf('%s/ReduMatrix/W_0_after.txt',vector_dir);
+    data_in = sprintf('%s/ReduMatrix/W_0.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
-    w0_data_read=ReadHexData(data_in,16);
+    temp=ReadHexData(data_in,16);
+    w0_data_read = (reshape(temp,32,64)).';
     
     
     % 读取W1
-    data_in = sprintf('%s/ReduMatrix/W_1_after.txt',vector_dir);
+    data_in = sprintf('%s/ReduMatrix/W_1.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
-    w1_data_read=ReadHexData(data_in,16);
+    temp=ReadHexData(data_in,16);
+    w1_data_read = (reshape(temp,32,64)).';
 
     save('data/dr_data_read','dr_data_read');
+    save('data/dr_aau1_read','dr_aau1_read');
     save('data/BeamPwr0','BeamPwr0'); 
     save('data/BeamIndex0','BeamIndex0'); 
     save('data/w0_data_read','w0_data_read');
     save('data/w1_data_read','w1_data_read');
 else
     load('data/dr_data_read.mat');
+    load('data/dr_aau1_read.mat');
     load('data/w0_data_read.mat');
     load('data/w1_data_read.mat');
     load('data/BeamPwr0.mat');
@@ -191,6 +200,11 @@ end
 
 w0_data_read=conj(w0_data_read);
 w1_data_read=conj(w1_data_read);
+
+dr_aiu1_read = zeros(numCarriers*14,16);
+for ii=1:14
+    dr_aiu1_read((ii-1)*numCarriers+1 : ii*numCarriers,:) = dr_aau1_read((ii-1)*numCarriers*2+1 : (ii-1)*numCarriers*2+1584,:);
+end
 
 if WriteDrVector
     for ii=1:16
@@ -422,7 +436,7 @@ fprintf("rbG波束能量值误差和:\t err_beam_pwr\t= %d\n",sum(err_beam_pwr2,
 pct_err_pwr2 = err_beam_pwr2/BeamPwr0;
 fprintf("rbG波束能量值误差比:\t err_pwr_pct\t= %d\n",max(abs(pct_err_pwr2),[],[1,2]));
 
-err_cprs2 = sim_compress_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:)-rx_dr_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:);
+err_cprs2 = sim_compress_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:)-dr_aiu1_read((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarriers,:);
 err_cprs2_sum=sum(err_cprs2,[1,2]);
 fprintf('压缩后降维数据误差和:\t err_cprs2_sum\t= %d\n',err_cprs2_sum);
 
@@ -498,7 +512,7 @@ if(SymbolXCompare)
     err_cprs_sum=sum(err_cprs,[1,2]);
     fprintf('压缩后降维数据误差（与Matlab比）:\t%d\n',err_cprs_sum);
     
-    err_cprs2 = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-rx_dr_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:);
+    err_cprs2 = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-dr_aiu1_read((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:);
     err_cprs2_sum=sum(err_cprs2,[1,2]);
     fprintf('压缩后降维数据误差（与向量文本比）:\t%d\n',err_cprs2_sum);
 end
@@ -516,7 +530,7 @@ fprintf('压缩');
 for ss=1:14
     for aa = 1:16
         for rb = 1:132
-            dr_symb = rx_dr_data((ss-1)*1584+(rb-1)*12+1 : (ss-1)*1584+rb*12,aa);
+            dr_symb = dr_aiu1_read((ss-1)*1584+(rb-1)*12+1 : (ss-1)*1584+rb*12,aa);
 %              dr_symb = squeeze(dataout_RRU1_AIU1((rb-1)*12+1 :rb*12,ss,aa));
             [dr_symb_cprs(ss,aa,(rb-1)*12+1 :rb*12), rb_agc_cprs(ss,aa,rb)] = dynamic_truncation(dr_symb,7);
         end
@@ -560,11 +574,11 @@ fprintf('---------------------------------------------\n');
 fprintf('CPRI打包输出数据：FPGA与MATLAB比较\n');
 fprintf('---------------------------------------------\n');
 
-err_CpriOut = drout_cprs - cprs_cpri_out;
+err_CpriOut = drout_cprs(:,1:numSlot*numCarriers*2*numSymbols) - cprs_cpri_out(:,1:numSlot*numCarriers*2*numSymbols);
 err_CpriOut_Max=max(abs(err_CpriOut),[],[1,2]);
 fprintf('CPRI输出压缩数据比较(MAX):\t err_CpriOut_Max\t= %d\n',err_CpriOut_Max);
 
-err_CpriRbAgc = rbgout_cprs_reverse - rb_agc_cpri_out;
+err_CpriRbAgc = rbgout_cprs_reverse(:,1:numSlot*numPrb*2*numSymbols) - rb_agc_cpri_out(:,1:numSlot*numPrb*2*numSymbols);
 err_CpriRbAgc_max=max(abs(err_CpriRbAgc),[],[1,2]);
 fprintf('CPRI输出RB AGC比较(MAX):\t err_CpriRbAgc_max\t= %d\n',err_CpriRbAgc_max);
 

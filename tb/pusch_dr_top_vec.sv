@@ -22,7 +22,7 @@
 
 `timescale 1ns/1ps
 `define CLOCK_PERIOD 10.0
-`define SIM_ENDS_TIME 800000
+`define SIM_ENDS_TIME 2000000
 
 `include "params_list_pkg.sv"
 

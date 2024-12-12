@@ -23,7 +23,7 @@ add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/i_cpri_clk
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/i_cpri_rst
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/i_cpri_rx_data
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/i_cpri_rx_vld
-add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
+add wave -noupdate -expand -group rx_buffer -color Violet -radix unsigned {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
 add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/pusch_en}
 add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_vld}
 add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wen}
@@ -187,7 +187,7 @@ add wave -noupdate -expand -group dr_core_top /pusch_dr_top_vec/pusch_dr_top/pus
 add wave -noupdate -expand -group dr_core_top /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/rbg_sum_vld
 add wave -noupdate -expand -group dr_core_top /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/rbg_sum_wen
 add wave -noupdate -expand -group ant_buffer -radix unsigned {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/i_iq_addr}
-add wave -noupdate -expand -group ant_buffer {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/i_iq_data}
+add wave -noupdate -expand -group ant_buffer -expand {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/i_iq_data}
 add wave -noupdate -expand -group ant_buffer {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/i_iq_last}
 add wave -noupdate -expand -group ant_buffer {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/i_iq_vld}
 add wave -noupdate -expand -group ant_buffer {/pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/wr_addr}
@@ -221,6 +221,17 @@ add wave -noupdate -radix unsigned /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/symb_clr
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/symb_is_1st
 add wave -noupdate {/pusch_dr_top_vec/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_symb_clr}
+add wave -noupdate -expand -group cw_rec /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/code_word_rev/symb_1st_vec
+add wave -noupdate -expand -group cw_rec /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/code_word_rev/symb_phx_vec
+add wave -noupdate -expand -group cw_rec /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/code_word_rev/codeword_map_0
+add wave -noupdate -expand -group cw_rec /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/code_word_rev/codeword_map_1
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_eop
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_sop
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_rvalid
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_ants_data_even
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_ants_data_odd
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_code_word_even
+add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/i_code_word_odd
 add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/o_data_i
 add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/o_data_q
 add wave -noupdate -expand -group mac_beams /pusch_dr_top_vec/pusch_dr_top/pusch_dr_core/mac_beams/o_sop
@@ -439,10 +450,10 @@ add wave -noupdate /pusch_dr_top_vec/cprio_rbg_num
 add wave -noupdate /pusch_dr_top_vec/cprio_slot_num
 add wave -noupdate /pusch_dr_top_vec/cprio_symb_num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {181035000 ps} 0} {{Cursor 2} {34334356 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 3} {1395655000 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 362
-configure wave -valuecolwidth 100
+configure wave -valuecolwidth 211
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -455,4 +466,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {181033881 ps} {181037296 ps}
+WaveRestoreZoom {1395588602 ps} {1395731382 ps}

@@ -270,7 +270,8 @@ code_word_rev                                           code_word_rev
     
     .i_beam_idx                                         (beam_sort_idx          ),
     .i_symb_idx                                         (ant_buffer_sym         ),
-    .i_symb_1st                                         (symb_is_1st            ),
+    .i_symb_clr                                         (symb_clr               ),   
+    .i_symb_1st                                         (symb_is_1st            ),   
     
     .o_cw_even                                          (code_word_even         ),
     .o_cw_odd                                           (code_word_odd          ),
