@@ -36,7 +36,7 @@ InputDataCheck = 0;
 SymbolXCompare = 1;
 
 
-vector_dir = '../../../AlgoVec/ulrxDimRedu-1212';
+vector_dir = '../../../AlgoVec/ulrxDimRedu-1213';
 fpga_dir   = '../vfy/pusch_dr_top_vec_work';
 
 
@@ -235,8 +235,16 @@ end
 
 % 转换码本矩阵
 if WriteCodeMif
-    write_mif('../prj/ip/rom_code_word_even',w0_data_read,1024,64);
-    write_mif('../prj/ip/rom_code_word_odd',w1_data_read,1024,64);
+    mif_dir = './data';
+    write_mif(sprintf('%s/rom_code_word_even_0',mif_dir),w0_data_read(:, 1: 8),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_even_1',mif_dir),w0_data_read(:, 9:16),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_even_2',mif_dir),w0_data_read(:,17:24),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_even_3',mif_dir),w0_data_read(:,25:32),8*32,64);
+
+    write_mif(sprintf('%s/rom_code_word_odd_0',mif_dir),w1_data_read(:, 1: 8),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_odd_1',mif_dir),w1_data_read(:, 9:16),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_odd_2',mif_dir),w1_data_read(:,17:24),8*32,64);
+    write_mif(sprintf('%s/rom_code_word_odd_3',mif_dir),w1_data_read(:,25:32),8*32,64);
 end
 
 

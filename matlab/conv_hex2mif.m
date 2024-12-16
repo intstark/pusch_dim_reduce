@@ -14,14 +14,15 @@ clc;clear all;close all;
 
 aau_idx = 0;    % AAU编号识别
 aiu_idx = 0;    % AIU编号识别
+width = 64;
+depth = 44352;
 
-vector_dir1 = '../../../AlgoVec/ulrxDimRedu-1209';
-vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1213';
-fpga_dir   = '../vfy/vector/datain';
+vector_dir1 = '../../../AlgoVec/ulrxDimRedu-1213';
+vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1212';
+fpga_dir   = '../tb/tsv/pusch_group0_mif';
 
 for ii=1:8
     data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx+aiu_idx),ii);
-    data_in2 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir2,(aau_idx+aiu_idx),ii);
     fprintf('读取文件:\t%s\n',data_in1);
 
 
@@ -29,27 +30,37 @@ for ii=1:8
     data_cell1=textscan(fid,'%s');
     fclose(fid);
 
-    fid=fopen(data_in2);
-    data_cell2=textscan(fid,'%s');
-    fclose(fid);
 
-    data_cell = {data_cell1,data_cell2,data_cell1,data_cell2};
+    data_cell = data_cell1;
 
     c=length(data_cell);
     r=length(data_cell1{1});
     
-    data_out = sprintf('%s/LAN%d.txt',fpga_dir,ii);
+    data_out = sprintf('%s/LAN%d.mif',fpga_dir,ii);
     fprintf('写入文件:\t%s\n',data_out);
     fdes=fopen(data_out,'w');
 
+    puts = sprintf('WIDTH = %d;\nDEPTH = %d;\n\nADDRESS_RADIX = UNS;\nDATA_RADIX =HEX;\n\n',...
+        width, depth);
+    fwrite(fdes,puts);
+    
+    puts = sprintf('CONTENT BEGIN\n');
+    fwrite(fdes,puts);
+
+
+
     for ii=1:c
-        for jj=1:r
-            temp = data_cell{1,ii}{1,1}{jj,1};
-            fprintf('%s\n',temp);
-            puts = sprintf('%s\n',temp);
+        for jj=1:depth
+            temp = data_cell{1,1}{jj,1};
+            fprintf('\t%d\t:\t%s;\n',jj-1,temp);
+            puts = sprintf('\t%d\t:\t%s;\n', jj-1, temp);
             fwrite(fdes,puts);
         end
     end
+    puts = sprintf('END;\n');
+    fwrite(fdes,puts);
+    
     fclose(fdes);
 end
+
 

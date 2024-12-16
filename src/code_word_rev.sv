@@ -47,15 +47,19 @@ localparam DEPTH = 64;
 //--------------------------------------------------------------------------------------
 // Store the index of sorted beams to BRAM
 //--------------------------------------------------------------------------------------
-wire           [WIDTH*ANTS-1: 0]                codeword_rdata_even     ;
-wire           [WIDTH*ANTS-1: 0]                codeword_rdata_odd      ;
+genvar gi;
+wire           [WIDTH*8-1: 0]                   codeword_rdata_even[3:0];
+wire           [WIDTH*8-1: 0]                   codeword_rdata_odd [3:0];
 reg            [   6: 0]                        codeword_rdnum        =0;
-reg            [   5: 0]                        codeword_raddr        =0;
-reg                                             codeword_rden         =0;
-reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_0        =0;
-reg            [DEPTH-1:0][WIDTH*ANTS-1: 0]     codeword_map_1        =0;
+reg            [3:0][5: 0]                      codeword_raddr        =0;
+reg            [   3: 0]                        codeword_rden         =0;
+(* DONT_TOUCH = "TRUE" *) reg [WIDTH*ANTS-1: 0] codeword_map_e[DEPTH-1:0] ='{default:0};
+(* DONT_TOUCH = "TRUE" *) reg [WIDTH*ANTS-1: 0] codeword_map_o[DEPTH-1:0] ='{default:0};
+(* DONT_TOUCH = "TRUE" *) reg [WIDTH*ANTS-1: 0] codeword_map_0[DEPTH-1:0] ='{default:0};
+(* DONT_TOUCH = "TRUE" *) reg [WIDTH*ANTS-1: 0] codeword_map_1[DEPTH-1:0] ='{default:0};
 reg            [   2:0][6:0]                    ant_num_buf           =0;
-wire           [   6: 0]                        ant_num                 ;
+(* DONT_TOUCH = "TRUE" *) reg [   6: 0]         ant_num_0             =0;
+(* DONT_TOUCH = "TRUE" *) reg [   6: 0]         ant_num_1             =0;
 reg            [   3: 0]                        rom_vld               =0;
 reg                                             cwd_valid             =0;
 
@@ -75,15 +79,17 @@ end
 
 always @(posedge i_clk) begin
     if(i_reset)
-        codeword_rden <= 1'b0;
+        codeword_rden <= 'd0;
     else if(codeword_rdnum == DEPTH)
-        codeword_rden <= 1'b0;
+        codeword_rden <= 'd0;
     else if(i_enable)
-        codeword_rden <= 1'b1;
+        codeword_rden <= 4'hF;
 end
 
 always @(posedge i_clk) begin
-    codeword_raddr <= codeword_rdnum[5:0];
+    for(int i=0;i<4;i=i+1)begin
+        codeword_raddr[i] <= codeword_rdnum[5:0];
+    end
 end
 
 always @(posedge i_clk) begin
@@ -104,34 +110,86 @@ always @(posedge i_clk) begin
     end
 end
 
-assign ant_num = ant_num_buf[2];
-
 always @(posedge i_clk) begin
-    codeword_map_0[ant_num] <= codeword_rdata_even[1*WIDTH*ANTS-1: WIDTH*0   ];
-    codeword_map_1[ant_num] <= codeword_rdata_odd [1*WIDTH*ANTS-1: WIDTH*0   ];
+    ant_num_0 <= ant_num_buf[1];
+    ant_num_1 <= ant_num_buf[1];
 end
 
+always @(posedge i_clk) begin
+    codeword_map_e[ant_num_0] <= {codeword_rdata_even[3], codeword_rdata_even[2], codeword_rdata_even[1], codeword_rdata_even[0]};
+    codeword_map_o[ant_num_1] <= {codeword_rdata_odd [3], codeword_rdata_odd [2], codeword_rdata_odd [1], codeword_rdata_odd [0]};
+end
 
+always @(posedge i_clk) begin
+    codeword_map_0 <= codeword_map_e;
+    codeword_map_1 <= codeword_map_o;
+end
 
 
 //--------------------------------------------------------------------------------------
 // rom for codeword even: 4 clock cycle delay
 //--------------------------------------------------------------------------------------
-rom_codeword_even    u_rom_codeword_even
+rom_codeword_even_0                                     u_rom_codeword_even_0
 (
-    .q                                                  (codeword_rdata_even    ),//  output,  width = 64,       q.dataout
-    .rden                                               (codeword_rden          ),
-    .address                                            (codeword_raddr         ),//   input,   width = 8, address.address
+    .q                                                  (codeword_rdata_even[0]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [0]),
+    .address                                            (codeword_raddr     [0]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+rom_codeword_even_1                                     u_rom_codeword_even_1
+(
+    .q                                                  (codeword_rdata_even[1]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [1]),
+    .address                                            (codeword_raddr     [1]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+rom_codeword_even_2                                     u_rom_codeword_even_2
+(
+    .q                                                  (codeword_rdata_even[2]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [2]),
+    .address                                            (codeword_raddr     [2]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+rom_codeword_even_3                                     u_rom_codeword_even_3
+(
+    .q                                                  (codeword_rdata_even[3]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [3]),
+    .address                                            (codeword_raddr     [3]),//   input,   width = 8, address.address
     .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
 );
 
-rom_codeword_odd     u_rom_codeword_odd
+//--------------------------------------------------------------------------------------
+// rom for codeword odd: 4 clock cycle delay
+//--------------------------------------------------------------------------------------
+rom_codeword_odd_0                                      u_rom_codeword_odd_0
 (
-    .q                                                  (codeword_rdata_odd     ),//  output,  width = 64,       q.dataout
-    .rden                                               (codeword_rden          ),
-    .address                                            (codeword_raddr         ),//   input,   width = 8, address.address
+    .q                                                  (codeword_rdata_odd [0]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [0]),
+    .address                                            (codeword_raddr     [0]),//   input,   width = 8, address.address
     .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
 );
+rom_codeword_odd_1                                      u_rom_codeword_odd_1
+(
+    .q                                                  (codeword_rdata_odd [1]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [1]),
+    .address                                            (codeword_raddr     [1]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+rom_codeword_odd_2                                      u_rom_codeword_odd_2
+(
+    .q                                                  (codeword_rdata_odd [2]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [2]),
+    .address                                            (codeword_raddr     [2]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+rom_codeword_odd_3                                      u_rom_codeword_odd_3
+(
+    .q                                                  (codeword_rdata_odd [3]),//  output,  width = 64,       q.dataout
+    .rden                                               (codeword_rden      [3]),
+    .address                                            (codeword_raddr     [3]),//   input,   width = 8, address.address
+    .clock                                              (i_clk                  ) //   input,   width = 1,   clock.clk
+);
+
 
 //--------------------------------------------------------------------------------------
 // select codewrds for each beam
