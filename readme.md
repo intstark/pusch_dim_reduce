@@ -196,8 +196,11 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 ### 2024.12.12
 **此版本，通过了4个Slot(DUDU)从CPRI输入到降维后CPRI输出的向量比对**。
 + 修复了从空闲Slot进入重新计算码本序号的Slot时，码本选择和能量计算不正确问题，涉及的模块包括：
-  + code_word_rev：增加了i_symb_clr接口，用于清除码本选择相关状态
-  + beam_power_calc：iq_abs_valid修复
+  + code_word_rev：
+    + 增加了i_symb_clr接口，用于清除码本选择相关状态
+    + 修改codeword_map_0/1类型并增加一级寄存器
+    + 复制了ant_num以优化时序
+  + beam_power_calc：iq_abs_valid修复:与上symb_1st_dly[1]
 
 + 修改IQ_HD字段[7:0]信息：天线组只有0/1，涉及的模块包括：
   + txdata_queue：将IQ_HD字段[7:0]修改为0/1
@@ -206,3 +209,14 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 **此版本，通过了以ROM打桩方式的20241213版本向量**。
 + 优化了码本选择，涉及的模块包括：
   + code_word_rev：码本ROM切割成4块256位宽的小ROM
+
+### 2024.12.19
+**此版本，通过了以ROM打桩方式的20241213版本向量**。
++ 修复了输入异步缓存Buffer读写两端复位问题，涉及的模块包括：
+  + cpri_rx_bufer：
+    + 修复了读写时钟域误用问题
+    + 对读写两端输入的复位信号进行了交互同步
+    + 输入pusch_en和cpri_rx_vld复位赋值
+    + 读使能rd_en的复位问题
+  + 增加了alt_reset_synchronizer相关文件
++ 修复了此前对code_word_rev进行的非压缩数组及打拍操作，会导致资源暴增。

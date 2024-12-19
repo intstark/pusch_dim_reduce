@@ -173,9 +173,9 @@ pusch_dr_top                                            pusch_dr_top(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (reset                  ),
     
-    .i_aiu_idx                                          (2'b00                  ),
-    .i_rbg_size                                         (rbg_size               ),
-    .i_dr_mode                                          (2'b10                  ),
+    .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
+    .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
+    .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
     .i_l0_cpri_clk                                      (cpri_clk    [0]        ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [0]        ),// lane0 cpri rx reset

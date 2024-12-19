@@ -1,0 +1,18 @@
+# system info rom_codeword on 2024.10.15.09:19:09
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for rom_codeword on 2024.10.15.09:19:09
+files:
+filepath,kind,attributes,module,is_top
+sim/rom_codeword.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,rom_codeword,true
+rom_1port_2020/sim/rom_codeword_rom_1port_2020_dlhouoa.v,VERILOG,,rom_codeword_rom_1port_2020_dlhouoa,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+rom_codeword.rom_1port_0,rom_codeword_rom_1port_2020_dlhouoa

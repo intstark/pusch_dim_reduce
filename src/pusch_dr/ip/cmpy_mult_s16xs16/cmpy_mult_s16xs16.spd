@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altmult_complex_1910/sim/cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v"
+   type="VERILOG"
+   library="altmult_complex_1910" />
+ <file
+   path="sim/cmpy_mult_s16xs16.v"
+   type="VERILOG"
+   library="cmpy_mult_s16xs16"
+   hasInlineConfiguration="true" />
+ <topLevel name="cmpy_mult_s16xs16.cmpy_mult_s16xs16" />
+ <deviceFamily name="agilex7" />
+ <device name="AGFB027R25A2I2V" />
+</simPackage>

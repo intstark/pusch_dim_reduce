@@ -1,0 +1,42 @@
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TOOL_NAME "QsysPrimePro"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TOOL_VERSION "23.2"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TOOL_VENDOR_NAME "Intel Corporation"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TOP_LEVEL_COMPONENT_NAME "altmult_complex"
+set_global_assignment -library "cmpy_mult_s16xs16" -name SOPCINFO_FILE [file join $::quartus(qip_path) "cmpy_mult_s16xs16.sopcinfo"]
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name SLD_INFO "QSYS_NAME cmpy_mult_s16xs16 HAS_SOPCINFO 1 GENERATION_ID 0"
+set_global_assignment -library "cmpy_mult_s16xs16" -name MISC_FILE [file join $::quartus(qip_path) "cmpy_mult_s16xs16.cmp"]
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_TARGETED_DEVICE_FAMILY "Agilex 7"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_GENERATED_DEVICE_FAMILY "{Agilex 7}"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_QSYS_MODE "STANDALONE"
+set_global_assignment -name SYNTHESIS_ONLY_QIP ON
+set_global_assignment -library "cmpy_mult_s16xs16" -name MISC_FILE [file join $::quartus(qip_path) "../cmpy_mult_s16xs16.ip"]
+
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_NAME "Y21weV9tdWx0X3MxNnhzMTZfYWx0bXVsdF9jb21wbGV4XzE5MTBfZnpiNHBicQ=="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DISPLAY_NAME "QUxUTVVMVF9DT01QTEVYIEludGVsIEZQR0EgSVA="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_VERSION "MTkuMS4w"
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DESCRIPTION "VGhlIEFMVE1VTFRfQ09NUExFWCBtZWdhZnVuY3Rpb24gYWxsb3dzIHlvdSB0byBpbXBsZW1lbnQgYSBtdWx0aXBsaWVyLWNvbXBsZXg="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_GROUP "QmFzaWMgRnVuY3Rpb25zL0FyaXRobWV0aWM="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cDovL3d3dy5hbHRlcmEuY29tL2xpdGVyYXR1cmUvdWcvdWdfbHBtX2FsdF9tZnVnLnBkZg=="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly9kb2N1bWVudGF0aW9uLmFsdGVyYS5jb20vIy9saW5rL3NhbTEzOTUzMzE0MDE5Mzcvc2FtMTM5NTMyOTU3MTQ0NQ=="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly9kb2N1bWVudGF0aW9uLmFsdGVyYS5jb20vIy9saW5rL2tseTE0MzYxNDg3MDk1ODEva2x5MTQzOTE3NTk3MDczNg=="
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly9kb2N1bWVudGF0aW9uLmFsdGVyYS5jb20vIy9saW5rL2hjbzE0MjE2OTgwNDIwODcvaGNvMTQyMTY5ODAxMzQwOA=="
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_NAME "Y21weV9tdWx0X3MxNnhzMTY="
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_REPORT_HIERARCHY "On"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "cmpy_mult_s16xs16" -library "cmpy_mult_s16xs16" -name IP_COMPONENT_VERSION "MS4w"
+
+
+set_global_assignment -library "altmult_complex_1910" -name VERILOG_FILE [file join $::quartus(qip_path) "altmult_complex_1910/synth/cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v"]
+set_global_assignment -library "cmpy_mult_s16xs16" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/cmpy_mult_s16xs16.v"]
+
+
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_TOOL_NAME "altmult_complex"
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_TOOL_VERSION "19.1.0"
+set_global_assignment -entity "cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq" -library "altmult_complex_1910" -name IP_TOOL_ENV "QsysPrimePro"
+

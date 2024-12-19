@@ -1,0 +1,18 @@
+# system info rom_codeword_even_3 on 2024.12.17.23:34:50
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for rom_codeword_even_3 on 2024.12.17.23:34:50
+files:
+filepath,kind,attributes,module,is_top
+sim/rom_codeword_even_3.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,rom_codeword_even_3,true
+rom_1port_2020/sim/rom_codeword_even_3_rom_1port_2020_y3et4zi.v,VERILOG,,rom_codeword_even_3_rom_1port_2020_y3et4zi,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+rom_codeword_even_3.rom_1port_0,rom_codeword_even_3_rom_1port_2020_y3et4zi

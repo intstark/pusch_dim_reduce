@@ -1,9 +1,9 @@
 
-namespace eval cmpy_mult_s16xs16 {
+namespace eval rxdata_dual_ram {
   proc get_design_libraries {} {
     set libraries [dict create]
-    dict set libraries altmult_complex_1910 1
-    dict set libraries cmpy_mult_s16xs16    1
+    dict set libraries ram_2port_2040  1
+    dict set libraries rxdata_dual_ram 1
     return $libraries
   }
   
@@ -19,8 +19,8 @@ namespace eval cmpy_mult_s16xs16 {
   
   proc get_design_files {USER_DEFINED_COMPILE_OPTIONS USER_DEFINED_VERILOG_COMPILE_OPTIONS USER_DEFINED_VHDL_COMPILE_OPTIONS QSYS_SIMDIR} {
     set design_files [list]
-    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../altmult_complex_1910/sim/cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v"]\"  -work altmult_complex_1910"
-    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/cmpy_mult_s16xs16.v"]\"  -work cmpy_mult_s16xs16"                                                            
+    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../ram_2port_2040/sim/rxdata_dual_ram_ram_2port_2040_dd2btwq.v"]\"  -work ram_2port_2040"
+    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/rxdata_dual_ram.v"]\"  -work rxdata_dual_ram"                                            
     return $design_files
   }
   

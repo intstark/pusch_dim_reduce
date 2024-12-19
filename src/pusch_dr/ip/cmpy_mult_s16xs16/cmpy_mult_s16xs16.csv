@@ -1,0 +1,18 @@
+# system info cmpy_mult_s16xs16 on 2024.07.25.14:02:24
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for cmpy_mult_s16xs16 on 2024.07.25.14:02:24
+files:
+filepath,kind,attributes,module,is_top
+sim/cmpy_mult_s16xs16.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,cmpy_mult_s16xs16,true
+altmult_complex_1910/sim/cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v,VERILOG,,cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+cmpy_mult_s16xs16.altmult_complex_0,cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq

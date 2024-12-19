@@ -9,16 +9,18 @@ module rxdata_dual_ram (
 		input  wire [7:0]   wraddress, // wraddress.wraddress
 		input  wire [7:0]   rdaddress, // rdaddress.rdaddress
 		input  wire         wren,      //      wren.wren
-		input  wire         clock      //     clock.clk
+		input  wire         clock,     //     clock.clk
+		input  wire         rden       //      rden.rden
 	);
 
-	rxdata_dual_ram_ram_2port_2040_mxfxjui ram_2port_0 (
+	rxdata_dual_ram_ram_2port_2040_dd2btwq ram_2port_0 (
 		.data      (data),      //   input,  width = 384,      data.datain
 		.q         (q),         //  output,  width = 384,         q.dataout
 		.wraddress (wraddress), //   input,    width = 8, wraddress.wraddress
 		.rdaddress (rdaddress), //   input,    width = 8, rdaddress.rdaddress
 		.wren      (wren),      //   input,    width = 1,      wren.wren
-		.clock     (clock)      //   input,    width = 1,     clock.clk
+		.clock     (clock),     //   input,    width = 1,     clock.clk
+		.rden      (rden)       //   input,    width = 1,      rden.rden
 	);
 
 endmodule
