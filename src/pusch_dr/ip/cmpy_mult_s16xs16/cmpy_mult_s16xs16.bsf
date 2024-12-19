@@ -1,0 +1,115 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 2023  Intel Corporation. All rights reserved.
+Your use of Intel Corporation's design tools, logic functions 
+and other software and tools, and any partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Intel Program License 
+Subscription Agreement, the Intel Quartus Prime License Agreement,
+the Intel FPGA IP License Agreement, or other applicable license
+agreement, including, without limitation, that your use is for
+the sole purpose of programming logic devices manufactured by
+Intel and sold by Intel or its authorized distributors.  Please
+refer to the applicable agreement for further details, at
+https://fpgasoftware.intel.com/eula.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 0 0 320 312)
+	(text "cmpy_mult_s16xs16" (rect 94 0 176 12)(font "SansSerif" (font_size 11)))
+	(text "inst" (rect 8 296 20 308)(font "Arial" ))
+	(port
+		(pt 0 72)
+		(input)
+		(text "dataa_real[15..0]" (rect 0 0 64 12)(font "SansSerif" (font_size 8)))
+		(text "dataa_real[15..0]" (rect 4 65 106 76)(font "SansSerif" (font_size 8)))
+	)
+	(port
+		(pt 0 120)
+		(input)
+		(text "dataa_imag[15..0]" (rect 0 0 69 12)(font "SansSerif" (font_size 8)))
+		(text "dataa_imag[15..0]" (rect 4 115 106 126)(font "SansSerif" (font_size 8)))
+	)
+	(port
+		(pt 0 176)
+		(input)
+		(text "datab_real[15..0]" (rect 0 0 64 12)(font "SansSerif" (font_size 8)))
+		(text "datab_real[15..0]" (rect 4 165 106 176)(font "SansSerif" (font_size 8)))
+		(line (pt 0 176)(pt 102 176)(line_width 3))
+	)
+	(port
+		(pt 0 224)
+		(input)
+		(text "datab_imag[15..0]" (rect 0 0 69 12)(font "SansSerif" (font_size 8)))
+		(text "datab_imag[15..0]" (rect 4 215 106 226)(font "SansSerif" (font_size 8)))
+	)
+	(port
+		(pt 0 272)
+		(input)
+		(text "clock" (rect 0 0 20 12)(font "SansSerif" (font_size 8)))
+		(text "clock" (rect 4 265 34 276)(font "SansSerif" (font_size 8)))
+	)
+	(port
+		(pt 320 72)
+		(output)
+		(text "result_real[31..0]" (rect 0 0 64 12)(font "SansSerif" (font_size 8)))
+		(text "result_real[31..0]" (rect 241 65 349 76)(font "SansSerif" (font_size 8)))
+	)
+	(port
+		(pt 320 120)
+		(output)
+		(text "result_imag[31..0]" (rect 0 0 69 12)(font "SansSerif" (font_size 8)))
+		(text "result_imag[31..0]" (rect 237 115 345 126)(font "SansSerif" (font_size 8)))
+	)
+	(drawing
+		(text "dataa_real" (rect 41 46 142 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "dataa_real" (rect 107 71 274 152)(font "SansSerif" (color 0 0 0)))
+		(text "dataa_imag" (rect 35 96 130 205)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "dataa_imag" (rect 107 121 274 252)(font "SansSerif" (color 0 0 0)))
+		(text "datab_real" (rect 41 146 142 305)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "datab_real" (rect 107 171 274 352)(font "SansSerif" (color 0 0 0)))
+		(text "datab_imag" (rect 35 196 130 405)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "datab_imag" (rect 107 221 274 452)(font "SansSerif" (color 0 0 0)))
+		(text "result_real" (rect 222 46 510 105)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "result_real" (rect 172 71 410 152)(font "SansSerif" (color 0 0 0)))
+		(text "result_imag" (rect 222 96 510 205)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "result_imag" (rect 168 121 402 252)(font "SansSerif" (color 0 0 0)))
+		(text "clock" (rect 74 246 178 505)(font "SansSerif" (color 128 0 0)(font_size 9)))
+		(text "clk" (rect 107 271 232 552)(font "SansSerif" (color 0 0 0)))
+		(text " cmpy_mult_s16xs16 " (rect 233 301 580 612)(font "SansSerif" ))
+		(line (pt 102 34)(pt 221 34)(line_width 1))
+		(line (pt 221 34)(pt 221 301)(line_width 1))
+		(line (pt 102 301)(pt 221 301)(line_width 1))
+		(line (pt 102 34)(pt 102 301)(line_width 1))
+		(line (pt 0 76)(pt 102 76)(line_width 3))
+		(line (pt 103 55)(pt 103 80)(line_width 1))
+		(line (pt 104 55)(pt 104 80)(line_width 1))
+		(line (pt 0 126)(pt 102 126)(line_width 3))
+		(line (pt 103 105)(pt 103 130)(line_width 1))
+		(line (pt 104 105)(pt 104 130)(line_width 1))
+		(line (pt 103 155)(pt 103 180)(line_width 1))
+		(line (pt 104 155)(pt 104 180)(line_width 1))
+		(line (pt 0 226)(pt 102 226)(line_width 3))
+		(line (pt 103 205)(pt 103 230)(line_width 1))
+		(line (pt 104 205)(pt 104 230)(line_width 1))
+		(line (pt 323 76)(pt 221 76)(line_width 3))
+		(line (pt 220 55)(pt 220 80)(line_width 1))
+		(line (pt 219 55)(pt 219 80)(line_width 1))
+		(line (pt 323 126)(pt 221 126)(line_width 3))
+		(line (pt 220 105)(pt 220 130)(line_width 1))
+		(line (pt 219 105)(pt 219 130)(line_width 1))
+		(line (pt 0 276)(pt 102 276)(line_width 1))
+		(line (pt 103 255)(pt 103 280)(line_width 1))
+		(line (pt 104 255)(pt 104 280)(line_width 1))
+		(line (pt 0 0)(pt 323 0)(line_width 1))
+		(line (pt 323 0)(pt 323 318)(line_width 1))
+		(line (pt 0 318)(pt 323 318)(line_width 1))
+		(line (pt 0 0)(pt 0 318)(line_width 1))
+	)
+)

@@ -17,7 +17,7 @@
 # ----------------------------------------
 # This script provides commands to simulate the following IP detected in
 # your Quartus project:
-#     cmpy_mult_s16xs16
+#     rxdata_dual_ram
 # 
 # Intel recommends that you source this Quartus-generated IP simulation
 # script from your own customized top-level script, and avoid editing this
@@ -83,7 +83,7 @@
 # 
 # IP SIMULATION SCRIPT
 # ----------------------------------------
-# If cmpy_mult_s16xs16 is one of several IP cores in your
+# If rxdata_dual_ram is one of several IP cores in your
 # Quartus project, you can generate a simulation script
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 23.2 94 win32 2024.07.25.14:02:26
+# ACDS 23.2 94 win32 2024.08.07.18:44:49
 
 # ----------------------------------------
 # Initialize variables
@@ -105,7 +105,7 @@ if ![info exists SYSTEM_INSTANCE_NAME] {
 }
 
 if ![info exists TOP_LEVEL_NAME] { 
-  set TOP_LEVEL_NAME "cmpy_mult_s16xs16.cmpy_mult_s16xs16"
+  set TOP_LEVEL_NAME "rxdata_dual_ram.rxdata_dual_ram"
 }
 
 if ![info exists QSYS_SIMDIR] { 
@@ -155,13 +155,13 @@ if { ![ string match "*-64 vsim*" [ vsimVersionString ] ] } {
 } else {
   set SIMULATOR_TOOL_BITNESS "bit_64"
 }
-set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [cmpy_mult_s16xs16::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
+set LD_LIBRARY_PATH [dict merge $LD_LIBRARY_PATH [dict get [rxdata_dual_ram::get_env_variables $SIMULATOR_TOOL_BITNESS] "LD_LIBRARY_PATH"]]
 if {[dict size $LD_LIBRARY_PATH] !=0 } {
   set LD_LIBRARY_PATH [subst [join [dict keys $LD_LIBRARY_PATH] ":"]]
   setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH"
 }
-append ELAB_OPTIONS [subst [cmpy_mult_s16xs16::get_elab_options $SIMULATOR_TOOL_BITNESS]]
-append SIM_OPTIONS [subst [cmpy_mult_s16xs16::get_sim_options $SIMULATOR_TOOL_BITNESS]]
+append ELAB_OPTIONS [subst [rxdata_dual_ram::get_elab_options $SIMULATOR_TOOL_BITNESS]]
+append SIM_OPTIONS [subst [rxdata_dual_ram::get_sim_options $SIMULATOR_TOOL_BITNESS]]
 
 proc modelsim_ae_select {force_select_modelsim_ae} {
   if [string is true -strict $force_select_modelsim_ae] {
@@ -179,7 +179,7 @@ alias file_copy {
     echo "\[exec\] file_copy"
   }
   set memory_files [list]
-  set memory_files [concat $memory_files [cmpy_mult_s16xs16::get_memory_files "$QSYS_SIMDIR"]]
+  set memory_files [concat $memory_files [rxdata_dual_ram::get_memory_files "$QSYS_SIMDIR"]]
   foreach file $memory_files {
   set itercount 0
   while {$itercount < 10  && [file type $file] eq "link"} {
@@ -190,8 +190,8 @@ alias file_copy {
     set file $nf
   }
   set dest_file [file join ./ [file tail $file]]
-  set normalized_src [cmpy_mult_s16xs16::normalize_path "$file"]
-  set normalized_dest [cmpy_mult_s16xs16::normalize_path "$dest_file"]
+  set normalized_src [rxdata_dual_ram::normalize_path "$file"]
+  set normalized_dest [rxdata_dual_ram::normalize_path "$dest_file"]
   if { $normalized_src ne $normalized_dest } {
     file copy -force $file ./
   }
@@ -230,7 +230,7 @@ if [string is false -strict [modelsim_ae_select $FORCE_MODELSIM_AE_SELECTION]] {
   vmap       tennm_hssi_p0_ver ./libraries/tennm_hssi_p0_ver/
 }
 set design_libraries [dict create]
-set design_libraries [dict merge $design_libraries [cmpy_mult_s16xs16::get_design_libraries]]
+set design_libraries [dict merge $design_libraries [rxdata_dual_ram::get_design_libraries]]
 set libraries [dict keys $design_libraries]
 foreach library $libraries {
   ensure_lib ./libraries/$library/
@@ -250,14 +250,14 @@ alias dev_com {
     eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS                 "$QUARTUS_INSTALL_DIR/eda/sim_lib/altera_primitives.v"                  -work altera_ver       
     eval  vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS                 "$QUARTUS_INSTALL_DIR/eda/sim_lib/altera_mf.v"                          -work altera_mf_ver    
     eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/altera_lnsim.sv"                      -work altera_lnsim_ver 
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_atoms.sv"                       -work tennm_ver        
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/mentor/tennm_atoms_ncrypt.sv"         -work tennm_ver        
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/fmica_atoms_ncrypt.sv"                -work tennm_ver        
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_hssi_atoms.sv"                  -work tennm_hssi_ver   
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_hssi_atoms_ncrypt.sv"           -work tennm_hssi_ver   
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/mentor/cr3v0_serdes_models_ncrypt.sv" -work tennm_hssi_e0_ver
-    eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/ctp_hssi_atoms.sv"                    -work tennm_hssi_p0_ver
-    eval  vlog -sv -permissive $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QUARTUS_INSTALL_DIR/eda/sim_lib/ctp_hssi_atoms_ncrypt.sv"             -work tennm_hssi_p0_ver
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_atoms.sv"                       -work tennm_ver        
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/mentor/tennm_atoms_ncrypt.sv"         -work tennm_ver        
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/fmica_atoms_ncrypt.sv"                -work tennm_ver        
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_hssi_atoms.sv"                  -work tennm_hssi_ver   
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/tennm_hssi_atoms_ncrypt.sv"           -work tennm_hssi_ver   
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/mentor/cr3v0_serdes_models_ncrypt.sv" -work tennm_hssi_e0_ver
+    # eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS             "$QUARTUS_INSTALL_DIR/eda/sim_lib/ctp_hssi_atoms.sv"                    -work tennm_hssi_p0_ver
+    # eval  vlog -sv -permissive $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QUARTUS_INSTALL_DIR/eda/sim_lib/ctp_hssi_atoms_ncrypt.sv"             -work tennm_hssi_p0_ver
   }
   eval  vlog -sv $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QUARTUS_INSTALL_DIR/eda/sim_lib/simsf_dpi.cpp"
 }
@@ -269,13 +269,14 @@ alias com {
     echo "\[exec\] com"
   }
   set design_files [dict create]
-  set design_files [dict merge [cmpy_mult_s16xs16::get_common_design_files $USER_DEFINED_COMPILE_OPTIONS $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_VHDL_COMPILE_OPTIONS "$QSYS_SIMDIR"]]
+  set design_files [dict merge [rxdata_dual_ram::get_common_design_files $USER_DEFINED_COMPILE_OPTIONS $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_VHDL_COMPILE_OPTIONS "$QSYS_SIMDIR"]]
   set common_design_files [dict values $design_files]
   foreach file $common_design_files {
     eval $file
   }
   set design_files [list]
-  set design_files [concat $design_files [cmpy_mult_s16xs16::get_design_files $USER_DEFINED_COMPILE_OPTIONS $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_VHDL_COMPILE_OPTIONS "$QSYS_SIMDIR"]]
+  #set design_files [concat $design_files [rxdata_dual_ram::get_design_files $USER_DEFINED_COMPILE_OPTIONS $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_VHDL_COMPILE_OPTIONS "$QSYS_SIMDIR"]]
+  set design_files [concat $design_files [$USER_DEFINED_COMPILE_OPTIONS $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_VHDL_COMPILE_OPTIONS "$QSYS_SIMDIR"]]
   foreach file $design_files {
     eval $file
   }
@@ -366,5 +367,5 @@ alias h {
   echo
   echo "FORCE_MODELSIM_AE_SELECTION                       -- Set to true to force to select Modelsim AE always."
 }
-file_copy
+#file_copy
 h

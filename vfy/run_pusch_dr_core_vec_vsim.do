@@ -2,9 +2,14 @@
 # NEWHUI @ 2014
 # ModelSim simulation script
 # --------------------------------------------------
+# top-level testbench name
 set TOP_LEVEL_NAME "pusch_dr_core_vec"
 
+# top-level testbench file directory
+set TB_DIR "../../tb"
+set TB_FILE $TB_DIR/$TOP_LEVEL_NAME.sv
 
+# 创建仿真文件夹
 if ![info exists WORK_DIR] { 
     set CURRENT_DIR  [pwd]
     set WORK_DIR  $TOP_LEVEL_NAME\_work
@@ -20,32 +25,28 @@ if ![info exists WORK_DIR] {
 }
 
 # 得到当前工作路径
-#set QSYS_SIMDIR $CURRENT_DIR/sim_script
-set QSYS_SIMDIR $CURRENT_DIR/../src/ip/rxdata_dual_ram/sim
+set QSYS_SIMDIR $CURRENT_DIR/sim_script
+#set QSYS_SIMDIR $CURRENT_DIR/../src/pusch_dr/ip/rxdata_dual_ram/sim
 
 
 # quartus env
 do $QSYS_SIMDIR/mentor/msim_setup.tcl
 
+# 建库
+vlib work
 
 # compile quartus eda simulation files
-#dev_com
+dev_com
 
 # compile quartus-generated IP simulation files
 #com
 
-# 建库
-vlib work
-
-dev_com
-com
-
 
 # 编译文件
 # vlog -f bf_tb.sv -incr -cover bcestf
-vlog -f $CURRENT_DIR/$TOP_LEVEL_NAME.files
+vlog $TB_FILE
+vlog -f $CURRENT_DIR/design.files
 vlog -work work -refresh -force_refresh
-
 
 
 # 仿真
@@ -53,7 +54,6 @@ vlog -work work -refresh -force_refresh
 vsim -voptargs=+acc  -L altera_lnsim_ver -L altera_mf_ver $TOP_LEVEL_NAME 
 
 # elab
-
 
 
 # 添加波形
@@ -64,9 +64,8 @@ if [file exists $CURRENT_DIR/$TOP_LEVEL_NAME\_wave.do] {
 }
 
 
-
 # 运行仿真
-run 310us
+run 300us
 
 # coverage report -file ../dut_tb_report.txt
 # coverage save ../dut_tb_ucdb

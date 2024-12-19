@@ -1,0 +1,18 @@
+# system info rom_codeword_odd on 2024.10.15.12:30:49
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for rom_codeword_odd on 2024.10.15.12:30:49
+files:
+filepath,kind,attributes,module,is_top
+sim/rom_codeword_odd.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,rom_codeword_odd,true
+rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020_ognhewi.v,VERILOG,,rom_codeword_odd_rom_1port_2020_ognhewi,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+rom_codeword_odd.rom_1port_0,rom_codeword_odd_rom_1port_2020_ognhewi

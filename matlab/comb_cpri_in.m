@@ -16,7 +16,7 @@ aau_idx = 0;    % AAU编号识别
 aiu_idx = 0;    % AIU编号识别
 
 vector_dir1 = '../../../AlgoVec/ulrxDimRedu-1209';
-vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1212';
+vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1213';
 fpga_dir   = '../vfy/vector/datain';
 
 for ii=1:8

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2024.07.25.14:02:28"
+ outputDirectory="E:/ZJYJY/Product/PUSCH/project/prj/ip/cmpy_mult_s16xs16/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Agilex 7"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="AGFB027R25A2I2V"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="2"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CLOCK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="dataa_real" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="dataa_real" direction="input" role="dataa_real" width="16" />
+  </interface>
+  <interface name="dataa_imag" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="dataa_imag" direction="input" role="dataa_imag" width="16" />
+  </interface>
+  <interface name="datab_real" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="datab_real" direction="input" role="datab_real" width="16" />
+  </interface>
+  <interface name="datab_imag" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="datab_imag" direction="input" role="datab_imag" width="16" />
+  </interface>
+  <interface name="result_real" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="result_real" direction="output" role="result_real" width="32" />
+  </interface>
+  <interface name="result_imag" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="prSafe" value="false" />
+   <port name="result_imag" direction="output" role="result_imag" width="32" />
+  </interface>
+  <interface name="clock" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="clock" direction="input" role="clk" width="1" />
+  </interface>
+ </perimeter>
+ <entity kind="cmpy_mult_s16xs16" version="1.0" name="cmpy_mult_s16xs16">
+  <parameter name="AUTO_CLOCK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_CLOCK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_CLOCK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_DEVICE" value="AGFB027R25A2I2V" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Agilex 7" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
+  <generatedFiles>
+   <file
+       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\cmpy_mult_s16xs16\synth\cmpy_mult_s16xs16.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\cmpy_mult_s16xs16\synth\cmpy_mult_s16xs16.v"
+       attributes="CONTAINS_INLINE_CONFIGURATION" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file path="E:/ZJYJY/Product/PUSCH/project/prj/ip/cmpy_mult_s16xs16.ip" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="D:/intel/intelfpga_pro/23.2/ip/altera/megafunctions/altmult_complex/altmult_complex_hw.tcl" />
+  </childSourceFiles>
+  <messages>
+   <message level="Info" culprit="cmpy_mult_s16xs16">"Generating: cmpy_mult_s16xs16"</message>
+   <message level="Info" culprit="cmpy_mult_s16xs16">"Generating: cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq"</message>
+   <message level="Info" culprit="altmult_complex_0">Generating top-level entity cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.</message>
+   <message level="Debug" culprit="altmult_complex_0">Current quartus bindir: D:/intel/intelfpga_pro/23.2/quartus/bin64/.</message>
+  </messages>
+ </entity>
+ <entity
+   kind="altmult_complex"
+   version="19.1.0"
+   name="cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq">
+  <parameter name="REPRESENTATION_A" value="1" />
+  <parameter name="DEVICE_FAMILY" value="Agilex 7" />
+  <parameter name="WIDTH_RESULT" value="32" />
+  <parameter name="REPRESENTATION_B" value="1" />
+  <parameter name="GUI_CLEAR_TYPE" value="NONE" />
+  <parameter name="IMPLEMENTATION_STYLE" value="AUTO" />
+  <parameter name="PIPELINE" value="4" />
+  <parameter name="CBX_AUTO_BLACKBOX" value="ALL" />
+  <parameter name="WIDTH_B" value="16" />
+  <parameter name="GUI_USE_CLKEN" value="false" />
+  <parameter name="WIDTH_A" value="16" />
+  <parameter name="GUI_DYNAMIC_COMPLEX" value="false" />
+  <generatedFiles>
+   <file
+       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\cmpy_mult_s16xs16\altmult_complex_1910\synth\cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\cmpy_mult_s16xs16\altmult_complex_1910\synth\cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="D:/intel/intelfpga_pro/23.2/ip/altera/megafunctions/altmult_complex/altmult_complex_hw.tcl" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="cmpy_mult_s16xs16" as="altmult_complex_0" />
+  <messages>
+   <message level="Info" culprit="cmpy_mult_s16xs16">"Generating: cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq"</message>
+   <message level="Info" culprit="altmult_complex_0">Generating top-level entity cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.</message>
+   <message level="Debug" culprit="altmult_complex_0">Current quartus bindir: D:/intel/intelfpga_pro/23.2/quartus/bin64/.</message>
+  </messages>
+ </entity>
+</deploy>

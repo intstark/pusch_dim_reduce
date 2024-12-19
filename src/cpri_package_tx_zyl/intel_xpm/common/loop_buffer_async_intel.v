@@ -34,7 +34,7 @@ module loop_buffer_async_intel #
     input  wire                                     wr_wen                  ,
     input  wire                                     wr_wlast                ,
     input  wire    [INFO_WIDTH-1: 0]                wr_info                 ,
-    output reg     [LOOP_WIDTH-WADDR_WIDTH: 0]      free_size               ,
+    output reg     [LOOP_WIDTH-WADDR_WIDTH: 0]      free_size = {1'b1,{LOOP_WIDTH-WADDR_WIDTH{1'b0}}},
     input  wire                                     rd_rst                  ,
     input  wire                                     rd_clk                  ,
 
@@ -48,8 +48,8 @@ module loop_buffer_async_intel #
 
 //---------------------------------------------------------------------------//
 //--                                           
-reg [LOOP_WIDTH-WADDR_WIDTH-1:0]        wbadr;
-reg [LOOP_WIDTH-WADDR_WIDTH-1:0]        rbadr;
+reg [LOOP_WIDTH-WADDR_WIDTH-1:0]        wbadr =0;
+reg [LOOP_WIDTH-WADDR_WIDTH-1:0]        rbadr =0;
 wire                                    rd_empty;
 wire                                    wr_full;
 always @ (posedge wr_clk)
