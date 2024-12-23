@@ -234,10 +234,14 @@ always @ (posedge i_clk) begin
 end
 
 always @ (posedge i_clk)begin
-    if(re_num == re_num_per_rbg-1)
+    if(i_reset)
+        re_num <= 'd0;
+    else if(re_num == re_num_per_rbg-1)
         re_num <= 'd0;
     else if(ant_tvalid[0])
         re_num <= re_num + 1'b1;
+    else
+        re_num <= 'd0;
 end
 
 
@@ -247,6 +251,8 @@ assign rbg_load = (ant_tvalid[0] && re_num == 0) ? 1'b1 : 1'b0;
 // rbG number
 always @ (posedge i_clk)begin
     if(i_reset)
+        rbg_num <= 'd0;
+    else if(!ant_tvalid[0])
         rbg_num <= 'd0;
     else if(rbg_num == rbg_num_max && rbg_slip)
         rbg_num <= 'd0;

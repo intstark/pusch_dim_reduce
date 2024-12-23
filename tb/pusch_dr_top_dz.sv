@@ -25,8 +25,6 @@
 `define T1US 1000.0
 `define SIM_ENDS_TIME 2000000
 
-`include "params_list_pkg.sv"
-
 
 module pusch_dr_top_dz;
 
@@ -248,15 +246,23 @@ end
 
 // Reset generation
 initial begin
-    #(`CLOCK_PERIOD*10) reset = 1'b1;
-    #(`CLOCK_PERIOD*10) reset = 1'b0;
     #(`CLOCK_PERIOD*10) src_reset = 1'b1;
     #(`CLOCK_PERIOD*10) src_reset = 1'b0;
+    #(`CLOCK_PERIOD*10) reset = 1'b1;
+    #(`CLOCK_PERIOD*10) reset = 1'b0;
 
-    #(`T1US*500) reset = 1'b1;
-    #(`T1US*600) reset = 1'b0;
-    #(`T1US*500) src_reset = 1'b1;
+    #(`T1US*300) src_reset = 1'b1;
+    #(`T1US*500) src_reset = 1'b0;
+
+    #(212455) src_reset = 1'b1;
     #(`CLOCK_PERIOD*10) src_reset = 1'b0;
+
+    #(212465) reset = 1'b1;
+    #(`T1US*200) reset = 1'b0;
+
+    #(112455) src_reset = 1'b1;
+    #(`CLOCK_PERIOD*10) src_reset = 1'b0;
+
     tx_hfp = 1'b1;
     #(`CLOCK_PERIOD) tx_hfp = 1'b0;
 end
@@ -341,9 +347,10 @@ always @(posedge i_clk) begin
     for(int i=0; i<2; i++)begin
         if(cpri_tx_num[i]==95)
             cpri_tx_num[i] <= 0;
-        else if(cpri_tx_vld[i])begin
+        else if(cpri_tx_vld[i])
             cpri_tx_num[i] <= cpri_tx_num[i] + 1;
-        end
+        else
+            cpri_tx_num[i] <= 0;
     end
 end
 

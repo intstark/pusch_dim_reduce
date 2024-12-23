@@ -1,0 +1,18 @@
+# system info rom_65536x64_L6 on 2024.12.10.17:33:24
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for rom_65536x64_L6 on 2024.12.10.17:33:24
+files:
+filepath,kind,attributes,module,is_top
+sim/rom_65536x64_L6.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,rom_65536x64_L6,true
+rom_1port_2020/sim/rom_65536x64_L6_rom_1port_2020_mgz2dqa.v,VERILOG,,rom_65536x64_L6_rom_1port_2020_mgz2dqa,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+rom_65536x64_L6.rom_1port_0,rom_65536x64_L6_rom_1port_2020_mgz2dqa

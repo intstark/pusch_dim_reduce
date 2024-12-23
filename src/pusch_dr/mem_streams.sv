@@ -82,7 +82,9 @@ wire           [CHANNELS-1: 0]                  rd_empty                ;
 wire           [CHANNELS-1: 0]                  wr_full                 ;
 
 always @(posedge i_clk) begin
-    if(data_vld[0])
+    if(i_reset)
+        rd_ren <= 'd0;
+    else if(data_vld[0])
         rd_ren <= {CHANNELS{i_rd_ren}};
     else
         rd_ren <= 'd0;

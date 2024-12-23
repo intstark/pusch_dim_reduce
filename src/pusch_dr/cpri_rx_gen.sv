@@ -74,27 +74,6 @@ reg            [   6: 0]                        cpri_raddr            =3;
 wire           [LOOP_WIDTH-WADDR_WIDTH: 0]      free_size               ;
 reg            [2:0][7: 0]                      iq_raddr              ='{default:0};
 
-//--------------------------------------------------------------------------------------
-// Debug 
-//--------------------------------------------------------------------------------------
-reg            [  15: 0]                        sim_cnt=0               ;
-reg                                             stop                    ;
-
-
-always @ (posedge wr_clk )begin 
-    if (i_cpri_wen ==1'd1)  
-        sim_cnt <= sim_cnt + 1;    
-    else
-        sim_cnt <= sim_cnt;   
-end
-
-
-always @ (posedge wr_clk )begin 
-    if (sim_cnt >=16'd5000 && sim_cnt <=16'd6000 )  
-        stop <=1'd0; 
-    else 
-        stop <=1'd1; 
-end
 
 //------------------------------------------------------------------------------------------
 // Generate CPRI header for every chip
@@ -160,30 +139,6 @@ loop_buffer_async_intel #
     .rd_info                    (cpri_rinfo                      ),
     .rd_rdy                     (cpri_rdy                        )  
 );
-
-//wire           [FFT_AGC_WIDTH-1: 0]             rd_agc_data             ;
-//reg            [FFT_AGC_WIDTH-1: 0]             agc_data_d1           =0;
-//reg            [FFT_AGC_WIDTH-1: 0]             agc_data_d2           =0;
-//mem_streams # (
-//    .CHANNELS                                           (1                      ),
-//    .WDATA_WIDTH                                        (FFT_AGC_WIDTH          ),
-//    .WADDR_WIDTH                                        (FFT_AGC_DEPTH          ),
-//    .RDATA_WIDTH                                        (FFT_AGC_WIDTH          ),
-//    .RADDR_WIDTH                                        (FFT_AGC_DEPTH          ),
-//    .READ_LATENCY                                       (3                      ),
-//    .RAM_TYPE                                           (1                      ) 
-//)mem_streams_0(
-//    .i_clk                                              (wr_clk                 ),
-//    .i_reset                                            (wr_rst                 ),
-//    .i_rvalid                                           (                       ),
-//    .i_wr_wen                                           (i_cpri_wlast           ),
-//    .i_wr_data                                          ({i_fft_agc,i_fft_shift}),
-//    .i_rd_ren                                           (cpri_rdy               ),
-//    .o_rd_data                                          (rd_agc_data            ),
-//    .o_rd_addr                                          (                       ),
-//    .o_tvalid                                           (                       ) 
-//);
-
 
 //------------------------------------------------------------------------------------------
 // Read logic 
@@ -251,18 +206,6 @@ begin
     cpri_rinfo_d3 <= cpri_rinfo_d2;
 end
 
-//always @ (posedge rd_clk)
-//begin
-//    if(rd_valid)
-//        agc_data_d1 <= rd_agc_data;
-//    else
-//        agc_data_d1 <= agc_data_d1;
-//
-//    agc_data_d2 <= agc_data_d1;
-//end
-//assign o_fft_agc    = agc_data_d2[39:32];
-//assign o_fft_shift  = agc_data_d2[31: 0];
-
 
 assign o_iq_raddr   = iq_raddr[2];
 assign o_iq_rx_data = cpri_rdata;
@@ -272,5 +215,5 @@ assign o_tready     = (free_size==0) ? 1'b0 : 1'b1;
 assign o_fft_agc    = cpri_rinfo_d3[335:320];//[295:288]
 assign o_fft_shift  = cpri_rinfo_d3[319:256];//[287:256]
 
-                   
+
 endmodule

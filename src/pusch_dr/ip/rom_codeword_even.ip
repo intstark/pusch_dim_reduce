@@ -419,7 +419,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_MIFfilename" type="string">
           <ipxact:name>GUI_MIFfilename</ipxact:name>
           <ipxact:displayName>File name</ipxact:displayName>
-          <ipxact:value>E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_code_word_even.mif</ipxact:value>
+          <ipxact:value>../src/pusch_dr/ip/rom_code_word_even.mif</ipxact:value>
         </ipxact:parameter>
       </ipxact:parameters>
     </altera:altera_module_parameters>

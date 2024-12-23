@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="altera_in_system_sources_probes_1921/sim/altsource_probe.v"
+   type="VERILOG"
+   library="altera_in_system_sources_probes_1921" />
+ <file
+   path="sim/pus_rst.v"
+   type="VERILOG"
+   library="pus_rst"
+   hasInlineConfiguration="true" />
+ <topLevel name="pus_rst.pus_rst" />
+ <deviceFamily name="agilex7" />
+ <device name="AGFB027R25A2I2V" />
+</simPackage>

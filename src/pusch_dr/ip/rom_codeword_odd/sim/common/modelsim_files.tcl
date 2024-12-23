@@ -19,7 +19,7 @@ namespace eval rom_codeword_odd {
   
   proc get_design_files {USER_DEFINED_COMPILE_OPTIONS USER_DEFINED_VERILOG_COMPILE_OPTIONS USER_DEFINED_VHDL_COMPILE_OPTIONS QSYS_SIMDIR} {
     set design_files [list]
-    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020_ognhewi.v"]\"  -work rom_1port_2020"
+    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020_tz7bfci.v"]\"  -work rom_1port_2020"
     lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/rom_codeword_odd.v"]\"  -work rom_codeword_odd"                                           
     return $design_files
   }

@@ -1,0 +1,18 @@
+# system info pus_rst on 2024.12.16.10:50:54
+system_info:
+name,value
+DEVICE,AGFB027R25A2I2V
+DEVICE_FAMILY,Agilex 7
+GENERATION_ID,0
+#
+#
+# Files generated for pus_rst on 2024.12.16.10:50:54
+files:
+filepath,kind,attributes,module,is_top
+sim/pus_rst.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,pus_rst,true
+altera_in_system_sources_probes_1921/sim/altsource_probe.v,VERILOG,,altsource_probe,false
+#
+# Map from instance-path to kind of module
+instances:
+instancePath,module
+pus_rst.in_system_sources_probes_0,altsource_probe

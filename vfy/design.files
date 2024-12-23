@@ -1,6 +1,22 @@
-../../tb/pusch_dr_top_vec.sv
 ../../tb/ant_symbol_buffer.sv
-../../tb/params_list_pkg.sv
+
+../../src/tsv/cpri_prb_comb_gen.v
+../../src/tsv/rom_65536x64_L0/sim/rom_65536x64_L0.v
+../../src/tsv/rom_65536x64_L0/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L1/sim/rom_65536x64_L1.v
+../../src/tsv/rom_65536x64_L1/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L2/sim/rom_65536x64_L2.v
+../../src/tsv/rom_65536x64_L2/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L3/sim/rom_65536x64_L3.v
+../../src/tsv/rom_65536x64_L3/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L4/sim/rom_65536x64_L4.v
+../../src/tsv/rom_65536x64_L4/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L5/sim/rom_65536x64_L5.v
+../../src/tsv/rom_65536x64_L5/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L6/sim/rom_65536x64_L6.v
+../../src/tsv/rom_65536x64_L6/rom_1port_2020/sim/*.v
+../../src/tsv/rom_65536x64_L7/sim/rom_65536x64_L7.v
+../../src/tsv/rom_65536x64_L7/rom_1port_2020/sim/*.v
 
 ../../src/pusch_dr/alt_reset_synchronizer.v
 ../../src/pusch_dr/altera_std_synchronizer_nocut.v
@@ -38,18 +54,18 @@
 ../../src/pusch_dr/cpri_tx_gen.v
 
 ../../src/pusch_dr/ip/cmpy_mult_s16xs16/sim/cmpy_mult_s16xs16.v
-../../src/pusch_dr/ip/cmpy_mult_s16xs16/altmult_complex_1910/sim/cmpy_mult_s16xs16_altmult_complex_1910_fzb4pbq.v
+../../src/pusch_dr/ip/cmpy_mult_s16xs16/altmult_complex_1910/sim/cmpy_mult_s16xs16_altmult_complex_1910*.v
 ../../src/pusch_dr/ip/rom_codeword_even/sim/rom_codeword_even.v
 ../../src/pusch_dr/ip/rom_codeword_odd/sim/rom_codeword_odd.v
-../../src/pusch_dr/ip/rom_codeword_even/rom_1port_2020/sim/rom_codeword_even_rom_1port_2020_p32d6ya.v
-../../src/pusch_dr/ip/rom_codeword_odd/rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020_ognhewi.v
+../../src/pusch_dr/ip/rom_codeword_even/rom_1port_2020/sim/rom_codeword_even_rom_1port_2020*.v
+../../src/pusch_dr/ip/rom_codeword_odd/rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020*.v
 
-../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_sync_intel.v
-../../src/cpri_package_tx_zyl/intel_xpm/common/loop_buffer_async_intel.v
-../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_SYNC_XPM_intel.v
-../../src/cpri_package_tx_zyl/intel_xpm/common/FIFO_ASYNC_XPM_intel.v
-../../src/cpri_package_tx_zyl/intel_xpm/common/Simple_Dual_Port_BRAM_XPM_intel.v
-../../src/cpri_package_tx_zyl/intel_xpm/common/ASYNC_Dual_Port_BRAM_XPM_intel.v
+../../src/intel_xpm/loop_buffer_sync_intel.v
+../../src/intel_xpm/loop_buffer_async_intel.v
+../../src/intel_xpm/FIFO_SYNC_XPM_intel.v
+../../src/intel_xpm/FIFO_ASYNC_XPM_intel.v
+../../src/intel_xpm/Simple_Dual_Port_BRAM_XPM_intel.v
+../../src/intel_xpm/ASYNC_Dual_Port_BRAM_XPM_intel.v
 
 ../../src/dl_symb_cmpr/dl_package_data.sv
 ../../src/cpri_package_tx_zyl/dl_sym_if.v

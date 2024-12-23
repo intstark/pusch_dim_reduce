@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2024.10.15.12:30:52"
- outputDirectory="E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_codeword_odd/">
+ date="2024.12.16.23:35:35"
+ outputDirectory="E:/ZJYJY/Product/PUSCH/project/prj/intel_32a_23_2_12ch_1216/src/pusch_dr/ip/rom_codeword_odd/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -87,16 +87,17 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\rom_codeword_odd\synth\rom_codeword_odd.v"
+       path="E:\ZJYJY\Product\PUSCH\project\prj\intel_32a_23_2_12ch_1216\src\pusch_dr\ip\rom_codeword_odd\synth\rom_codeword_odd.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\rom_codeword_odd\synth\rom_codeword_odd.v"
+       path="E:\ZJYJY\Product\PUSCH\project\prj\intel_32a_23_2_12ch_1216\src\pusch_dr\ip\rom_codeword_odd\synth\rom_codeword_odd.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_codeword_odd.ip" />
+   <file
+       path="E:/ZJYJY/Product/PUSCH/project/prj/intel_32a_23_2_12ch_1216/src/pusch_dr/ip/rom_codeword_odd.ip" />
   </sourceFiles>
   <childSourceFiles>
    <file
@@ -104,13 +105,13 @@
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="rom_codeword_odd">"Generating: rom_codeword_odd"</message>
-   <message level="Info" culprit="rom_codeword_odd">"Generating: rom_codeword_odd_rom_1port_2020_ognhewi"</message>
+   <message level="Info" culprit="rom_codeword_odd">"Generating: rom_codeword_odd_rom_1port_2020_tz7bfci"</message>
   </messages>
  </entity>
  <entity
    kind="rom_1port"
    version="20.2.0"
-   name="rom_codeword_odd_rom_1port_2020_ognhewi">
+   name="rom_codeword_odd_rom_1port_2020_tz7bfci">
   <parameter name="GUI_CLOCK_ENABLE_INPUT_A" value="false" />
   <parameter name="GUI_NUMWORDS_A" value="64" />
   <parameter name="DEVICE_FAMILY" value="Agilex 7" />
@@ -128,7 +129,7 @@
   <parameter name="GUI_FORCE_TO_ZERO" value="false" />
   <parameter
      name="GUI_MIFfilename"
-     value="E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_code_word_odd.mif" />
+     value="../src/pusch_dr/ip/rom_code_word_odd.mif" />
   <parameter name="GUI_OPTIMIZATION_OPTION" value="0" />
   <parameter name="GUI_RegAddr" value="true" />
   <parameter name="GUI_JTAG_ENABLED" value="false" />
@@ -143,12 +144,12 @@
   <parameter name="GUI_BlankMemory" value="1" />
   <generatedFiles>
    <file
-       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\rom_codeword_odd\rom_1port_2020\synth\rom_codeword_odd_rom_1port_2020_ognhewi.v"
+       path="E:\ZJYJY\Product\PUSCH\project\prj\intel_32a_23_2_12ch_1216\src\pusch_dr\ip\rom_codeword_odd\rom_1port_2020\synth\rom_codeword_odd_rom_1port_2020_tz7bfci.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="E:\ZJYJY\Product\PUSCH\project\prj\ip\rom_codeword_odd\rom_1port_2020\synth\rom_codeword_odd_rom_1port_2020_ognhewi.v"
+       path="E:\ZJYJY\Product\PUSCH\project\prj\intel_32a_23_2_12ch_1216\src\pusch_dr\ip\rom_codeword_odd\rom_1port_2020\synth\rom_codeword_odd_rom_1port_2020_tz7bfci.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
@@ -158,7 +159,7 @@
   <childSourceFiles/>
   <instantiator instantiator="rom_codeword_odd" as="rom_1port_0" />
   <messages>
-   <message level="Info" culprit="rom_codeword_odd">"Generating: rom_codeword_odd_rom_1port_2020_ognhewi"</message>
+   <message level="Info" culprit="rom_codeword_odd">"Generating: rom_codeword_odd_rom_1port_2020_tz7bfci"</message>
   </messages>
  </entity>
 </deploy>

@@ -24,8 +24,6 @@
 `define CLOCK_PERIOD 10.0
 `define SIM_ENDS_TIME 2000000
 
-`include "params_list_pkg.sv"
-
 
 module pusch_dr_top_vec;
 
@@ -319,9 +317,10 @@ always @(posedge i_clk) begin
     for(int i=0; i<2; i++)begin
         if(cpri_tx_num[i]==95)
             cpri_tx_num[i] <= 0;
-        else if(cpri_tx_vld[i])begin
+        else if(cpri_tx_vld[i])
             cpri_tx_num[i] <= cpri_tx_num[i] + 1;
-        end
+        else
+            cpri_tx_num[i] <= 0;
     end
 end
 

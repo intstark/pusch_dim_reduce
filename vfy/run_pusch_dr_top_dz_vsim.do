@@ -65,7 +65,7 @@ if [file exists $CURRENT_DIR/$TOP_LEVEL_NAME\_wave.do] {
 
 
 # 运行仿真
-run 650us
+run -all
 
 # coverage report -file ../dut_tb_report.txt
 # coverage save ../dut_tb_ucdb

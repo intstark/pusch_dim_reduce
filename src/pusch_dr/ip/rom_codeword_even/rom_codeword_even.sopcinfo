@@ -5,7 +5,7 @@
  version="1.0"
  fabric="QSYS">
  <!-- Format version 23.2 94 (Future versions may contain additional information.) -->
- <!-- 2024.10.15.12:29:15 -->
+ <!-- 2024.12.16.23:37:12 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -103,7 +103,7 @@
    name="rom_1port_0"
    kind="rom_1port"
    version="20.2.0"
-   entity="rom_codeword_even_rom_1port_2020_p32d6ya"
+   entity="rom_codeword_even_rom_1port_2020_zz2uuwy"
    library="rom_1port_2020"
    path="rom_1port_0"
    hpath="rom_1port_0"
@@ -305,7 +305,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_MIFfilename">
    <type>java.lang.String</type>
-   <value>E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_code_word_even.mif</value>
+   <value>../src/pusch_dr/ip/rom_code_word_even.mif</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>

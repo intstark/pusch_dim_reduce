@@ -215,3 +215,19 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
     + 读使能rd_en的复位问题
   + 增加了alt_reset_synchronizer相关文件
 + 修复了此前对code_word_rev进行的非压缩数组及打拍操作，会导致资源暴增。
+
+### 2024.12.23
+**此版本，通过了以ROM打桩方式的20241213版本向量的硬件测试**。
++ 修复输入缓存buffer数据写使能问题，涉及的模块包括：
+  + cpri_rx_bufer：加入prb_idx=0判断条件
++ 修复内部清零不完全导致的问题，涉及的模块包括：
+  + mem_stream：rd_en复位
+  + cpri_rxdata_unpack：
+    + 修复了re_cnt_prb/re_cnt_cycle/prb_cnt/prb_cnt_cycle清零问题
+    + 修复了ant_sel的产生逻辑
+  + pusch_dr_core：
+    + 修复了re_num/rbg_num清零问题
+  + abt_data_buffer：
+    + 修复了ant_sel的清零问题
++ 修改cpri_tx_gen：恢复之前的从3开始读取ram，使得tx_enable和第0个数据只差一拍
+  + **待确认输出valid是否修改**

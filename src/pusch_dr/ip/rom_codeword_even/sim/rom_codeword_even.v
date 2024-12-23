@@ -10,7 +10,7 @@ module rom_codeword_even (
 		input  wire          rden     //    rden.rden
 	);
 
-	rom_codeword_even_rom_1port_2020_p32d6ya rom_1port_0 (
+	rom_codeword_even_rom_1port_2020_zz2uuwy rom_1port_0 (
 		.q       (q),       //  output,  width = 1024,       q.dataout
 		.address (address), //   input,     width = 6, address.address
 		.clock   (clock),   //   input,     width = 1,   clock.clk

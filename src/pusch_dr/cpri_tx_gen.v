@@ -107,26 +107,26 @@ always @ (posedge rd_clk)
 always @ (posedge rd_clk)
     begin
         if(rd_valid && cpri_rvld)
-            if(cpri_raddr == 7'd95)
-                cpri_raddr <= 7'd0;
+            if(cpri_raddr == 7'd98)
+                cpri_raddr <= 7'd3;
             else
                 cpri_raddr <= cpri_raddr + 7'd1;
         else
-                cpri_raddr <= 7'd0;                                                        
+                cpri_raddr <= 7'd3;                                                        
     end
 
 always @ (posedge rd_clk)
- if (cpri_rvld && (cpri_raddr == 7'd94))
+ if (cpri_rvld && (cpri_raddr == 7'd97))
        cpri_rdy <= 1'd1;  
  else
        cpri_rdy <= 1'd0;  
 
 assign    o_iq_tx_data  = cpri_rdata;
-assign    o_iq_tx_valid = cpri_rvld_d3;
+assign    o_iq_tx_valid = rd_valid && cpri_rvld;
 
 always @ (posedge rd_clk)
   begin
-    cpri_rvld_d1  <= rd_valid && cpri_rvld;
+    cpri_rvld_d1  <= rd_valid   ;
     cpri_rvld_d2  <= cpri_rvld_d1;
     cpri_rvld_d3  <= cpri_rvld_d2;
   end

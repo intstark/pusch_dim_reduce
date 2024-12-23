@@ -105,6 +105,8 @@ reg            [4:0][127:0]                     dout_info0            =0;
 always @ (posedge i_clk)begin
     if(i_reset)
         ant_sel <= 0;
+    else if(!i_iq_vld)
+        ant_sel <= 0;
     else if(i_iq_last)
         ant_sel <= ant_sel + 1;
 end

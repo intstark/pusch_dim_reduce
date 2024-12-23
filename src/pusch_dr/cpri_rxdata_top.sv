@@ -89,6 +89,25 @@ wire           [LANE-1: 0]                      tx_rdy                  ;
 wire           [   15: 0]                       fft_agc_base            ;
 wire           [LANE-1:0][63: 0]                fft_agc_shift           ;
 
+
+//--------------------------------------------------------------------------------------
+// Reset synchronizer 
+//--------------------------------------------------------------------------------------
+reg                                             sys_reset               =0;
+wire                                            cpri_rst_sync            ;
+
+alt_reset_synchronizer #(.depth(2),.rst_value(1)) rreset_sync (.clk(i_clk),.reset_n(!(|i_cpri_rst)),.rst_out(cpri_rst_sync));
+
+always @ (posedge i_clk)begin
+    if(i_reset)
+        sys_reset <= 1'b1;
+    else if(cpri_rst_sync)
+        sys_reset <= 1'b1;
+    else
+        sys_reset <= 1'b0;
+end
+
+
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer
 //--------------------------------------------------------------------------------------

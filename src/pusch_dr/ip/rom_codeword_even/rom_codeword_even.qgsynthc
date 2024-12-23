@@ -74,7 +74,7 @@
           </parameter>
           <parameter>
             <name>GUI_MIFfilename</name>
-            <value>E:/ZJYJY/Product/PUSCH/project/prj/ip/rom_code_word_even.mif</value>
+            <value>../src/pusch_dr/ip/rom_code_word_even.mif</value>
           </parameter>
           <parameter>
             <name>GUI_MODULE_NAME</name>
@@ -133,7 +133,7 @@
         <className>rom_1port</className>
         <version>20.2.0</version>
         <name>rom_1port_0</name>
-        <uniqueName>rom_codeword_even_rom_1port_2020_p32d6ya</uniqueName>
+        <uniqueName>rom_codeword_even_rom_1port_2020_zz2uuwy</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>rom_codeword_even.rom_1port_0</path>

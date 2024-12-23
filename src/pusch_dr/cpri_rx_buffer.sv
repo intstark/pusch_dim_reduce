@@ -95,6 +95,8 @@ reg            [   4: 0]                        rx_vld_buf            =0;
 reg            [4:0][63: 0]                     rx_data_buf           =0;
 reg            [   6: 0]                        slot_idx              =0;
 reg            [   3: 0]                        symb_idx              =0;
+reg            [   7: 0]                        prb0_idx              =0;
+reg            [   7: 0]                        prb1_idx              =0;
 reg                                             rx_vld                =0;
 reg            [  63: 0]                        cpri_rx_data          =0;
 reg                                             cpri_rx_vld           =0;
@@ -124,6 +126,8 @@ always @(posedge i_cpri_clk) begin
     if(rx_vld_buf[2])begin
         slot_idx <= i_rx_data[18:12];
         symb_idx <= i_rx_data[11: 8];
+        prb0_idx <= i_rx_data[35:28];
+        prb1_idx <= i_rx_data[27:20];
     end
 end
 
@@ -159,7 +163,7 @@ always @(posedge i_cpri_clk) begin
     if(cpri_reset)
         cpri_rx_vld <= 1'b0;
     else if(pusch_en)begin
-        if(symb_idx == 0 && rx_vld_buf[4])
+        if(symb_idx == 0 && prb0_idx == 0 && rx_vld_buf[4])
             cpri_rx_vld <= 1'b1;
         else
             cpri_rx_vld <= cpri_rx_vld;

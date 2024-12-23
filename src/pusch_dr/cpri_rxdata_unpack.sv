@@ -51,12 +51,16 @@ module cpri_rxdata_unpack # (
 //--------------------------------------------------------------------------------------
 // PARAMETERS
 //--------------------------------------------------------------------------------------
-genvar ant;
+localparam [10: 0] RE_PER_SYMBOL= 1583  ;
+localparam [ 7: 0] RB_PER_SYMBOL= 131   ; 
+localparam [ 6: 0] CHIP_DW      = 95    ;
+
 
 
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
+genvar ant;
 wire                                            re_reached_12           ;
 reg                                             fifo_wr_en            =0;
 reg            [20:0][63: 0]                    data_rx_buf           ='{default:0};
@@ -144,27 +148,37 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    if(re_reached_12)
+    if(i_reset)
+        re_cnt_prb <= 8'd0;
+    else if(re_reached_12)
         re_cnt_prb <= 8'd0;
     else if(ant_package_valid)
         re_cnt_prb <= re_cnt_prb + 8'd1;
+    else
+        re_cnt_prb <= 'd0;
 end
 
 assign unpack_ready = (re_cnt_cycle==7'd3) ? 1'b0 : 1'b1;
 //assign unpack_ready = 1'b1;
 
 always @(posedge i_clk) begin
-    if(cpri_iq_vld)
+    if(i_reset)
+        re_cnt_cycle <= 0;
+    else if(cpri_iq_vld)
         re_cnt_cycle <= re_cnt_cycle + 3'd1;
     else
-        re_cnt_cycle <= re_cnt_cycle;
+        re_cnt_cycle <= 0;
 end
 
 //--------------------------------------------------------------------------------------
 // generate prb number
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    if(re_reached_12)begin
+    if(i_reset)
+        prb_cnt <= 8'd0;
+    else if(!ant_package_valid)
+        prb_cnt <= 8'd0;
+    else if(re_reached_12)begin
         if(prb_cnt == 8'd131) 
             prb_cnt <= 8'd0;
         else
@@ -176,9 +190,10 @@ end
 always @(posedge i_clk) begin
     if(i_reset)
         prb_cnt_cycle <= 0;
-    else if(re_reached_12)begin
+    else if(!ant_package_valid)
+        prb_cnt_cycle <= 0;
+    else if(re_reached_12)
         prb_cnt_cycle <= prb_cnt_cycle + 3'd1;
-    end
 end
 
 //--------------------------------------------------------------------------------------
@@ -280,6 +295,12 @@ end
 //--------------------------------------------------------------------------------------
 reg                                             ant_sel               =0;
 reg                                             ant_sel_pre           =0;
+reg                                             ant_sel_d1            =0;
+reg                                             ant_sel_d2            =0;
+wire           [   7: 0]                        prb0_idx                ;
+wire           [   7: 0]                        prb1_idx                ;
+wire           [   3: 0]                        ant_grp0                ;
+wire           [   3: 0]                        ant_grp1                ;
 wire           [  63: 0]                        header_info_0           ;
 wire           [  63: 0]                        header_info_1           ;
 reg            [5:0][63: 0]                     dout_info0            =0;
@@ -289,6 +310,10 @@ reg            [2:0][63: 0]                     fft_agc_shift_buf     =0;
 reg            [   7: 0]                        fft_agc_base_val      =0;
 reg            [  31: 0]                        fft_agc_shift_val     =0;
 
+assign prb0_idx = cpri_rx_info[35:28];
+assign prb1_idx = cpri_rx_info[27:20];
+assign ant_grp0 = cpri_rx_info[7:4];
+assign ant_grp1 = cpri_rx_info[3:0];
 assign header_info_0 = cpri_rx_info[63:0];      // DW3 IQ HD
 assign header_info_1 = cpri_rx_info[127:64];
 
@@ -302,19 +327,23 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
+    ant_sel_pre <= ant_sel_d1;
     if(i_reset)
-        ant_sel_pre <= 0;
-    else if(re_num == 'd1582)
-        ant_sel_pre <= ant_sel_pre + 1;
+        ant_sel_d1 <= 0;
+    else if(!ant_package_valid)
+        ant_sel_d1 <= 0;
+    else if(prb_cnt == 0)
+        ant_sel_d1 <= ant_grp1[0];
 end
+
 
 always @(posedge i_clk) begin
     ant_sel <= ant_sel_pre;
     if(ant_sel_pre)begin
-       fft_agc_base_val <= fft_agc_base_buf[2][15:8]; //odd
+       fft_agc_base_val  <= fft_agc_base_buf[2][15:8]; //odd
        fft_agc_shift_val <= fft_agc_shift_buf[2][63:32]; //odd
     end else begin
-       fft_agc_base_val <= fft_agc_base_buf[2][7:0]; //even
+       fft_agc_base_val  <= fft_agc_base_buf[2][7:0]; //even
        fft_agc_shift_val <= fft_agc_shift_buf[2][31:0]; //even
     end
 end
@@ -347,13 +376,13 @@ end
 
 always @(posedge i_clk) begin
     if(i_reset)
-        re_num <= 0;
-    else if(re_num == 'd1583)
-        re_num <= 0;
+        re_num <= 'd0;
+    else if(re_num == RE_PER_SYMBOL)
+        re_num <= 'd0;
     else if(data_unpack_vld)
         re_num <= re_num + 'd1;
     else
-        re_num <= re_num;
+        re_num <= 'd0;
 end
 
 
@@ -362,7 +391,7 @@ end
 // generate valid 
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk) begin
-    if(prb_cnt==131 && re_reached_12)
+    if(prb_cnt==RB_PER_SYMBOL && re_reached_12)
         prb_reached_132 <= 1;
     else
         prb_reached_132 <= 0;
@@ -384,16 +413,17 @@ reg            [  10: 0]                        iq_addr_out           =0;
 
 always @(posedge i_clk) begin
     for(int i=0; i<ANT; i++)begin
-        if(data_fft_uncprs_vld) begin
+        if(data_fft_uncprs_vld)
             iq_data_out[i*32 +: 32] <= data_fft_uncprs[i];
-        end
+        else
+            iq_data_out[i*32 +: 32] <= 0;
     end
 end
 
 always @(posedge i_clk) begin
     iq_vld_out  <= data_fft_uncprs_vld;
     iq_addr_out <= iq_addr;
-    if(iq_addr == 'd1583)
+    if(iq_addr == RE_PER_SYMBOL)
         iq_last_out <= 1;
     else
         iq_last_out <= 0;
