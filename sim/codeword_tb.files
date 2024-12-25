@@ -1,7 +1,0 @@
-../../src/code_word_rev.sv
-../../tb/codeword_tb.sv
-../../prj/ip/rom_codeword_even/sim/rom_codeword_even.v
-../../prj/ip/rom_codeword_odd/sim/rom_codeword_odd.v
-../../prj/ip/rom_codeword_even/rom_1port_2020/sim/rom_codeword_even_rom_1port_2020_p32d6ya.v
-../../prj/ip/rom_codeword_odd/rom_1port_2020/sim/rom_codeword_odd_rom_1port_2020_ognhewi.v
-

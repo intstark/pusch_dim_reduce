@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 23.2 94 win32 2024.12.16.20:23:54
+# ACDS 23.2 94 win32 2024.12.10.17:33:25
 
 # ----------------------------------------
 # Initialize variables
@@ -113,7 +113,7 @@ if ![info exists QSYS_SIMDIR] {
 }
 
 if ![info exists QUARTUS_INSTALL_DIR] { 
-  set QUARTUS_INSTALL_DIR "D:/intel/intelfpga_pro/23.2/quartus/"
+  set QUARTUS_INSTALL_DIR "E:/intel/intelfpga_pro/23.2/quartus/"
 }
 
 if ![info exists USER_DEFINED_COMPILE_OPTIONS] { 

@@ -122,7 +122,7 @@ always @ (posedge rd_clk)
        cpri_rdy <= 1'd0;  
 
 assign    o_iq_tx_data  = cpri_rdata;
-assign    o_iq_tx_valid = rd_valid && cpri_rvld;
+assign    o_iq_tx_valid = rd_valid  ;
 
 always @ (posedge rd_clk)
   begin
