@@ -35,7 +35,7 @@ module cpri_prb_comb_gen
 //---------------------------------------------------------------------------------------------------------
 reg [15:0]  dat_r_cnt    =0;
 reg [2 :0]  symbol_cnt   =0;
-wire        symbol_valid;
+wire        symbol_valid ;
 always @(posedge clk) begin 
     if(rst) begin 
         dat_r_cnt <= 'hffff;
@@ -43,7 +43,7 @@ always @(posedge clk) begin
     else if(dat_r_cnt == 'hffff) begin 
         dat_r_cnt <= 0;
     end 
-    else if(dat_r_cnt >= 'd12671)  begin 
+    else if(dat_r_cnt >= 'd44351)  begin 
         dat_r_cnt <= 0;
     end 
     else begin 
@@ -55,7 +55,7 @@ always @(posedge clk) begin
     if(rst) begin 
         symbol_cnt <= 'd4;
     end 
-    else if(dat_r_cnt >= 'd12671)  begin 
+    else if(dat_r_cnt >= 'd44351)  begin 
         if(symbol_cnt ==  'd4) begin 
             symbol_cnt <= 'd0;
         end 
@@ -64,7 +64,7 @@ always @(posedge clk) begin
         end
     end 
 end 
-reg [7:0] chip_cnt=0;
+reg [7:0] chip_cnt =0;
 
 always @(posedge clk) begin 
     if(rst) begin 

@@ -119,17 +119,11 @@ wire                                            cpri_iq_vld             ;
 wire           [1:0][63: 0]                     cpri_tx_data            ;
 wire           [   1: 0]                        cpri_tx_vld             ;
 
+
+
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-
-//assign cpri_clk          = {8{i_clk}};
-//assign cpri_rst          = {8{reset}};
-//assign cpri_rx_data[7:0] = cpri_datain; 
-//assign cpri_rx_vld [7:0] = {8{cpri_iq_vld}};
-
-
-
 reg                                             src_reset             =0;
 wire           [  15: 0]                        io_rst                  ;
 
@@ -246,10 +240,10 @@ end
 
 // Reset generation
 initial begin
-    #(`CLOCK_PERIOD*10) src_reset = 1'b1;
-    #(`CLOCK_PERIOD*10) src_reset = 1'b0;
     #(`CLOCK_PERIOD*10) reset = 1'b1;
     #(`CLOCK_PERIOD*10) reset = 1'b0;
+    #(`CLOCK_PERIOD*10) src_reset = 1'b1;
+    #(`CLOCK_PERIOD*10) src_reset = 1'b0;
 
 //    #(`T1US*300) src_reset = 1'b1;
 //    #(`T1US*500) src_reset = 1'b0;
@@ -270,66 +264,6 @@ end
 
 
 //------------------------------------------------------------------------------------------
-// Input data file
-//------------------------------------------------------------------------------------------
-initial begin
-    fid_iq_data00   = $fopen(FILE_IQDATA00,"r");
-    fid_iq_data01   = $fopen(FILE_IQDATA01,"r");
-    fid_iq_data02   = $fopen(FILE_IQDATA02,"r");
-    fid_iq_data03   = $fopen(FILE_IQDATA03,"r");
-    fid_iq_data04   = $fopen(FILE_IQDATA04,"r");
-    fid_iq_data05   = $fopen(FILE_IQDATA05,"r");
-    fid_iq_data06   = $fopen(FILE_IQDATA06,"r");
-    fid_iq_data07   = $fopen(FILE_IQDATA07,"r");
-
-    if(fid_iq_data00)
-        $display("succeed open file %s",FILE_TX_DATA);
-
-    #(`SIM_ENDS_TIME);
-    $fclose(fid_iq_data00);
-    $fclose(fid_iq_data01);
-    $fclose(fid_iq_data02);
-    $fclose(fid_iq_data03);
-    $fclose(fid_iq_data04);
-    $fclose(fid_iq_data05);
-    $fclose(fid_iq_data06);
-    $fclose(fid_iq_data07);
-    $stop;
-end
-
-
-
-always @(posedge i_clk) begin
-    if(!reset)begin
-        $fscanf(fid_iq_data00, "%h\n", cpri_datain[0]);
-        $fscanf(fid_iq_data01, "%h\n", cpri_datain[1]);
-        $fscanf(fid_iq_data02, "%h\n", cpri_datain[2]);
-        $fscanf(fid_iq_data03, "%h\n", cpri_datain[3]);
-        $fscanf(fid_iq_data04, "%h\n", cpri_datain[4]);
-        $fscanf(fid_iq_data05, "%h\n", cpri_datain[5]);
-        $fscanf(fid_iq_data06, "%h\n", cpri_datain[6]);
-        $fscanf(fid_iq_data07, "%h\n", cpri_datain[7]);
-
-        cpri_data_vld <= 1'b1;
-
-        if(chip_num == 95)
-            chip_num <= 0;
-        else if(cpri_data_vld)
-            chip_num <= chip_num + 1;
-    end
-end
-
-assign cpri_iq_vld = (cpri_data_vld && chip_num == 0) ? 1'b1 : 1'b0;
-
-reg            [7:0][63: 0]                     fft_agc               =0;
-always @(posedge i_clk) begin
-    for(int i=0; i<8; i++)begin
-        if(chip_num == 4)
-            fft_agc[i] <= cpri_datain[i];
-    end
-end
-
-//------------------------------------------------------------------------------------------
 // Output data check 
 //------------------------------------------------------------------------------------------
 reg            [1:0][7: 0]                      cpri_tx_num           =0;
@@ -347,10 +281,9 @@ always @(posedge i_clk) begin
     for(int i=0; i<2; i++)begin
         if(cpri_tx_num[i]==95)
             cpri_tx_num[i] <= 0;
-        else if(cpri_tx_vld[i])
+        else if(cpri_tx_vld[i])begin
             cpri_tx_num[i] <= cpri_tx_num[i] + 1;
-        else
-            cpri_tx_num[i] <= 0;
+        end
     end
 end
 
@@ -453,6 +386,7 @@ initial begin
     $fclose(fid_tx_cpri0   );
     $fclose(fid_tx_cpri1   );
     $fclose(fid_drout0_hex );$fclose(fid_drout15_hex );
+    $stop;
 end
 
 

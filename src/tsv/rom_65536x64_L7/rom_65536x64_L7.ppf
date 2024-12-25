@@ -6,7 +6,7 @@
  specifies="all_ports">
  <global>
   <pin name="q[63..0]" direction="output" scope="external" />
-  <pin name="address[13..0]" direction="input" scope="external" />
+  <pin name="address[15..0]" direction="input" scope="external" />
   <pin name="clock" direction="input" scope="external" />
   <pin name="rden" direction="input" scope="external" />
  </global>

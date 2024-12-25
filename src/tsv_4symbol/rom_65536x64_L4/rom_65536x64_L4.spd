@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="rom_1port_2020/sim/rom_65536x64_L4_rom_1port_2020_y2sxjey.v"
+   type="VERILOG"
+   library="rom_1port_2020" />
+ <file
+   path="sim/rom_65536x64_L4.v"
+   type="VERILOG"
+   library="rom_65536x64_L4"
+   hasInlineConfiguration="true" />
+ <topLevel name="rom_65536x64_L4.rom_65536x64_L4" />
+ <deviceFamily name="agilex7" />
+ <device name="AGFB027R25A2I2V" />
+</simPackage>

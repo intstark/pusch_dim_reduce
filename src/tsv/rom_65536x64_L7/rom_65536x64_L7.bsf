@@ -27,8 +27,8 @@ https://fpgasoftware.intel.com/eula.
 	(port
 		(pt 0 72)
 		(input)
-		(text "address[13..0]" (rect 0 0 55 12)(font "SansSerif" (font_size 8)))
-		(text "address[13..0]" (rect 4 65 88 76)(font "SansSerif" (font_size 8)))
+		(text "address[15..0]" (rect 0 0 55 12)(font "SansSerif" (font_size 8)))
+		(text "address[15..0]" (rect 4 65 88 76)(font "SansSerif" (font_size 8)))
 	)
 	(port
 		(pt 0 120)

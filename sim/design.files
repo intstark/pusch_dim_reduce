@@ -1,5 +1,3 @@
-../../tb/ant_symbol_buffer.sv
-
 ../../src/tsv/cpri_prb_comb_gen.v
 ../../src/tsv/rom_65536x64_L0/sim/rom_65536x64_L0.v
 ../../src/tsv/rom_65536x64_L0/rom_1port_2020/sim/*.v
@@ -66,9 +64,3 @@
 ../../src/intel_xpm/FIFO_ASYNC_XPM_intel.v
 ../../src/intel_xpm/Simple_Dual_Port_BRAM_XPM_intel.v
 ../../src/intel_xpm/ASYNC_Dual_Port_BRAM_XPM_intel.v
-
-../../src/dl_symb_cmpr/dl_package_data.sv
-../../src/cpri_package_tx_zyl/dl_sym_if.v
-../../src/cpri_package_tx_zyl/dl_data_gen.sv
-../../src/cpri_package_tx_zyl/compress_data.v
-

@@ -74,7 +74,7 @@
           </parameter>
           <parameter>
             <name>GUI_MIFfilename</name>
-            <value>../src/tsv/pusch_group0_mif/LAN7.mif</value>
+            <value>M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN7.mif</value>
           </parameter>
           <parameter>
             <name>GUI_MODULE_NAME</name>
@@ -82,7 +82,7 @@
           </parameter>
           <parameter>
             <name>GUI_NUMWORDS_A</name>
-            <value>12672</value>
+            <value>65536</value>
           </parameter>
           <parameter>
             <name>GUI_OPTIMIZATION_OPTION</name>
@@ -118,7 +118,7 @@
           </parameter>
           <parameter>
             <name>GUI_WIDTHAD_A</name>
-            <value>14</value>
+            <value>16</value>
           </parameter>
           <parameter>
             <name>GUI_WIDTH_A</name>
@@ -133,7 +133,7 @@
         <className>rom_1port</className>
         <version>20.2.0</version>
         <name>rom_1port_0</name>
-        <uniqueName>rom_65536x64_L6_rom_1port_2020_iyy7zji</uniqueName>
+        <uniqueName>rom_65536x64_L6_rom_1port_2020_mgz2dqa</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>rom_65536x64_L6.rom_1port_0</path>

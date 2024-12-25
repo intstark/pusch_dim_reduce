@@ -1,4 +1,4 @@
-# system info rom_65536x64_L1 on 2024.12.17.09:20:24
+# system info rom_65536x64_L1 on 2024.12.10.17:40:05
 system_info:
 name,value
 DEVICE,AGFB027R25A2I2V
@@ -6,13 +6,13 @@ DEVICE_FAMILY,Agilex 7
 GENERATION_ID,0
 #
 #
-# Files generated for rom_65536x64_L1 on 2024.12.17.09:20:24
+# Files generated for rom_65536x64_L1 on 2024.12.10.17:40:05
 files:
 filepath,kind,attributes,module,is_top
 sim/rom_65536x64_L1.v,VERILOG,CONTAINS_INLINE_CONFIGURATION,rom_65536x64_L1,true
-rom_1port_2020/sim/rom_65536x64_L1_rom_1port_2020_fc4dihy.v,VERILOG,,rom_65536x64_L1_rom_1port_2020_fc4dihy,false
+rom_1port_2020/sim/rom_65536x64_L1_rom_1port_2020_nvgfu2y.v,VERILOG,,rom_65536x64_L1_rom_1port_2020_nvgfu2y,false
 #
 # Map from instance-path to kind of module
 instances:
 instancePath,module
-rom_65536x64_L1.rom_1port_0,rom_65536x64_L1_rom_1port_2020_fc4dihy
+rom_65536x64_L1.rom_1port_0,rom_65536x64_L1_rom_1port_2020_nvgfu2y

@@ -250,7 +250,7 @@ https://fpgasoftware.intel.com/eula.-->
           <ipxact:vectors>
             <ipxact:vector>
               <ipxact:left>0</ipxact:left>
-              <ipxact:right>13</ipxact:right>
+              <ipxact:right>15</ipxact:right>
             </ipxact:vector>
           </ipxact:vectors>
           <ipxact:wireTypeDefs>
@@ -384,7 +384,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_NUMWORDS_A" type="int">
           <ipxact:name>GUI_NUMWORDS_A</ipxact:name>
           <ipxact:displayName>How many words of memory?</ipxact:displayName>
-          <ipxact:value>12672</ipxact:value>
+          <ipxact:value>65536</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_MAXIMUM_DEPTH" type="string">
           <ipxact:name>GUI_MAXIMUM_DEPTH</ipxact:name>
@@ -394,7 +394,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_RAM_BLOCK_TYPE" type="string">
           <ipxact:name>GUI_RAM_BLOCK_TYPE</ipxact:name>
           <ipxact:displayName>What should the memory block type be?</ipxact:displayName>
-          <ipxact:value>M20K</ipxact:value>
+          <ipxact:value>Auto</ipxact:value>
         </ipxact:parameter>
         <ipxact:parameter parameterId="GUI_SingleClock" type="int">
           <ipxact:name>GUI_SingleClock</ipxact:name>
@@ -419,7 +419,7 @@ https://fpgasoftware.intel.com/eula.-->
         <ipxact:parameter parameterId="GUI_MIFfilename" type="string">
           <ipxact:name>GUI_MIFfilename</ipxact:name>
           <ipxact:displayName>File name</ipxact:displayName>
-          <ipxact:value>../src/tsv/pusch_group0_mif/LAN6.mif</ipxact:value>
+          <ipxact:value>M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN6.mif</ipxact:value>
         </ipxact:parameter>
       </ipxact:parameters>
     </altera:altera_module_parameters>
