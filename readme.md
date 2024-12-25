@@ -231,3 +231,9 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
     + 修复了ant_sel的清零问题
 + 修改cpri_tx_gen：恢复之前的从3开始读取ram，使得tx_enable和第0个数据只差一拍
   + **待确认输出valid是否修改**
+
+### 2024.12.24
++ 将发送模块两条CPRI通道的时钟以及iq_tx_enable信号独立，涉及的模块包括：
+  + cpri_tx_lane：加入i_tx_clk
+  + cpri_txdata_top：加入i_tx0_clk/i_tx1_clk和i_tx0_enable/i_tx1_enable
+  + cpri_dr_top：加入i_cpri0_tx_clk/i_cpri1_tx_clk和i_cpri0_tx_enable/i_cpri1_tx_enable

@@ -439,7 +439,20 @@ add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/i_iq_tx_enable
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/o_iq_tx_data
 add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/o_iq_tx_valid
+add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/o_cpri0_tx_data
+add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/o_cpri0_tx_vld
+add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/o_cpri1_tx_data
+add wave -noupdate /pusch_dr_top_vec/pusch_dr_top/o_cpri1_tx_vld
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_clk[0]}
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_vld[0]}
+add wave -noupdate {/pusch_dr_top_vec/iq_tx_enable[0]}
 add wave -noupdate -radix unsigned {/pusch_dr_top_vec/cpri_tx_num[0]}
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_data[0]}
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_clk[1]}
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_vld[1]}
+add wave -noupdate {/pusch_dr_top_vec/iq_tx_enable[1]}
+add wave -noupdate -radix unsigned {/pusch_dr_top_vec/cpri_tx_num[1]}
+add wave -noupdate {/pusch_dr_top_vec/cpri_tx_data[1]}
 add wave -noupdate /pusch_dr_top_vec/fft_agc_out
 add wave -noupdate /pusch_dr_top_vec/iq_hd_out
 add wave -noupdate /pusch_dr_top_vec/rb_agc_out
@@ -466,4 +479,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1395588602 ps} {1395731382 ps}
+WaveRestoreZoom {643295611 ps} {643502294 ps}

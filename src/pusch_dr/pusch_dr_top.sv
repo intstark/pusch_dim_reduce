@@ -70,12 +70,16 @@ module pusch_dr_top #(
 
 
     // cpri txdata
-    input                                           i_iq_tx_enable          , // cpri tx enable
+
+    input                                           i_cpri0_tx_clk          , // cpri tx clock 
+    input                                           i_cpri0_tx_enable       , // cpri tx enable
     output         [  63: 0]                        o_cpri0_tx_data         , // cpri data
     output                                          o_cpri0_tx_vld          , // cpri valid
+
+    input                                           i_cpri1_tx_clk          , // cpri tx clock 
+    input                                           i_cpri1_tx_enable       , // cpri tx enable
     output         [  63: 0]                        o_cpri1_tx_data         , // cpri data
     output                                          o_cpri1_tx_vld            // cpri valid
-
 );
 
 //--------------------------------------------------------------------------------------
@@ -236,11 +240,16 @@ cpri_txdata_top                                         cpri_txdata_top(
     .i_slot_idx                                         (dr_slot_idx            ),
     .i_symb_idx                                         (dr_symb_idx            ),
     .i_fft_agc                                          (dr_fft_agc             ),
-    .i_iq_tx_enable                                     (i_iq_tx_enable         ),
-    .o_iq_tx0_data                                      (o_cpri0_tx_data        ),// lane 0
-    .o_iq_tx0_valid                                     (o_cpri0_tx_vld         ),
-    .o_iq_tx1_data                                      (o_cpri1_tx_data        ),// lane 1
-    .o_iq_tx1_valid                                     (o_cpri1_tx_vld         ) 
+    
+    .i_tx0_clk                                          (i_cpri0_tx_clk         ),// lane 0 txdata clock
+    .i_tx0_enable                                       (i_cpri0_tx_enable      ),// lane 0 txdata enable
+    .o_tx0_data                                         (o_cpri0_tx_data        ),// lane 0 txdata
+    .o_tx0_valid                                        (o_cpri0_tx_vld         ),// lane 0 txdata valid
+    
+    .i_tx1_clk                                          (i_cpri1_tx_clk         ),// lane 1 txdata clock
+    .i_tx1_enable                                       (i_cpri1_tx_enable      ),// lane 1 txdata enable
+    .o_tx1_data                                         (o_cpri1_tx_data        ),// lane 1 txdata
+    .o_tx1_valid                                        (o_cpri1_tx_vld         ) // lane 1 txdata valid
 );
 
 

@@ -19,11 +19,11 @@
 //////////////////////////////////////////////////////////////////////////////////
 `timescale 1ns/1ps
 
-
-`timescale 1ns/1ps
-`define CLOCK_PERIOD 10.0
-`define T1US 1000.0
-`define SIM_ENDS_TIME 2000000
+`define CLOCK_PERIOD    10.0
+`define T1US            1000
+`define TCLK0_DELAY     `T1US*100
+`define TCLK1_DELAY     `T1US*100+5
+`define SIM_ENDS_TIME   2000000
 
 
 module pusch_dr_top_dz;
@@ -117,6 +117,7 @@ reg            [   6: 0]                        chip_num              =0;
 wire                                            cpri_iq_vld             ;
 
 wire           [1:0][63: 0]                     cpri_tx_data            ;
+reg            [   1: 0]                        cpri_tx_clk           =0;
 wire           [   1: 0]                        cpri_tx_vld             ;
 
 //------------------------------------------------------------------------------------------
@@ -131,25 +132,27 @@ wire           [   1: 0]                        cpri_tx_vld             ;
 
 
 reg                                             src_reset             =0;
+reg            [1:0][7: 0]                      cpri_cnt              =0;
 wire           [  15: 0]                        io_rst                  ;
+wire           [   1: 0]                        iq_tx_enable            ;
 
 assign io_rst = {16{src_reset}};
 
-reg [7:0] cpri_cnt;
-always @(posedge i_clk) begin
-	if(io_rst[0]) begin 
-		cpri_cnt <= 8'd0;
-	end
-	else if(cpri_cnt >= 8'd95) begin 
-		cpri_cnt <= 8'd0;
-	end
-	else begin 
-		cpri_cnt <= cpri_cnt + 1'b1;
-	end 
-end 
-	 
-wire   i_iq_tx_enable;
-assign i_iq_tx_enable = (cpri_cnt >= 8'd95);
+
+generate for(gi=0;gi<2;gi=gi+1) begin:gen_lane
+    always @(posedge cpri_tx_clk[gi]) begin
+        if(io_rst[0])
+            cpri_cnt[gi] <= 8'd0;
+        else if(cpri_cnt[gi] >= 8'd95)
+            cpri_cnt[gi] <= 8'd0;
+        else
+            cpri_cnt[gi] <= cpri_cnt[gi] + 1'b1;
+    end 
+
+    assign iq_tx_enable[gi] = (cpri_cnt[gi] >= 8'd95);
+end
+endgenerate
+
 
 wire                                            sop_cpri                ;
 wire           [64-1: 0]                        dat_cpri0               ;
@@ -228,10 +231,13 @@ pusch_dr_top                                            pusch_dr_top(
     .i_l7_cpri_rx_data                                  (dat_cpri7              ),
     .i_l7_cpri_rx_vld                                   (sop_cpri               ),
 
-	.i_iq_tx_enable                                     (i_iq_tx_enable         ),
-
+    .i_cpri0_tx_clk                                     (cpri_tx_clk [0]        ),
+    .i_cpri0_tx_enable                                  (iq_tx_enable[0]        ),
     .o_cpri0_tx_data                                    (cpri_tx_data[0]        ),
     .o_cpri0_tx_vld                                     (cpri_tx_vld [0]        ),
+    
+    .i_cpri1_tx_clk                                     (cpri_tx_clk [1]        ),
+    .i_cpri1_tx_enable                                  (iq_tx_enable[1]        ),
     .o_cpri1_tx_data                                    (cpri_tx_data[1]        ),
     .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
 );
@@ -243,10 +249,23 @@ initial begin
     forever #(`CLOCK_PERIOD/2) i_clk = ~i_clk;
 end
 
+// Tx Clock generation
+initial begin
+    #(`TCLK0_DELAY) cpri_tx_clk[0] = 1;
+    forever #(`CLOCK_PERIOD/2) cpri_tx_clk[0] = ~cpri_tx_clk[0];
+end
+
+// Tx Clock generation
+initial begin
+    #(`TCLK1_DELAY) cpri_tx_clk[1] = 1;
+    forever #(`CLOCK_PERIOD/2) cpri_tx_clk[1] = ~cpri_tx_clk[1];
+end
+
+
 
 // Reset generation
 initial begin
-    #(`CLOCK_PERIOD*10) src_reset = 1'b1;
+    #(`CLOCK_PERIOD/2*9) src_reset = 1'b1;
     #(`CLOCK_PERIOD*10) src_reset = 1'b0;
     #(`CLOCK_PERIOD*10) reset = 1'b1;
     #(`CLOCK_PERIOD*10) reset = 1'b0;
@@ -343,40 +362,40 @@ reg            [1:0][1: 0]                      cprio_aiu_num         =0;
 reg            [1:0][2: 0]                      cprio_lane_num        =0;
 reg            [1:0][3: 0]                      cprio_pkg_type        =0;
 
-always @(posedge i_clk) begin
-    for(int i=0; i<2; i++)begin
-        if(cpri_tx_num[i]==95)
-            cpri_tx_num[i] <= 0;
-        else if(cpri_tx_vld[i])
-            cpri_tx_num[i] <= cpri_tx_num[i] + 1;
+generate for(gi=0;gi<2;gi=gi+1) begin:gen_output_data_check
+    always @(posedge cpri_tx_clk[gi]) begin
+        if(cpri_tx_num[gi]==95)
+            cpri_tx_num[gi] <= 0;
+        else if(cpri_tx_vld[gi])
+            cpri_tx_num[gi] <= cpri_tx_num[gi] + 1;
         else
-            cpri_tx_num[i] <= 0;
+            cpri_tx_num[gi] <= 0;
     end
-end
 
-always @(posedge i_clk) begin
-    for(int i=0; i<2; i++)begin
-        if(cpri_tx_num[i]==3)
-            iq_hd_out[i] <= cpri_tx_data[i];
-        else if(cpri_tx_num[i]==4)
-            fft_agc_out[i] <= cpri_tx_data[i];
-        else if(cpri_tx_num[i]==5)
-            rb_agc_out[i][63:0] <= cpri_tx_data[i];
-        else if(cpri_tx_num[i]==6)
-            rb_agc_out[i][127:64] <= cpri_tx_data[i];
+    always @(posedge cpri_tx_clk[gi]) begin
+        if(cpri_tx_num[gi]==3)
+            iq_hd_out[gi] <= cpri_tx_data[gi];
+        else if(cpri_tx_num[gi]==4)
+            fft_agc_out[gi] <= cpri_tx_data[gi];
+        else if(cpri_tx_num[gi]==5)
+            rb_agc_out[gi][63:0] <= cpri_tx_data[gi];
+        else if(cpri_tx_num[gi]==6)
+            rb_agc_out[gi][127:64] <= cpri_tx_data[gi];
     end
-end
 
-always @(posedge i_clk) begin
-    for(int i=0; i<2; i++)begin
-        cprio_rbg_num[i] <= iq_hd_out[i][52:45];
-        cprio_aiu_num[i] <= iq_hd_out[i][44:43];
-        cprio_lane_num[i] <= iq_hd_out[i][42:40];
-        cprio_pkg_type[i] <= iq_hd_out[i][39:36];
-        cprio_slot_num[i] <= iq_hd_out[i][18:12];
-        cprio_symb_num[i] <= iq_hd_out[i][11:8];
+    always @(posedge cpri_tx_clk[gi]) begin
+        cprio_rbg_num [gi] <= iq_hd_out[gi][52:45];
+        cprio_aiu_num [gi] <= iq_hd_out[gi][44:43];
+        cprio_lane_num[gi] <= iq_hd_out[gi][42:40];
+        cprio_pkg_type[gi] <= iq_hd_out[gi][39:36];
+        cprio_slot_num[gi] <= iq_hd_out[gi][18:12];
+        cprio_symb_num[gi] <= iq_hd_out[gi][11: 8];
     end
 end
+endgenerate
+
+
+
 
 //------------------------------------------------------------------------------------------
 // Output data file

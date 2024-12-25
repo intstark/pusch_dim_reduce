@@ -24,51 +24,51 @@ add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/i_cpri_clk
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/i_cpri_rst
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/i_cpri_rx_data
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/i_cpri_rx_vld
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_reset}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_reset}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb0_idx}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb1_idx}
-add wave -noupdate -group rx_buffer -color Violet -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/pusch_en}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_vld}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wlast}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wen}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_addr}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_data}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_en}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_en}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_vld}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_vld}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_data}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_data}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/seq_num}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/seq_num}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_addr}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc_eve}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc_odd}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_addr_buf[2]}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_info}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_info}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_rlast}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_sym_num}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/wbadr}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/rbadr}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/sym1_done}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tready}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_rd_vld}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tvalid}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_addr}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_data}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_fft_agc}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_symb_eop}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_symb_1st}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_clr}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx_out}
-add wave -noupdate -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx_out}
-add wave -noupdate -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_last}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_reset}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_reset}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb0_idx}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb1_idx}
+add wave -noupdate -expand -group rx_buffer -color Violet -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/pusch_en}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_vld}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wlast}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wen}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_addr}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_data}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_en}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_en}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_vld}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_vld}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_data}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_data}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/seq_num}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/seq_num}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_addr}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc_eve}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc_odd}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_addr_buf[2]}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_info}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_info}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_rlast}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_sym_num}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/wbadr}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/rbadr}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/sym1_done}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tready}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_rd_vld}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tvalid}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_addr}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_data}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_fft_agc}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/fft_agc}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_symb_eop}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_symb_1st}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_clr}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx_out}
+add wave -noupdate -expand -group rx_buffer -radix unsigned {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx_out}
+add wave -noupdate -expand -group rx_buffer {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tx_last}
 add wave -noupdate -group rx_buffer1 {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_info}
 add wave -noupdate -group rx_buffer1 {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rd_info_buf[2]}
 add wave -noupdate -group rx_buffer1 {/pusch_dr_top_dz/pusch_dr_top/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/fft_agc}
@@ -479,10 +479,23 @@ add wave -noupdate -radix unsigned /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/cpri_rvld
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/cpri_rdata
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/rd_valid
-add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/i_iq_tx_enable
+add wave -noupdate -color {Green Yellow} /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/i_iq_tx_enable
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/o_iq_tx_data
 add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/cpri_txdata_top/cpri_tx_lane_0/u_cpri_tx_gen/o_iq_tx_valid
+add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/o_cpri0_tx_data
+add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/o_cpri0_tx_vld
+add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/o_cpri1_tx_data
+add wave -noupdate /pusch_dr_top_dz/pusch_dr_top/o_cpri1_tx_vld
+add wave -noupdate -color {Green Yellow} {/pusch_dr_top_dz/iq_tx_enable[0]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_clk[0]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_vld[0]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_data[0]}
 add wave -noupdate -radix unsigned {/pusch_dr_top_dz/cpri_tx_num[0]}
+add wave -noupdate -color {Green Yellow} {/pusch_dr_top_dz/iq_tx_enable[1]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_clk[1]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_vld[1]}
+add wave -noupdate {/pusch_dr_top_dz/cpri_tx_data[1]}
+add wave -noupdate -radix unsigned {/pusch_dr_top_dz/cpri_tx_num[1]}
 add wave -noupdate /pusch_dr_top_dz/fft_agc_out
 add wave -noupdate /pusch_dr_top_dz/iq_hd_out
 add wave -noupdate /pusch_dr_top_dz/rb_agc_out
@@ -493,9 +506,9 @@ add wave -noupdate /pusch_dr_top_dz/cprio_rbg_num
 add wave -noupdate /pusch_dr_top_dz/cprio_slot_num
 add wave -noupdate /pusch_dr_top_dz/cprio_symb_num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {1104059289 ps} 0} {{Cursor 2} {1307995000 ps} 0}
+WaveRestoreCursors {{Cursor 2} {45000 ps} 0} {{Cursor 2} {997986765 ps} 0}
 quietly wave cursor active 2
-configure wave -namecolwidth 307
+configure wave -namecolwidth 330
 configure wave -valuecolwidth 364
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -509,4 +522,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {2100 us}
+WaveRestoreZoom {0 ps} {1043915250 ps}
