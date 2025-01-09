@@ -25,19 +25,20 @@ numSymbols = 14;
 aau_idx = 0;    % AAU编号识别
 aiu_idx = 0;    % AIU编号识别
 
-ReadFile  = 1;
+ReadFile  = 0;
 MergeFile = 0;
 WriteCodeMif = 0;
 WriteDrVector = 0;
 
 numSlot  = 1;
-symbol_id= 14;
+symbol_list= 1:14;
 InputDataCheck = 0;
+CHEK_SIM_MID_DATA = 0;
 SymbolXCompare = 1;
 
 
-vector_dir  = '../../../../AlgoVec/ulrxDimRedu-1213';
-fpga_dir    = '../vfy/pusch_dr_top_vec_work';
+vector_dir  = '../../../../AlgoVec/ulrxDimRedu-0102';
+fpga_dir    = '../vfy/pusch_dr_top_vec128_work';
 mif_dir     = './data/mif';
 
 
@@ -45,7 +46,7 @@ mif_dir     = './data/mif';
 if ReadFile
     % 读取CPRI输入数据
     for ii=1:8
-        data_in = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir,(aau_idx+aiu_idx),ii);
+        data_in = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir,(aau_idx*2+aiu_idx),ii);
         fprintf('读取文件:\t%s\n',data_in);
         [uncprs_data_read((ii-1)*4+1:ii*4,:), cprs_data_read((ii-1)*4+1:ii*4,:),...
          rb_agc_read((ii-1)*4+1:ii*4,:), fft_agc_read((ii-1)*4+1:ii*4,:)]=ReadCpriData(data_in,7);
@@ -57,7 +58,7 @@ if ReadFile
     
     % 读取降维输入数据
     for ii=1:32
-        data_in = sprintf('%s/group%d_data_in/ant%dand%d.txt',vector_dir,(aau_idx+aiu_idx+1),2*ii-2,2*ii-1);
+        data_in = sprintf('%s/group%d_data_in/ant%dand%d.txt',vector_dir,(aau_idx*2+aiu_idx+1),2*ii-2+aau_idx*64,2*ii-1+aau_idx*64);
         fprintf('读取文件:\t%s\n',data_in);
         dr_din_read(ii,:)=ReadHexData(data_in,16);
     end
@@ -73,14 +74,20 @@ end
     
 
 
-fft_agc_eve = fft_agc_read(:, 1:33:end);
-fft_agc_odd = fft_agc_read(:,18:33:end);
+fft_agc_read_singed = fft_agc_read - (fft_agc_read>=(2^7))*2^8;
+
+fft_agc_eve = fft_agc_read_singed(:, 1:33:end);
+fft_agc_odd = fft_agc_read_singed(:,18:33:end);
+
+
 
 fft_agc_eve_base = min(fft_agc_eve,[],1);
 fft_agc_odd_base = min(fft_agc_odd,[],1);
 
 fft_agc_eve_shift = fft_agc_eve - fft_agc_eve_base;
 fft_agc_odd_shift = fft_agc_odd - fft_agc_odd_base;
+
+fft_agc_base = [fft_agc_eve_base.' fft_agc_odd_base.'];
 
 for ii=1:14
     factor_eve=2.^(-fft_agc_eve_shift(:,ii)); %右移
@@ -89,56 +96,97 @@ for ii=1:14
     unfft_data_read(:,(ii-1)*3168+1585 : (ii-1)*3168+3168) = uncprs_data_read(:,(ii-1)*3168+1585 : (ii-1)*3168+3168).*factor_odd;
 end
 
-% FPGA与本Matlab计算结果比较
-fprintf('---------------------------------------------\n');
-fprintf('原始数据检查比对\n');
-fprintf('---------------------------------------------\n');
 
 if InputDataCheck
+    
+    % FPGA与本Matlab计算结果比较
+    fprintf('---------------------------------------------\n');
+    fprintf('原始数据检查比对\n');
+    fprintf('---------------------------------------------\n');
+
     load(sprintf('%s/matlab文件/rx_data_freq_fixed_compressed',vector_dir));
     load(sprintf('%s/matlab文件/rx_data_decompressed',vector_dir));
     load(sprintf('%s/matlab文件/DecomExponent_tv',vector_dir));
-    load(sprintf('%s/matlab文件/dataout_RRU1_AIU1',vector_dir));
+    load(sprintf('%s/matlab文件/AlignFactor',vector_dir));
+    load(sprintf('%s/matlab文件/FFTScaleAntBase_tv',vector_dir));
+    
+%     load(sprintf('%s/matlab文件/dataout_RRU%d_AIU%d',vector_dir,aau_idx+1,aiu_idx+1));
     load(sprintf('%s/matlab文件/data_equl_fixed_compressed',vector_dir));
     
+    CprsDataFromMat = zeros(32,14*3156);
+    for ii=1:14
+        rx_data_freq_compressed(1,:,:) = squeeze(rx_data_freq_fixed_compressed(   1:1584,ii,:));
+        rx_data_freq_compressed(2,:,:) = squeeze(rx_data_freq_fixed_compressed(1585:3168,ii,:));
+
+        rx_cprs_eve = squeeze(rx_data_freq_compressed(aau_idx*2+aiu_idx+1,:,1:2:64)).';
+        rx_cprs_odd = squeeze(rx_data_freq_compressed(aau_idx*2+aiu_idx+1,:,2:2:64)).';
+
+        CprsDataFromMat(:,(ii-1)*3168+1 : ii*3168) = [rx_cprs_eve rx_cprs_odd];
+
+    end
+
+
     
-    rx_cprs_symb1_eve=squeeze(rx_data_freq_fixed_compressed(1:1584,1,1:2:64)).';
-    rx_cprs_symb1_odd=squeeze(rx_data_freq_fixed_compressed(1:1584,1,2:2:64)).';
-    rx_cprs_symb1 = [rx_cprs_symb1_eve rx_cprs_symb1_odd];
+    for ii=1:14
+        rx_data_decmps(1,:,:) = squeeze(rx_data_decompressed(   1:1584,ii,:));
+        rx_data_decmps(2,:,:) = squeeze(rx_data_decompressed(1585:3168,ii,:));
+
+        DeCprsDataFromMat_eve=squeeze(rx_data_decmps(aau_idx*2+aiu_idx+1,:,1:2:64)).';
+        DeCprsDataFromMat_odd=squeeze(rx_data_decmps(aau_idx*2+aiu_idx+1,:,2:2:64)).';
+        DeCprsDataFromMat(:,(ii-1)*3168+1 : ii*3168) = [DeCprsDataFromMat_eve DeCprsDataFromMat_odd];
+    end
+
     
     
-    rx_decprs_symb1_eve=squeeze(rx_data_decompressed(1:1584,1,1:2:64)).';
-    rx_decprs_symb1_odd=squeeze(rx_data_decompressed(1:1584,1,2:2:64)).';
-    rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
+    err_rx_cprs = cprs_data_read-CprsDataFromMat;
+    err_rx_decprs = unfft_data_read-DeCprsDataFromMat;
     
-    
-    err_rx_cprs = cprs_data_read(:,1:3168)-rx_cprs_symb1;
-    err_rx_decprs = unfft_data_read(:,1:3168)-rx_decprs_symb1;
-    
+
     err_rx_cprs_max=max(abs(err_rx_cprs),[],[1,2]);
     fprintf('压缩数据读取与Mat数据比对误差:\t err_rx_cprs_max\t= %d\n',err_rx_cprs_max);
-    
+    first_mis_index = find(err_rx_cprs(1,:)~=0,1);
+    fprintf('压缩数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+
     err_rx_decprs_max=max(abs(err_rx_decprs),[],[1,2]);
     fprintf('解压数据读取与Mat数据比对误差:\t err_rx_decprs_max\t= %d\n',err_rx_decprs_max);
-    
-    rx_rb_agc_eve=squeeze(DecomExponent_tv(1:132,1,1:2:64)).';
-    rx_rb_agc_odd=squeeze(DecomExponent_tv(1:132,1,2:2:64)).';
-    rx_rb_agc = [rx_rb_agc_eve rx_rb_agc_odd];
-    err_rx_agc= rb_agc_read(:,1:264)-rx_rb_agc;
+    first_mis_index = find(err_rx_decprs(1,:)~=0,1);
+    fprintf('解压数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+
+    for ii=1:14
+        DecomExponent_FromMat(1,:,:) = squeeze(DecomExponent_tv(  1:132,ii,:));
+        DecomExponent_FromMat(2,:,:) = squeeze(DecomExponent_tv(133:264,ii,:));
+
+        rx_rb_agc_eve=squeeze(DecomExponent_FromMat(aau_idx*2+aiu_idx+1,:,1:2:64)).';
+        rx_rb_agc_odd=squeeze(DecomExponent_FromMat(aau_idx*2+aiu_idx+1,:,2:2:64)).';
+        RbAGC_FromMat(:,(ii-1)*264+1 : ii*264) = [rx_rb_agc_eve rx_rb_agc_odd];
+    end
+
+
+    err_rx_agc= rb_agc_read-RbAGC_FromMat;
     
     err_rx_rbagc_max=max(abs(err_rx_agc),[],[1,2]);
     fprintf('AGC数据读取与Mat数据比对误差:\t err_rx_rbagc_max\t= %d\n',err_rx_rbagc_max);
-    
-    
-    
+    first_mis_index = find(err_rx_agc(1,:)~=0,1);
+    fprintf('AGC数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+
+
+    FFTAGC_FromMat = AlignFactor.';
+
+    fftagc_read_cpri(1:2:64,:) = fft_agc_eve;
+    fftagc_read_cpri(2:2:64,:) = fft_agc_odd;
+
+    err_fft_agc = fftagc_read_cpri - FFTAGC_FromMat;
+    err_fft_agc_max=max(abs(err_fft_agc),[],[1,2]);
+    fprintf('FFT AGC读取与Mat数据比对误差:\t err_fft_agc_max\t= %d\n',err_fft_agc_max);
+
     rx_cpriout_cprs_eve=squeeze(data_equl_fixed_compressed(:,:,1:2:16,1));
     rx_cpriout_cprs_odd=squeeze(data_equl_fixed_compressed(:,:,2:2:16,1));
-    % rx_decprs_symb1 = [rx_decprs_symb1_eve rx_decprs_symb1_odd];
+    % DeCprsDataFromMat = [DeCprsDataFromMat_eve DeCprsDataFromMat_odd];
     
     
-    for ii=1:14
-        rx_dr_data((ii-1)*1584+1 : ii*1584,:) = squeeze(dataout_RRU1_AIU1(:,ii,:));
-    end
+%     for ii=1:14
+%         rx_dr_data((ii-1)*1584+1 : ii*1584,:) = squeeze(dataout_RRU1_AIU1(:,ii,:));
+%     end
 end
 
 
@@ -250,6 +298,17 @@ if WriteCodeMif
     write_mif(sprintf('%s/rom_code_word_odd',mif_dir),w1_data_read,1024,64);
 end
 
+% FPGA与本Matlab计算结果比较
+fprintf('---------------------------------------------\n');
+fprintf('原始数据检查比对\n');
+fprintf('---------------------------------------------\n');
+err_drin_read = dr_din_read-unfft_data_read;
+err_drin_read_max=max(abs(err_drin_read),[],[1,2]);
+fprintf('解FFT数据与DR输入向量比对误差:\t err_drin_read_max\t= %d\n',err_drin_read_max);
+
+first_mis_index = find(err_drin_read(1,:)~=0,1);
+fprintf('DR输入数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+
 
 ant_data_in = unfft_data_read;
 
@@ -339,42 +398,47 @@ BeamPower=rbG_sort_sum(:,1:16);
 BeamIndex=rbG_sort_addr(:,1:16);
 
 %% 动态定标比对
-beams_sum_sft_fix=dynamic_truncation(beams16_sym1_sort,16);
+[beams_sum_sft_fix,factor_40to16]=dynamic_truncation(beams16_sym1_sort,16);
+
+% FFT AGC叠加上标值
+fft_agc_base_fct = fft_agc_base + (24-factor_40to16);
 
 
 
 %% 读取FPGA仿真数据
 uiwait(msgbox('FPGA仿真运行完毕'));
 
-MAC_DW=40;
 
 
-for ii=1:8
-    datafile3=sprintf('%s/des_uzip_data%d.txt' ,fpga_dir,ii-1);
-    datafile2=sprintf('%s/des_rx_data%d.txt' ,fpga_dir,ii-1);
+if CHEK_SIM_MID_DATA
+    for ii=1:8
+        datafile3=sprintf('%s/des_uzip_data%d.txt' ,fpga_dir,ii-1);
+        datafile2=sprintf('%s/des_rx_data%d.txt' ,fpga_dir,ii-1);
+        
+        sim_uzip_data(ii,:,:) = ReadData(datafile3,16,0,'IQ');
+        [rx_data(ii,:,:),rx_cmps(ii,:,:),rx_agc(ii,:,:)]  = ReadZipData(datafile2,0);
     
-    sim_uzip_data(ii,:,:) = ReadData(datafile3,16,0,'IQ');
-    [rx_data(ii,:,:),rx_cmps(ii,:,:),rx_agc(ii,:,:)]  = ReadZipData(datafile2,0);
+        sim_rx_data(:,(ii-1)*4+1:ii*4) = squeeze(rx_data(ii,:,:));
+        sim_rx_cmps(:,(ii-1)*4+1:ii*4) = squeeze(rx_cmps(ii,:,:));
+        sim_rx_agc(:,(ii-1)*4+1:ii*4) = squeeze(rx_agc(ii,:,:));
+        sim_unzip_data(:,(ii-1)*4+1:ii*4) = squeeze(sim_uzip_data(ii,:,:));
+    end
 
-    sim_rx_data(:,(ii-1)*4+1:ii*4) = squeeze(rx_data(ii,:,:));
-    sim_rx_cmps(:,(ii-1)*4+1:ii*4) = squeeze(rx_cmps(ii,:,:));
-    sim_rx_agc(:,(ii-1)*4+1:ii*4) = squeeze(rx_agc(ii,:,:));
-    sim_unzip_data(:,(ii-1)*4+1:ii*4) = squeeze(sim_uzip_data(ii,:,:));
-end
 
-datafile1=sprintf('%s/compress_data.txt' ,fpga_dir);
+
 datafile8=sprintf('%s/des_dr_datain.txt' ,fpga_dir);
 datafile4=sprintf('%s/des_beams_data.txt',fpga_dir);
 datafile5=sprintf('%s/des_beams_pwr.txt' ,fpga_dir);
 datafile6=sprintf('%s/des_beams_sort.txt',fpga_dir);
 datafile7=sprintf('%s/des_beams_idx.txt' ,fpga_dir);
+datafile1=sprintf('%s/compress_data.txt' ,fpga_dir);
 
+sim_compress_data = ReadData(datafile1,16,0,'IQ');
 
-sim_beams_data = ReadData(datafile4,MAC_DW,0);
-sim_beams_pwr  = ReadData(datafile5,MAC_DW,0);
+sim_beams_data = ReadData(datafile4,40,0);
+sim_beams_pwr  = ReadData(datafile5,40,0);
 sim_beams_sort = ReadData(datafile6,32,0);
 sim_beams_idx  = ReadData(datafile7,8,0);
-sim_compress_data = ReadData(datafile1,16,0,'IQ');
 sim_ants_data = ReadData(datafile8,16,0,'IQ');
 
 
@@ -451,6 +515,7 @@ err_cprs2 = sim_compress_data((sim_symb-1)*numCarriers+1 : (sim_symb)*numCarrier
 err_cprs2_sum=sum(err_cprs2,[1,2]);
 fprintf('压缩后降维数据误差和:\t err_cprs2_sum\t= %d\n',err_cprs2_sum);
 
+end % SIM MID DATA CHECK
 
 %% 后续符号对比
 %  采用对SYMBOL1筛选出来的最大16beam序号的码本与天线数据相乘降维，每个rbG不同
@@ -467,12 +532,13 @@ if(SymbolXCompare)
     clear err_beam_odd;
     clear beams_sum_sft_fix;
     
-    
     %% 分析开始
+    for symbol_id=symbol_list
+
     fprintf('---------------------------------------------\n');
     fprintf("第%d个符号分析如下：\n",symbol_id);
     fprintf('---------------------------------------------\n');
-    
+
     % 分离出发送端的奇偶天线数据（单Lane 8天线）
     ant32_tx_eve = ant_data_in(:, (2*symbol_id-2)*numCarriers+1 : (2*symbol_id-1)*numCarriers);
     ant32_tx_odd = ant_data_in(:, (2*symbol_id-1)*numCarriers+1 : (2*symbol_id-0)*numCarriers);
@@ -516,23 +582,24 @@ if(SymbolXCompare)
     
     
     %% 动态定标
-    beams_sum_sft_fix=dynamic_truncation(beams_sum,16);
+    [beams_sum_sft_fix((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:),factor_40to16(symbol_id)]=dynamic_truncation(beams_sum,16);
     
-    %% 比对结果
-    err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix;
-    err_cprs_sum=sum(err_cprs,[1,2]);
-    fprintf('压缩后降维数据误差（与Matlab比）:\t%d\n',err_cprs_sum);
+    if CHEK_SIM_MID_DATA
+        %% 比对结果
+        err_cprs = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-beams_sum_sft_fix((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:);
+        err_cprs_sum=sum(err_cprs,[1,2]);
+        fprintf('压缩后降维数据误差（与Matlab比）:\t%d\n',err_cprs_sum);
+        
+        err_cprs2 = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-dr_aiu1_read((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:);
+        err_cprs2_sum=sum(err_cprs2,[1,2]);
+        fprintf('压缩后降维数据误差（与向量文本比）:\t%d\n',err_cprs2_sum);
+    end
     
-    err_cprs2 = sim_compress_data((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:)-dr_aiu1_read((symbol_id-1)*numCarriers+1 : (symbol_id)*numCarriers,:);
-    err_cprs2_sum=sum(err_cprs2,[1,2]);
-    fprintf('压缩后降维数据误差（与向量文本比）:\t%d\n',err_cprs2_sum);
+    end % every symbol
 end
 
-%%
-fprintf('---------------------------------------------\n');
-fprintf('分析完毕！\n');
-fprintf('---------------------------------------------\n');
-
+% FFT AGC叠加上标值
+fft_agc_base_fct = fft_agc_base + (24-factor_40to16.');
 
 
 %% 输出CPRI验证
@@ -542,13 +609,13 @@ for ss=1:14
     for aa = 1:16
         for rb = 1:132
             dr_symb = dr_aiu1_read((ss-1)*1584+(rb-1)*12+1 : (ss-1)*1584+rb*12,aa);
-%              dr_symb = squeeze(dataout_RRU1_AIU1((rb-1)*12+1 :rb*12,ss,aa));
             [dr_symb_cprs(ss,aa,(rb-1)*12+1 :rb*12), rb_agc_cprs(ss,aa,rb)] = dynamic_truncation(dr_symb,7);
         end
     end
     fprintf('.');
 end
 fprintf('\n');
+
 
 for ii=1:14
     drout_cprs(1:8,(ii-1)*3168+1 : (ii-1)*3168+1584) = squeeze(dr_symb_cprs(ii,1:2:16,:)); % eve
@@ -562,12 +629,11 @@ rbgout_cprs_reverse = 9-rbgout_cprs;
 
 
 for ii=1:2
-    data_in = sprintf('%s/DimRedu164To16/pusch_group%d/LAN%d.txt',vector_dir,(aau_idx+aiu_idx),ii);
+    data_in = sprintf('%s/DimRedu164To16/pusch_group%d/LAN%d.txt',vector_dir,(2*aau_idx+aiu_idx),ii);
     fprintf('读取文件:\t%s\n',data_in);
     [uncprs_cpriout_read((ii-1)*4+1:ii*4,:), cprs_cpriout_read((ii-1)*4+1:ii*4,:),...
      rb_agc_cpriout_read((ii-1)*4+1:ii*4,:), fft_agc_cpriout_read((ii-1)*4+1:ii*4,:)]=ReadCpriData(data_in,7);
 end
-
 
 
 
@@ -593,7 +659,10 @@ err_CpriRbAgc = rbgout_cprs_reverse(:,1:numSlot*numPrb*2*numSymbols) - rb_agc_cp
 err_CpriRbAgc_max=max(abs(err_CpriRbAgc),[],[1,2]);
 fprintf('CPRI输出RB AGC比较(MAX):\t err_CpriRbAgc_max\t= %d\n',err_CpriRbAgc_max);
 
-
+%%
+fprintf('---------------------------------------------\n');
+fprintf('分析完毕！\n');
+fprintf('---------------------------------------------\n');
 
 
 %% 相关函数

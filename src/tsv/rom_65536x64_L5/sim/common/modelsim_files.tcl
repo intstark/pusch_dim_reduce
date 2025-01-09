@@ -19,7 +19,7 @@ namespace eval rom_65536x64_L5 {
   
   proc get_design_files {USER_DEFINED_COMPILE_OPTIONS USER_DEFINED_VERILOG_COMPILE_OPTIONS USER_DEFINED_VHDL_COMPILE_OPTIONS QSYS_SIMDIR} {
     set design_files [list]
-    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../rom_1port_2020/sim/rom_65536x64_L5_rom_1port_2020_icyhtqa.v"]\"  -work rom_1port_2020"
+    lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/../rom_1port_2020/sim/rom_65536x64_L5_rom_1port_2020_bqf2xwy.v"]\"  -work rom_1port_2020"
     lappend design_files "vlog $USER_DEFINED_VERILOG_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS  \"[normalize_path "$QSYS_SIMDIR/rom_65536x64_L5.v"]\"  -work rom_65536x64_L5"                                            
     return $design_files
   }

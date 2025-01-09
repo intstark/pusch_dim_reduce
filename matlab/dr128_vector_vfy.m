@@ -12,13 +12,13 @@ aau_idx = 0;
 aiu_idx = 0;            % AIU编号识别
 symbol_id=2;
 
-ReadFile = 0;
+ReadFile = 1;
 MergeFile = 0;
 WriteCodeMif = 0;
 SymbolXCompare = 1;
 
 
-vector_dir = '../AlgoVec/ulrxDimRedu20241104';
+vector_dir = '../../../../AlgoVec/ulrxDimRedu-1213'; %ulrxDimRedu20241104
 fpga_dir   = '../vfy/pusch_dr_128ants_tb_work';
 
 
@@ -75,23 +75,26 @@ if ReadFile
         end
     end
 
-    save('BeamPowerRead128','BeamPowerRead128'); 
-    save('BeamIndexRead128','BeamIndexRead128'); 
+    save('data/BeamPowerRead128','BeamPowerRead128'); 
+    save('data/BeamIndexRead128','BeamIndexRead128'); 
 else
-    load('BeamPowerRead128.mat');
-    load('BeamIndexRead128.mat');
+    load('data/BeamPowerRead128.mat');
+    load('data/BeamIndexRead128.mat');
 end
 
 if ReadFile
     % 读取W0
-    data_in = sprintf('%s/ReduMatrix/W_0_after.txt',vector_dir);
+    data_in = sprintf('%s/ReduMatrix/W_0.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
-    w0_data_read=ReadHexData(data_in,16);
+    temp=ReadHexData(data_in,16);
+    w0_data_read = (reshape(temp,32,64)).';
+    
     
     % 读取W1
-    data_in = sprintf('%s/ReduMatrix/W_1_after.txt',vector_dir);
+    data_in = sprintf('%s/ReduMatrix/W_1.txt',vector_dir);
     fprintf('读取文件:\t%s\n',data_in);
-    w1_data_read=ReadHexData(data_in,16);
+    temp=ReadHexData(data_in,16);
+    w1_data_read = (reshape(temp,32,64)).';
 
     % 读取天线数据
     for ii=1:16
@@ -100,20 +103,31 @@ if ReadFile
         dr_data_read(:,ii)=ReadHexData(data_in,16);
     end
 
-    save('dr_data_read','dr_data_read');
-    save('w0_data_read','w0_data_read');
-    save('w1_data_read','w1_data_read');
+    % 读取降维数据
+    for ii=1:16
+        data_in = sprintf('%s/data_out_rru1/beam%d.txt',vector_dir,ii-1);
+        fprintf('读取文件:\t%s\n',data_in);
+        dr_aau1_read(:,ii)=ReadHexData(data_in,16);
+    end
+
+
+    save('data/dr_data_read','dr_data_read');
+    save('data/w0_data_read','w0_data_read');
+    save('data/w1_data_read','w1_data_read');
 else
-    load('dr_data_read.mat');
-    load('w0_data_read.mat');
-    load('w1_data_read.mat');
+    load('data/dr_data_read.mat');
+    load('data/w0_data_read.mat');
+    load('data/w1_data_read.mat');
 end
 
 
 w0_data_read=conj(w0_data_read);
 w1_data_read=conj(w1_data_read);
 
-
+dr_aiu1_read = zeros(numCarriers*14,16);
+for ii=1:14
+    dr_aiu1_read((ii-1)*numCarriers+1 : ii*numCarriers,:) = dr_aau1_read((ii-1)*numCarriers*2+1 : (ii-1)*numCarriers*2+1584,:);
+end
 
 %% 写FPGA仿真激励
 %  合并64天线输入数据
@@ -292,6 +306,9 @@ fprintf("rbG波束序号的误差和:\t err_sort_idx = %d\n",sum(err_sort_idx,[1
 err_beam_sort = BeamPowerRead128 - BeamPower;
 fprintf("rbG波束能量值误差和:\t err_beam_sort = %d\n",sum(err_beam_sort,[1,2,3]));
 
+err_dr_aiu1 = dr_aiu1_read(1:numCarriers,:)-squeeze(beams_sum_sft_fix(1,:,:));
+fprintf("压缩后降维数据误差和:\t err_dr_aiu1 = %d\n",sum(err_dr_aiu1,[1,2,3]));
+
 err_dr_data = dr_data_read(1:2*numCarriers,:) - beam_dr_aau_out;
 fprintf("压缩后降维数据误差和:\t err_dr_data = %d\n",sum(err_dr_data,[1,2,3]));
 
@@ -326,6 +343,7 @@ fprintf("rbG波束能量值误差和:\t err_beam_sort = %d\n",sum(err_beam_sort,
 err_cprs = sim_compress_data(:,(1-1)*numCarriers+1 : (1)*numCarriers,:)-beams_sum_sft_fix;
 err_cprs_sum=sum(err_cprs,[1,2,3]);
 fprintf('压缩后降维数据误差和:\t err_cprs_sum=\t%d\n',err_cprs_sum);
+
 
 
 

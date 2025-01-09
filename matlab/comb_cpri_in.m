@@ -13,15 +13,15 @@ clc;clear all;close all;
 
 
 aau_idx = 0;    % AAU编号识别
-aiu_idx = 0;    % AIU编号识别
+aiu_idx = 1;    % AIU编号识别
 
-vector_dir1 = '../../../AlgoVec/ulrxDimRedu-1209';
-vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1213';
-fpga_dir   = '../vfy/vector/datain';
+vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-1209';
+vector_dir2 = '../../../../AlgoVec/ulrxDimRedu-0102 (1)';
+fpga_dir   = sprintf('../vfy/vector/datain/pusch_group%d',(aau_idx*2+aiu_idx));
 
 for ii=1:8
-    data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx+aiu_idx),ii);
-    data_in2 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir2,(aau_idx+aiu_idx),ii);
+    data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx*2+aiu_idx),ii);
+    data_in2 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir2,(aau_idx*2+aiu_idx),ii);
     fprintf('读取文件:\t%s\n',data_in1);
 
 

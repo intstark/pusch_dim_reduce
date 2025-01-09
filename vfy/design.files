@@ -1,5 +1,7 @@
 ../../tb/ant_symbol_buffer.sv
 
+../../src/tbu/*
+
 ../../src/tsv/cpri_prb_comb_gen.v
 ../../src/tsv/rom_65536x64_L0/sim/rom_65536x64_L0.v
 ../../src/tsv/rom_65536x64_L0/rom_1port_2020/sim/*.v
@@ -47,8 +49,8 @@
 ../../src/pusch_dr/cpri_rx_buffer.sv
 ../../src/pusch_dr/ant_data_buffer.sv
 ../../src/pusch_dr/cpri_rx_gen.sv
-../../src/pusch_dr/compress_bit.v
 ../../src/pusch_dr/ul_package_data.v
+../../src/pusch_dr/ul_compress_bit.v
 ../../src/pusch_dr/ul_compress_data.sv
 ../../src/pusch_dr/register_shift.sv
 ../../src/pusch_dr/cpri_tx_gen.v

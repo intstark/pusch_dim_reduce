@@ -84,7 +84,7 @@ module ul_compress_data
     output wire    [  31: 0]                        o_pkg3_power           
 );         
 
-compress_bit #
+ul_compress_bit #
 (
     .Num                                                (7                      ) 
 )
@@ -115,7 +115,7 @@ u0_compress_bit
     .o_info                                             (o_info0                ) 
 );
 
-compress_bit #
+ul_compress_bit #
 (
     .Num                                                (7                      ) 
 )
@@ -136,7 +136,7 @@ u1_compress_bit
     .o_info                                             (o_info1                ) 
 );
 
-compress_bit #
+ul_compress_bit #
 (
     .Num                                                (7                      ) 
 )
@@ -157,7 +157,7 @@ u2_compress_bit
     .o_info                                             (o_info2                ) 
 );
 
-compress_bit #
+ul_compress_bit #
 (
     .Num                                                (7                      ) 
 )

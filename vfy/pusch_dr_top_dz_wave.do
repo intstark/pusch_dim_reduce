@@ -506,10 +506,10 @@ add wave -noupdate /pusch_dr_top_dz/cprio_rbg_num
 add wave -noupdate /pusch_dr_top_dz/cprio_slot_num
 add wave -noupdate /pusch_dr_top_dz/cprio_symb_num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 2} {45000 ps} 0} {{Cursor 2} {997986765 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 330
-configure wave -valuecolwidth 364
+WaveRestoreCursors {{Cursor 2} {0 ps} 0} {{Cursor 2} {997986765 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 376
+configure wave -valuecolwidth 189
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -522,4 +522,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {1043915250 ps}
+WaveRestoreZoom {0 ps} {46519341750 ps}

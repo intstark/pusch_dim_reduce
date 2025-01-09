@@ -2,22 +2,24 @@
 //
 //---------------------------------------------------------------------------------------------------------
 module cpri_prb_comb_gen
-    #(parameter	 AIU_NO   = 0,
+    #(parameter	 AIU_NO     = 0,
 		parameter	 CPRI_NO    = 1,
 		parameter	 CHIP_COUNT = 36,
 		parameter	 CHIP_LEN   = 96,
-		parameter  CHIP_LOOP  = 12,
+		parameter    CHIP_LOOP  = 12,
 		parameter	 FF_DEPTH   = 4096,
 		parameter	 FF_DW      = 12, 
-		parameter  RAM_D_DW   = 12,
-		parameter  RAM_P_DW   = 9,
+		parameter    RAM_D_DW   = 12,
+		parameter    RAM_P_DW   = 9,
 		parameter	 DAT_DW     = 64,
 		parameter	 CHIP_SYM   = 1, 
 		parameter	 STATE_DW   = 8
 		)
 (
-      input         		clk,
-      input         		rst,
+      input         		    clk,
+      input         		    rst,
+		
+		input                 aux_rx_rfp_rise,
       
       
       output                sop_cpri_o ,
@@ -33,44 +35,71 @@ module cpri_prb_comb_gen
 //--------------------------------------------------------------------------------------------------------
       
 //---------------------------------------------------------------------------------------------------------
-reg [15:0]  dat_r_cnt    =0;
-reg [2 :0]  symbol_cnt   =0;
-wire        symbol_valid;
+reg [16:0]  start_cnt;
 always @(posedge clk) begin 
     if(rst) begin 
-        dat_r_cnt <= 'hffff;
+        start_cnt <= 0;
     end 
-    else if(dat_r_cnt == 'hffff) begin 
+    else begin 
+        start_cnt <= start_cnt + 1'b1;
+    end 
+end 
+
+reg [7:0] chip_cnt;
+reg       start_sr;
+always @(posedge clk) begin 
+    if(rst) begin 
+        start_sr <= 1'b0;
+    end
+//  else if(&start_cnt) begin 
+    else if(aux_rx_rfp_rise) begin 
+        start_sr <= 1'b1;
+    end 
+    else if(start_sr && (chip_cnt >= 'd95)) begin 
+        start_sr <= 1'b0;
+    end 
+end 
+
+wire   start_si;
+assign start_si = (start_sr && (chip_cnt >= 'd95));
+
+reg   [17:0]  dat_r_cnt    ;
+//reg [2 :0]  symbol_cnt   ;
+//wire        symbol_valid ;
+always @(posedge clk) begin 
+    if(rst) begin 
+        dat_r_cnt <= 'h3fffe;
+    end 
+    else if(start_si) begin 
         dat_r_cnt <= 0;
     end 
-    else if(dat_r_cnt >= 'd12671)  begin 
-        dat_r_cnt <= 0;
+    else if(dat_r_cnt >= 'd44351)  begin 
+        dat_r_cnt <= 'h3fffe;
     end 
     else begin 
         dat_r_cnt <= dat_r_cnt + 1'b1;
     end 
 end 
 //---------------------------------------------------------------------------------------------------------
-always @(posedge clk) begin 
-    if(rst) begin 
-        symbol_cnt <= 'd4;
-    end 
-    else if(dat_r_cnt >= 'd12671)  begin 
-        if(symbol_cnt ==  'd4) begin 
-            symbol_cnt <= 'd0;
-        end 
-        else begin 
-            symbol_cnt <= symbol_cnt + 1'b1;
-        end
-    end 
-end 
-reg [7:0] chip_cnt=0;
+//always @(posedge clk) begin 
+//    if(rst) begin 
+//        symbol_cnt <= 'd4;
+//    end 
+//    else if(dat_r_cnt >= 'd12671)  begin 
+//        if(symbol_cnt ==  'd4) begin 
+//            symbol_cnt <= 'd0;
+//        end 
+//        else begin 
+//            symbol_cnt <= symbol_cnt + 1'b1;
+//        end
+//    end 
+//end 
 
 always @(posedge clk) begin 
     if(rst) begin 
-        chip_cnt <= 'd3000;
+        chip_cnt <= 'd200;
     end 
-    else if(chip_cnt == 'd3000) begin 
+    else if(chip_cnt == 'd200) begin 
         chip_cnt <= 0;
     end 
     else if(chip_cnt >= 'd95)  begin 
@@ -81,12 +110,13 @@ always @(posedge clk) begin
     end 
 end 
 
-assign symbol_valid = (symbol_cnt == 'd0);
+//assign symbol_valid = (symbol_cnt == 'd0);
 
 wire [15:0] ram_rd_addr;
-assign  ram_rd_addr = symbol_valid ? dat_r_cnt : 'd0;
-wire        ram_rd_en;
-assign  ram_rd_en = symbol_valid ? 1'b1 : 1'b0;
+assign      ram_rd_addr = dat_r_cnt;
+//assign    ram_rd_addr = symbol_valid ? dat_r_cnt : 'd0;
+//wire      ram_rd_en;
+//assign    ram_rd_en = symbol_valid ? 1'b1 : 1'b0;
 wire [63:0] ram_rd_q0;
 wire [63:0] ram_rd_q1;
 wire [63:0] ram_rd_q2;
@@ -214,14 +244,14 @@ wire      sop_cpri;
 assign    sop_cpri = (chip_cnt == 'd3);
 
 
-reg [DAT_DW-1:0]   dat_cpri0 =0;
-reg [DAT_DW-1:0]   dat_cpri1 =0;      
-reg [DAT_DW-1:0]   dat_cpri2 =0;      
-reg [DAT_DW-1:0]   dat_cpri3 =0;      
-reg [DAT_DW-1:0]   dat_cpri4 =0;
-reg [DAT_DW-1:0]   dat_cpri5 =0;      
-reg [DAT_DW-1:0]   dat_cpri6 =0;      
-reg [DAT_DW-1:0]   dat_cpri7 =0;
+reg [DAT_DW-1:0]   dat_cpri0;
+reg [DAT_DW-1:0]   dat_cpri1;      
+reg [DAT_DW-1:0]   dat_cpri2;      
+reg [DAT_DW-1:0]   dat_cpri3;      
+reg [DAT_DW-1:0]   dat_cpri4;
+reg [DAT_DW-1:0]   dat_cpri5;      
+reg [DAT_DW-1:0]   dat_cpri6;      
+reg [DAT_DW-1:0]   dat_cpri7;
       
 always @(posedge clk) begin 
      dat_cpri0  <=  ram_rd_q0;

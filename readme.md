@@ -237,3 +237,11 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + cpri_tx_lane：加入i_tx_clk
   + cpri_txdata_top：加入i_tx0_clk/i_tx1_clk和i_tx0_enable/i_tx1_enable
   + cpri_dr_top：加入i_cpri0_tx_clk/i_cpri1_tx_clk和i_cpri0_tx_enable/i_cpri1_tx_enable
+
+### 2025.01.09
++ 优化码本选择模块时序:
+  + code_word_rev：beam_index打拍，拆分cw_even_symb1/cw_odd_symb1
++ 修改动态定标输出的标值结果：
+  + compress_matrix：输出标值为29-(39-shift_num)，shift_num位宽改为6，增加15:0之后的移位判断
+  + compress_shift：i_shift_num位宽改为6
++ 修复pusch_dr_core中aiu_idx的用法，通过bit0判断

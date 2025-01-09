@@ -17,13 +17,14 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`timescale 1ns/1ps
+`timescale 100ps/1ps
 
-`define CLOCK_PERIOD    10.0
-`define T1US            1000
+`define CLOCK_PERIOD    27.126
+`define CLK245_PERIOD   40.690
+`define T1US            10000
 `define TCLK0_DELAY     `T1US*100
 `define TCLK1_DELAY     `T1US*100+5
-`define SIM_ENDS_TIME   2000000
+`define SIM_ENDS_TIME   2000*(`T1US)
 
 
 module pusch_dr_top_dz;
@@ -100,6 +101,7 @@ integer fid_drout0_hex, fid_drout15_hex;
 
 // Inputs
 reg                                             i_clk                 =0;
+reg                                             clk245                =0;
 reg                                             reset                 =0;
 reg                                             tx_hfp                =0;
 reg            [   1: 0]                        rbg_size              =2;
@@ -123,21 +125,21 @@ wire           [   1: 0]                        cpri_tx_vld             ;
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-
-//assign cpri_clk          = {8{i_clk}};
-//assign cpri_rst          = {8{reset}};
-//assign cpri_rx_data[7:0] = cpri_datain; 
-//assign cpri_rx_vld [7:0] = {8{cpri_iq_vld}};
-
-
-
 reg                                             src_reset             =0;
 reg            [1:0][7: 0]                      cpri_cnt              =0;
 wire           [  15: 0]                        io_rst                  ;
 wire           [   1: 0]                        iq_tx_enable            ;
+reg            [  23: 0]                        chip_cnt              =0;
+reg            [   3: 0]                        slot_cnt              =0;
+reg                                             slot_head             =0;
+reg            [   1: 0]                        tx_hfp_buf            =0;
+wire                                            tx_hfp_pos              ;
+wire                                            cpri_gen_rst            ;
+wire           [   7: 0]                        cpri_slot_num           ;
+wire                                            cpri_slot_head          ;
 
-assign io_rst = {16{src_reset}};
 
+assign io_rst = {1'b0, 14'd0, src_reset};
 
 generate for(gi=0;gi<2;gi=gi+1) begin:gen_lane
     always @(posedge cpri_tx_clk[gi]) begin
@@ -154,6 +156,99 @@ end
 endgenerate
 
 
+always @ (posedge i_clk)begin
+    tx_hfp_buf <= {tx_hfp_buf[0],tx_hfp};
+end
+
+assign tx_hfp_pos = tx_hfp_buf[0] & (~tx_hfp_buf[1]);
+
+always @ (posedge i_clk)begin
+    if(tx_hfp_pos)
+        chip_cnt <= 'd0;
+    else if(chip_cnt == 'd230399)
+        chip_cnt <= 'd0;
+    else
+        chip_cnt <= chip_cnt + 1'b1;
+end
+
+always @ (posedge i_clk)begin
+    if(tx_hfp_pos)
+        slot_cnt <= 'd0;
+    else if(chip_cnt == 'd230399)
+        slot_cnt <= slot_cnt + 'd1;
+end
+
+always @ (posedge i_clk)begin
+    if(tx_hfp_pos)
+        slot_head <= 'd1;
+    else if(chip_cnt == 'd230399 && slot_cnt <'d15)
+        slot_head <= 'd1;
+    else
+        slot_head <= 'd0;
+end
+
+//------------------------------------------------------------------------------------
+// TBU
+//------------------------------------------------------------------------------------
+reg start;
+
+always @ (posedge i_clk) begin
+if(io_rst[0])
+	start <=0;
+else if(cpri_slot_head)
+	case(cpri_slot_num)
+		0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75:start <=1;
+		default:start <=0;
+	endcase
+else
+	start <=0;
+end
+
+assign cpri_gen_rst = io_rst[15] ? slot_head : start;
+
+//---------------------------------------------------------------------------//
+//--cpri gen
+sys_tbu #(
+//   SIM_TEST:  for sim,it=1;for prj,it=0.
+//   CLK_SET:   1=122.88, 2=245.76, 4=491.52
+    .SIM_TEST                                           (1'd0                   ),
+    .CLK_SET                                            (3'd2                   ) 
+)u_sys_tbu(
+    .clk                                                (clk245                 ),//sys_clk_491_52
+    .rst                                                (reset                  ),//sys_rst_491_52
+    .i_ref_10ms_head                                    (                       ),//gps      
+    .i_ref_80ms_head                                    (                       ),//gps      
+    .i_ref_cpri_head                                    (tx_hfp                 ),
+    .i_ref_frame_num                                    ('d0                    ),
+    .i_sys_max_delay                                    (32'b0                  ),
+    .i_10ms_ul_dl_gap                                   (32'b0                  ),
+//---------------------------------------------------------------------------//
+//--local uplink    
+    .i_ul_0_frame_pos                                   (32'h10                 ),
+
+
+    .i_ul_1_frame_pos                                   (32'h10                 ),
+
+//---------------------------------------------------------------------------//
+//--local downlink
+    .i_dl_0_frame_pos                                   (32'h10                 ),
+
+//---------------------------------------------------------------------------//
+//--cpri gen                                                              
+    .i_cpri_frame_pos                                   (32'd80                 ),
+    .o_cpri_half_frame_num                              (                       ),
+    .o_cpri_frame_num                                   (                       ),
+    .o_cpri_slot_num                                    (cpri_slot_num          ),
+    .o_cpri_symb_num                                    (                       ),
+    .o_cpri_half_frame_head                             (                       ),
+    .o_cpri_half_frame_last                             (                       ),
+    .o_cpri_frame_head                                  (                       ),
+    .o_cpri_frame_last                                  (                       ),
+    .o_cpri_slot_head                                   (cpri_slot_head         ),
+    .o_cpri_symb_head                                   (                       ) 
+);
+
+
 wire                                            sop_cpri                ;
 wire           [64-1: 0]                        dat_cpri0               ;
 wire           [64-1: 0]                        dat_cpri1               ;
@@ -167,7 +262,8 @@ wire           [64-1: 0]                        dat_cpri7               ;
 cpri_prb_comb_gen                                       u_cpri_prb_comb_gen(
     .clk                                                (i_clk                  ),
     .rst                                                (io_rst[0]              ),
-      
+    .aux_rx_rfp_rise                                    (cpri_gen_rst           ),/////dbg
+
     .sop_cpri_o                                         (sop_cpri               ),
     .dat_cpri0_o                                        (dat_cpri0              ),
     .dat_cpri1_o                                        (dat_cpri1              ),
@@ -231,15 +327,15 @@ pusch_dr_top                                            pusch_dr_top(
     .i_l7_cpri_rx_data                                  (dat_cpri7              ),
     .i_l7_cpri_rx_vld                                   (sop_cpri               ),
 
-    .i_cpri0_tx_clk                                     (cpri_tx_clk [0]        ),
-    .i_cpri0_tx_enable                                  (iq_tx_enable[0]        ),
-    .o_cpri0_tx_data                                    (cpri_tx_data[0]        ),
-    .o_cpri0_tx_vld                                     (cpri_tx_vld [0]        ),
-    
-    .i_cpri1_tx_clk                                     (cpri_tx_clk [1]        ),
-    .i_cpri1_tx_enable                                  (iq_tx_enable[1]        ),
-    .o_cpri1_tx_data                                    (cpri_tx_data[1]        ),
-    .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
+    .i_cpri0_tx_clk                                     (cpri_tx_clk    [0]     ),
+    .i_cpri0_tx_enable                                  (iq_tx_enable   [0]     ),
+    .o_cpri0_tx_data                                    (cpri_tx_data   [0]     ),
+    .o_cpri0_tx_vld                                     (cpri_tx_vld    [0]     ),
+                                                                     
+    .i_cpri1_tx_clk                                     (cpri_tx_clk    [1]     ),
+    .i_cpri1_tx_enable                                  (iq_tx_enable   [1]     ),
+    .o_cpri1_tx_data                                    (cpri_tx_data   [1]     ),
+    .o_cpri1_tx_vld                                     (cpri_tx_vld    [1]     ) 
 );
 
 
@@ -248,6 +344,13 @@ initial begin
     i_clk = 0;
     forever #(`CLOCK_PERIOD/2) i_clk = ~i_clk;
 end
+
+// Clock generation
+initial begin
+    clk245 = 0;
+    forever #(`CLK245_PERIOD/2) clk245 = ~clk245;
+end
+
 
 // Tx Clock generation
 initial begin
@@ -269,7 +372,7 @@ initial begin
     #(`CLOCK_PERIOD*10) src_reset = 1'b0;
     #(`CLOCK_PERIOD*10) reset = 1'b1;
     #(`CLOCK_PERIOD*10) reset = 1'b0;
-
+`ifdef SIM_RESET_CASE
     #(`T1US*300) src_reset = 1'b1;
     #(`T1US*500) src_reset = 1'b0;
 
@@ -281,11 +384,14 @@ initial begin
 
     #(112455) src_reset = 1'b1;
     #(`CLOCK_PERIOD*10) src_reset = 1'b0;
-
-    tx_hfp = 1'b1;
-    #(`CLOCK_PERIOD) tx_hfp = 1'b0;
+`endif
 end
 
+// Reset generation
+initial begin
+    #(`CLOCK_PERIOD*40) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+end
 
 
 //------------------------------------------------------------------------------------------

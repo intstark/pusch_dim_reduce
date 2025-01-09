@@ -26,7 +26,7 @@ module compress_shift
     input  wire                                     i_vld                   ,
     input  wire    [IW-1: 0]                        i_din_re                ,
     input  wire    [IW-1: 0]                        i_din_im                ,
-    input  wire    [   4: 0]                        i_shift_num             ,
+    input  wire    [   5: 0]                        i_shift_num             ,
 
 
     output reg     [OW-1: 0]                        o_dout_re               ,

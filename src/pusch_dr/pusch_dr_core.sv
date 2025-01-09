@@ -71,6 +71,7 @@ genvar gi;
 //------------------------------------------------------------------------------------------
 // RAM BLOCK FOR CPRI DATA FOR 7 SYMBOLS 
 //------------------------------------------------------------------------------------------
+wire                                            aiu_idx                 ;
 wire           [LANE-1:0][63: 0]                ant_info_0              ;
 wire           [LANE-1:0][15: 0]                ant_info_1              ;
 wire           [LANE-1:0][ 6: 0]                ant_slot_idx            ;
@@ -208,23 +209,24 @@ assign rbg_num_max = (i_rbg_size == 2'b00) ? 8'd32  :
                      (i_rbg_size == 2'b01) ? 8'd16  :
                      (i_rbg_size == 2'b10) ? 8'd8   : 8'd8;
 
+assign aiu_idx = i_aiu_idx[0];
 
 // re number per rbG based on rbg size
 always @ (posedge i_clk) begin
     case(i_rbg_size)
         2'b00:  re_num_per_rbg <= 'd48;    // rbG=4 PRRs
         2'b01:  begin
-                    if(i_aiu_idx==0 && rbg_num==0)
+                    if(aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd96;     // rbG=8 PRRs
                 end
         2'b10:  begin
-                    if(i_aiu_idx==0 && rbg_num==0)
+                    if(aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd192;    // rbG=16 PRRs

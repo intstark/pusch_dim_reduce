@@ -13,16 +13,15 @@ clc;clear all;close all;
 
 
 aau_idx = 0;    % AAU编号识别
-aiu_idx = 0;    % AIU编号识别
+aiu_idx = 1;    % AIU编号识别
 width = 64;
 depth = 44352;
 
-vector_dir1 = '../../../AlgoVec/ulrxDimRedu-1213';
-vector_dir2 = '../../../AlgoVec/ulrxDimRedu-1212';
-fpga_dir   = '../tb/tsv/pusch_group0_mif';
+vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-0108';
+fpga_dir   = sprintf('../vfy/pusch_group%d_mif',(aau_idx*2+aiu_idx));
 
 for ii=1:8
-    data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx+aiu_idx),ii);
+    data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx*2+aiu_idx),ii);
     fprintf('读取文件:\t%s\n',data_in1);
 
 

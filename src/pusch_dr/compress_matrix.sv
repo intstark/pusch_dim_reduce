@@ -68,12 +68,12 @@ genvar gb;
 
 reg            [DAT_DEPTH-1: 0]                 rx_vld_dly            =0;
 reg                                             i_eop_d1              =0;
-reg            [   4: 0]                        shift_num             =0;
+reg            [   5: 0]                        shift_num             =0;
 reg            [  39: 0]                        max_value_iq          =0;
-reg            [   4: 0]                        max_shift_dly1        =0;
-reg            [   4: 0]                        max_shift_dly2        =0;
-reg            [   4: 0]                        max_shift_dly3        =0;
-reg            [   4: 0]                        lsb_right_shift       =0;
+reg            [   5: 0]                        max_shift_dly1        =0;
+reg            [   5: 0]                        max_shift_dly2        =0;
+reg            [   5: 0]                        max_shift_dly3        =0;
+reg            [   5: 0]                        lsb_right_shift       =0;
 
 wire           [15:0][IW-1: 0]                  max_dout                ;
 reg            [ 7:0][IW-1: 0]                  max_val_0               ;
@@ -136,33 +136,48 @@ always @ (posedge clk)
 //--------------------------------------------------------------------------------------------
 always @ (posedge clk)                      
 begin
-    casex(max_value_iq[39:15])//14-0;14-n=shift
-        25'b0_0000_0000_0000_0000_0000_0001 : shift_num <= 5'd23;  
-        25'b0_0000_0000_0000_0000_0000_001x : shift_num <= 5'd22;  
-        25'b0_0000_0000_0000_0000_0000_01xx : shift_num <= 5'd21;  
-        25'b0_0000_0000_0000_0000_0000_1xxx : shift_num <= 5'd20;  
-        25'b0_0000_0000_0000_0000_0001_xxxx : shift_num <= 5'd19;  
-        25'b0_0000_0000_0000_0000_001x_xxxx : shift_num <= 5'd18;  
-        25'b0_0000_0000_0000_0000_01xx_xxxx : shift_num <= 5'd17;        
-        25'b0_0000_0000_0000_0000_1xxx_xxxx : shift_num <= 5'd16;   
-        25'b0_0000_0000_0000_0001_xxxx_xxxx : shift_num <= 5'd15;   
-        25'b0_0000_0000_0000_001x_xxxx_xxxx : shift_num <= 5'd14;
-        25'b0_0000_0000_0000_01xx_xxxx_xxxx : shift_num <= 5'd13;
-        25'b0_0000_0000_0000_1xxx_xxxx_xxxx : shift_num <= 5'd12;
-        25'b0_0000_0000_0001_xxxx_xxxx_xxxx : shift_num <= 5'd11;
-        25'b0_0000_0000_001x_xxxx_xxxx_xxxx : shift_num <= 5'd10;
-        25'b0_0000_0000_01xx_xxxx_xxxx_xxxx : shift_num <= 5'd9 ;
-        25'b0_0000_0000_1xxx_xxxx_xxxx_xxxx : shift_num <= 5'd8 ;
-        25'b0_0000_0001_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd7 ;
-        25'b0_0000_001x_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd6 ;
-        25'b0_0000_01xx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd5 ;
-        25'b0_0000_1xxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd4 ;
-        25'b0_0001_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd3 ;
-        25'b0_001x_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd2 ;
-        25'b0_01xx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd1 ;
-        25'b0_1xxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd0 ;
-        25'b1_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 5'd0 ;
-        default 	                        : shift_num <= 5'd24;
+    casex(max_value_iq[39:0])//14-0;14-n=shift
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_0001 : shift_num <= 6'd38;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_001x : shift_num <= 6'd37;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_01xx : shift_num <= 6'd36;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_1xxx : shift_num <= 6'd35;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_0001_xxxx : shift_num <= 6'd34;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_001x_xxxx : shift_num <= 6'd33;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_01xx_xxxx : shift_num <= 6'd32;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0000_1xxx_xxxx : shift_num <= 6'd31;  
+        40'b0000_0000_0000_0000_0000_0000_0000_0001_xxxx_xxxx : shift_num <= 6'd30;  
+        40'b0000_0000_0000_0000_0000_0000_0000_001x_xxxx_xxxx : shift_num <= 6'd29;  
+        40'b0000_0000_0000_0000_0000_0000_0000_01xx_xxxx_xxxx : shift_num <= 6'd28;  
+        40'b0000_0000_0000_0000_0000_0000_0000_1xxx_xxxx_xxxx : shift_num <= 6'd27;  
+        40'b0000_0000_0000_0000_0000_0000_0001_xxxx_xxxx_xxxx : shift_num <= 6'd26;  
+        40'b0000_0000_0000_0000_0000_0000_001x_xxxx_xxxx_xxxx : shift_num <= 6'd25;  
+        40'b0000_0000_0000_0000_0000_0000_01xx_xxxx_xxxx_xxxx : shift_num <= 6'd24;  
+        40'b0000_0000_0000_0000_0000_0000_1xxx_xxxx_xxxx_xxxx : shift_num <= 6'd23;  
+        40'b0000_0000_0000_0000_0000_0001_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd22;  
+        40'b0000_0000_0000_0000_0000_001x_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd21;  
+        40'b0000_0000_0000_0000_0000_01xx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd20;  
+        40'b0000_0000_0000_0000_0000_1xxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd19;  
+        40'b0000_0000_0000_0000_0001_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd18;  
+        40'b0000_0000_0000_0000_001x_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd17;        
+        40'b0000_0000_0000_0000_01xx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd16;   
+        40'b0000_0000_0000_0000_1xxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd15;   
+        40'b0000_0000_0000_0001_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd14;
+        40'b0000_0000_0000_001x_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd13;
+        40'b0000_0000_0000_01xx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd12;
+        40'b0000_0000_0000_1xxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd11;
+        40'b0000_0000_0001_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd10;
+        40'b0000_0000_001x_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd9 ;
+        40'b0000_0000_01xx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd8 ;
+        40'b0000_0000_1xxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd7 ;
+        40'b0000_0001_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd6 ;
+        40'b0000_001x_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd5 ;
+        40'b0000_01xx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd4 ;
+        40'b0000_1xxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd3 ;
+        40'b0001_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd2 ;
+        40'b001x_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd1 ;
+        40'b01xx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd0 ;
+        40'b1xxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx_xxxx : shift_num <= 6'd0 ;
+        default 	                        : shift_num <= 6'd24;
     endcase
 end
 
@@ -216,7 +231,7 @@ end
 
 always@(posedge clk)
 begin
-    lsb_right_shift <= 5'd24 - max_shift_dly2;
+    lsb_right_shift <= max_shift_dly2 - 'd10; // 29-MSB = 29-(39-shift_num)
 end
 
 
@@ -279,7 +294,7 @@ generate for(gb=0;gb<16;gb=gb+1)begin : dly_info1
 
     always @ (posedge clk)
     begin
-        fft_agc_out[gb] <= fft_agc[gb] + max_shift_dly3; //lsb_right_shift
+        fft_agc_out[gb] <= fft_agc[gb] + 8'(signed'(lsb_right_shift)); //lsb_right_shift | max_shift_dly3
     end
 
     assign o_fft_agc[gb] = fft_agc_out[gb];
