@@ -22,8 +22,8 @@
 `define CLOCK_PERIOD    27.126
 `define CLK245_PERIOD   40.690
 `define T1US            10000
-`define TCLK0_DELAY     `T1US*100
-`define TCLK1_DELAY     `T1US*100+5
+`define TCLK0_DELAY     `T1US*50
+`define TCLK1_DELAY     `T1US*50+5
 `define SIM_ENDS_TIME   2000*(`T1US)
 
 
@@ -139,7 +139,7 @@ wire           [   7: 0]                        cpri_slot_num           ;
 wire                                            cpri_slot_head          ;
 
 
-assign io_rst = {1'b0, 14'd0, src_reset};
+assign io_rst = {1'b1, 14'd0, src_reset};
 
 generate for(gi=0;gi<2;gi=gi+1) begin:gen_lane
     always @(posedge cpri_tx_clk[gi]) begin
@@ -1017,14 +1017,14 @@ always @(posedge i_clk)
     );
 
 // Lane0 tx cpri data
-always @(posedge i_clk) begin
+always @(posedge cpri_tx_clk[0]) begin
     if(pusch_dr_top.o_cpri0_tx_vld)begin
         $fwrite(fid_tx_cpri0, "%h\n", pusch_dr_top.o_cpri0_tx_data);
     end
 end
 
 // Lane1 tx cpri data
-always @(posedge i_clk) begin
+always @(posedge cpri_tx_clk[1]) begin
     if(pusch_dr_top.o_cpri1_tx_vld)begin
         $fwrite(fid_tx_cpri1, "%h\n", pusch_dr_top.o_cpri1_tx_data);
     end
