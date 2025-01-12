@@ -248,10 +248,22 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 
 ### 2025.01.11
 + 优化码本选择模块时序:
-  + code_word_rev：beam_index打拍，去掉cw_even_symb1/cw_odd_symb1，在cw_even_select时用i_rbg_load
+  + code_word_rev：：输出码本相比原始ant数据整体延时2拍
+    + beam_index打拍，去掉cw_even_symb1/cw_odd_symb1
+    + 在cw_even_select时用i_rbg_load，从而使得码本输出再延时1拍
   + mac_beams：
     + 为匹配码本选择中的1拍延时，输入信号打两怕
     + 将re_num/rbg_num/rbg_load拿到mac_beams中延时该模块处理时间
     + 增加了参数O_LATENCY
   + pusch_dr_core：为匹配修改的码本模块，beam_sort模块输入的i_rbg_load需要延时1拍
   + beam_power_calc：由于输入的re_num/rbg_num/rbg_load已经在mac_beams中延时，所以模块内只需要延时处理的2拍延时。
+
+### 2025.01.12
++ 优化码本选择模块时序:
+  + code_word_rev：输出码本相比原始ant数据整体延时3拍
+    + rbg_load打拍，从而使得码本输出再延时1拍
+    + 将ant_data、re_num、info等伴随信号，在本模块延时对齐
+    + 专门输出bid_rden给beam_sort模块
+  + mac_beams：
+    + 将之前的re_num/rbg_num/rbg_load输入延时对齐放到code_word_rev中
+    + 本模块目前延时13拍（1+11+1）

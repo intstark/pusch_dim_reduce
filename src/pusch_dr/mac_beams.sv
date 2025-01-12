@@ -8,7 +8,7 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 14 Clocks latency
+// Description: 13 Clocks latency(1 + 11 + 1)
 // 
 // Dependencies: 
 // 
@@ -79,21 +79,11 @@ genvar bi;
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
-reg            [   2: 0]                        rvalid                =0;
-reg            [   2: 0]                        sop                   =0;
-reg            [   2: 0]                        eop                   =0;
-
-reg            [ANT*IW-1: 0]                    r1_ants_data_even     =0;
-reg            [ANT*IW-1: 0]                    r1_ants_data_odd      =0;
-
-reg            [ANT*IW-1: 0]                    r2_ants_data_even     =0;
-reg            [ANT*IW-1: 0]                    r2_ants_data_odd      =0;
-
+reg                                             rvalid                =0;
+reg                                             sop                   =0;
+reg                                             eop                   =0;
 reg            [ANT*IW-1: 0]                    ants_data_even        =0;
 reg            [ANT*IW-1: 0]                    ants_data_odd         =0;
-
-reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_even        ='{default:0};
-reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_odd         ='{default:0};
 
 wire           [BEAM-1:0][OW-1: 0]              even_ants_re            ;
 wire           [BEAM-1:0][OW-1: 0]              even_ants_im            ;
@@ -119,31 +109,19 @@ reg            [   1: 0]                        eop_out               =0;
 reg            [   1: 0]                        sop_out               =0;
 
 //-----------------------------------------------------------------
-//  input register: 2 Clock Latency
+//  input register: 1 Clock Latency
 //-----------------------------------------------------------------
 always @ (posedge i_clk) begin
-    rvalid <= {rvalid[1:0], i_rvalid};
-    sop    <= {sop   [1:0], i_sop   };
-    eop    <= {eop   [1:0], i_eop   };
+    rvalid <= i_rvalid;
+    sop    <= i_sop   ;
+    eop    <= i_eop   ;
 end
 
 always @(posedge i_clk) begin
-    r1_ants_data_even <= i_ants_data_even;       
-    r1_ants_data_odd  <= i_ants_data_odd ;
-
-    r2_ants_data_even <= r1_ants_data_even;       
-    r2_ants_data_odd  <= r1_ants_data_odd ;
-    
-    ants_data_even <= r1_ants_data_even;       
-    ants_data_odd  <= r1_ants_data_odd ;
+    ants_data_even <= i_ants_data_even;       
+    ants_data_odd  <= i_ants_data_odd ;
 end
 
-always @(posedge i_clk) begin
-    for(int k=0; k<BEAM; k++)begin:data_re_pipe
-        code_word_even[k] <= i_code_word_even[k];
-        code_word_odd [k] <= i_code_word_odd [k];
-    end   
-end
 
 //--------------------------------------------------------------------------------------
 // EVEN ANTS of 16 Beams: 11 Clock Latency 
@@ -157,9 +135,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
     ) mac_ants_even (
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (ants_data_even         ),
-        .i_rvalid                                           (rvalid[1]              ),
-        .i_sop                                              (sop   [1]              ),
-        .i_eop                                              (eop   [1]              ),
+        .i_rvalid                                           (rvalid                 ),
+        .i_sop                                              (sop                    ),
+        .i_eop                                              (eop                    ),
         .i_code_word                                        (i_code_word_even[bi]   ),
         .o_data_i                                           (even_ants_re    [bi]   ),
         .o_data_q                                           (even_ants_im    [bi]   ),
@@ -182,9 +160,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
     ) mac_ants_odd (
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (ants_data_odd          ),
-        .i_rvalid                                           (rvalid[1]              ),
-        .i_sop                                              (sop   [1]              ),
-        .i_eop                                              (eop   [1]              ),
+        .i_rvalid                                           (rvalid                 ),
+        .i_sop                                              (sop                    ),
+        .i_eop                                              (eop                    ),
         .i_code_word                                        (i_code_word_odd[bi]    ),
         .o_data_i                                           (odd_ants_re    [bi]    ),
         .o_data_q                                           (odd_ants_im    [bi]    ),
@@ -218,12 +196,12 @@ end
 
 
 //--------------------------------------------------------------------------------------
-// OUTPUT: 2+11+1=14 Clock Latency
+// OUTPUT: 1+11+1=13 Clock Latency
 //--------------------------------------------------------------------------------------
-localparam                                      O_LATENCY             =14;
+localparam                                      O_LATENCY             =13;
 
-reg            [O_LATENCY-2: 0]                 symb_clr_buf          =0;
-reg            [O_LATENCY-2: 0]                 symb_1st_buf          =0;
+reg            [O_LATENCY-1: 0]                 symb_clr_buf          =0;
+reg            [O_LATENCY-1: 0]                 symb_1st_buf          =0;
 reg            [63:0]                           dout_info0 [O_LATENCY-1:0] ='{default:0};
 reg            [15:0]                           dout_info1 [O_LATENCY-1:0] ='{default:0};
 reg            [O_LATENCY-1:0][7: 0]            re_num_dly            =0;
@@ -276,8 +254,8 @@ end
 
 // symb_clr/symb_1st latency match
 always @(posedge i_clk) begin
-    symb_1st_buf<= {symb_1st_buf[O_LATENCY-3:0], i_symb_1st};
-    symb_clr_buf<= {symb_clr_buf[O_LATENCY-3:0], i_symb_clr};
+    symb_1st_buf<= {symb_1st_buf[O_LATENCY-2:0], i_symb_1st};
+    symb_clr_buf<= {symb_clr_buf[O_LATENCY-2:0], i_symb_clr};
 end
 
 // output assignment
@@ -297,8 +275,8 @@ assign o_re_num         = re_num_dly  [O_LATENCY-1];
 assign o_rbg_num        = rbg_num_dly [O_LATENCY-1];
 assign o_rbg_load       = rbg_load_dly[O_LATENCY-1];
 
-assign o_symb_clr       = symb_clr_buf[O_LATENCY-2];
-assign o_symb_1st       = symb_1st_buf[O_LATENCY-2];
+assign o_symb_clr       = symb_clr_buf[O_LATENCY-1];
+assign o_symb_1st       = symb_1st_buf[O_LATENCY-1];
 
 
 endmodule
