@@ -17,8 +17,8 @@ aiu_idx = 1;    % AIU编号识别
 width = 64;
 depth = 44352;
 
-vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-0108';
-fpga_dir   = sprintf('../vfy/pusch_group%d_mif',(aau_idx*2+aiu_idx));
+vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-0109';
+fpga_dir   = sprintf('pusch_group%d_mif',(aau_idx*2+aiu_idx));
 
 for ii=1:8
     data_in1 = sprintf('%s/data_beforeDimRedu/pusch_group%d/LAN%d.txt',vector_dir1,(aau_idx*2+aiu_idx),ii);

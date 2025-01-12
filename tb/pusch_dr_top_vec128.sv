@@ -131,6 +131,7 @@ wire                                            cpri_iq_vld             ;
 wire           [3:0][63: 0]                     cpri_tx_data            ;
 reg            [   3: 0]                        cpri_tx_clk           =0;
 wire           [   3: 0]                        cpri_tx_vld             ;
+reg                                             cpri_tx_rst           =1;
 
 //------------------------------------------------------------------------------------------
 // UL data
@@ -313,7 +314,7 @@ initial begin
     forever #(`CLOCK_PERIOD/2) cpri_tx_clk[1] = ~cpri_tx_clk[1];
 end
 
-reg cpri_tx_rst =1;
+
 // Reset generation
 initial begin
     #(`CLOCK_PERIOD*10) reset = 1'b0;

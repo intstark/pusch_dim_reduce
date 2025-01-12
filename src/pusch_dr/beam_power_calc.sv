@@ -22,10 +22,10 @@ module beam_power_calc # (
     parameter                                       IW                     = 40    ,
     parameter                                       OW                     = 40    
 )(
-    input                                           i_clk                   ,   // data clock
-    input                                           i_reset                 ,   // reset
+    input                                           i_clk                   ,// data clock
+    input                                           i_reset                 ,// reset
 
-    input          [   1: 0]                        i_rbg_size              ,   // default:2'b10 16rb
+    input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
     input                                           i_symb_clr              ,
     input                                           i_symb_1st              ,
 
@@ -126,16 +126,16 @@ end
 
 assign iq_abs_vld    = beam_tvalid_buf[1] && symb_1st_dly[1];   // 2 clock cycle delay
 assign rbg_acc_valid = beam_tvalid_buf[4];  // 4 clock cycle delay
-assign rbg_acc_tlast = beam_tlast_buf[2];  // 4 clock cycle delay
+assign rbg_acc_tlast = beam_tlast_buf[2];   // 3 clock cycle delay
 
 //------------------------------------------------------------------------------------------
 // rbG sum 
 //------------------------------------------------------------------------------------------
 reg            [BEAM-1:0][OW-1: 0]              rbg_acc_re            ='{default:0};
 reg            [BEAM-1:0][OW-1: 0]              rbg_sum_abs           ='{default:0};
-reg            [14:0][7: 0]                     re_num_dly            ='{default:0};
-reg            [14:0][7: 0]                     rbg_num_dly           ='{default:0};
-reg            [  14: 0]                        rbg_load_dly          =0;
+reg            [15:0][7: 0]                     re_num_dly            ='{default:0};
+reg            [15:0][7: 0]                     rbg_num_dly           ='{default:0};
+reg            [  15: 0]                        rbg_load_dly          =0;
 wire           [   7: 0]                        rbg_num_acc             ;
 wire           [   7: 0]                        re_num_acc              ;
 wire                                            rbg_load_acc            ;
@@ -152,17 +152,17 @@ reg            [   2: 0]                        rbg_store_en          =0;
 always @ (posedge i_clk)begin
     re_num_dly[0]   <= i_re_num;
     rbg_num_dly[0]  <= i_rbg_num;
-    rbg_load_dly    <= {rbg_load_dly[13:0], i_rbg_load};
+    rbg_load_dly    <= {rbg_load_dly[14:0], i_rbg_load};
 
-    for(int i=0; i<14; i++) begin
+    for(int i=0; i<15; i++) begin
         re_num_dly[i+1] <= re_num_dly[i];
         rbg_num_dly[i+1] <= rbg_num_dly[i];
     end
 end
 
-assign re_num_acc   = re_num_dly  [14];
-assign rbg_num_acc  = rbg_num_dly [14];
-assign rbg_load_acc = rbg_load_dly[14];
+assign re_num_acc   = re_num_dly  [1];
+assign rbg_num_acc  = rbg_num_dly [1];
+assign rbg_load_acc = rbg_load_dly[1];
 
 
 // re accumulator

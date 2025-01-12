@@ -97,6 +97,9 @@ wire                                            beams_sop               ;
 wire                                            beams_eop               ;
 wire                                            beams_symb_clr          ;
 wire                                            beams_symb_1st          ;
+wire                                            beams_rbg_load          ;
+wire           [   7: 0]                        beams_re_num            ;
+wire           [   7: 0]                        beams_rbg_num           ;
 
 wire           [LANE-1: 0]                      w_cpri_clk              ;
 wire           [LANE-1: 0]                      w_cpri_rst              ;
@@ -251,6 +254,12 @@ assign rbg_slip = (re_num == re_num_per_rbg-1) ? 1'b1 : 1'b0;
 assign rbg_load = (ant_tvalid[0] && re_num == 0) ? 1'b1 : 1'b0;
 
 // rbG number
+reg [2:0] r1_rbg_load = 0;
+always @ (posedge i_clk)begin
+    r1_rbg_load <= {r1_rbg_load[1:0],rbg_load};
+end
+
+// rbG number
 always @ (posedge i_clk)begin
     if(i_reset)
         rbg_num <= 'd0;
@@ -278,8 +287,8 @@ code_word_rev                                           code_word_rev
     
     .i_beam_idx                                         (beam_sort_idx          ),
     .i_symb_idx                                         (ant_buffer_sym         ),
-    .i_symb_clr                                         (symb_clr               ),   
-    .i_symb_1st                                         (symb_is_1st            ),   
+    .i_symb_clr                                         (symb_clr               ),
+    .i_symb_1st                                         (symb_is_1st            ),
     
     .o_cw_even                                          (code_word_even         ),
     .o_cw_odd                                           (code_word_odd          ),
@@ -301,30 +310,39 @@ mac_beams #(
     .i_rvalid                                           (ant_tvalid[0]          ),
     .i_sop                                              (ant_sop   [0]          ),
     .i_eop                                              (ant_eop   [0]          ),
-    .i_symb_clr                                         (symb_clr               ),   
-    .i_symb_1st                                         (symb_is_1st            ),   
+    .i_symb_clr                                         (symb_clr               ),
+    .i_symb_1st                                         (symb_is_1st            ),
 
     .i_ants_data_even                                   (ant_data_even          ),
     .i_ants_data_odd                                    (ant_data_odd           ),
     .i_code_word_even                                   (code_word_even         ),
     .i_code_word_odd                                    (code_word_odd          ),
 
-    .i_info_0                                           (ant_info_0[0]          ),  // IQ HD
-    .i_info_1                                           (ant_info_1[0]          ),  // FFT AGC{odd, even}
+    .i_info_0                                           (ant_info_0[0]          ),// IQ HD
+    .i_info_1                                           (ant_info_1[0]          ),// FFT AGC{odd, even}
+    
+    .i_re_num                                           (re_num                 ),
+    .i_rbg_num                                          (rbg_num                ),
+    .i_rbg_load                                         (rbg_load               ),
 
-    .o_info_0                                           (beams_info_0           ),  // IQ HD
-    .o_info_1                                           (beams_info_1           ),  // FFT AGC{odd, even}
+    .o_info_0                                           (beams_info_0           ),// IQ HD
+    .o_info_1                                           (beams_info_1           ),// FFT AGC{odd, even}
     .o_data_even_i                                      (                       ),
     .o_data_even_q                                      (                       ),
     .o_data_odd_i                                       (                       ),
     .o_data_odd_q                                       (                       ),
     .o_data_i                                           (beams_ants_i           ),
     .o_data_q                                           (beams_ants_q           ),
-    .o_sop                                              (beams_sop              ), 
-    .o_eop                                              (beams_eop              ), 
-    .o_symb_clr                                         (beams_symb_clr         ),  
-    .o_symb_1st                                         (beams_symb_1st         ),  
-    .o_tvalid                                           (beams_tvalid           ) 
+    .o_sop                                              (beams_sop              ),
+    .o_eop                                              (beams_eop              ),
+    .o_tvalid                                           (beams_tvalid           ),
+    
+    .o_re_num                                           (beams_re_num           ),
+    .o_rbg_num                                          (beams_rbg_num          ),
+    .o_rbg_load                                         (beams_rbg_load         ),
+
+    .o_symb_clr                                         (beams_symb_clr         ),
+    .o_symb_1st                                         (beams_symb_1st         ) 
 );
 
 
@@ -355,9 +373,9 @@ beam_power_calc # (
     .i_data_eop                                         (beams_eop              ),
     .i_data_sop                                         (beams_sop              ),
     
-    .i_re_num                                           (re_num                 ),
-    .i_rbg_num                                          (rbg_num                ),
-    .i_rbg_load                                         (rbg_load               ),
+    .i_re_num                                           (beams_re_num           ),
+    .i_rbg_num                                          (beams_rbg_num          ),
+    .i_rbg_load                                         (beams_rbg_load         ),
     
     .o_data_sum                                         (rbg_sum_abs            ),
     .o_data_addr                                        (rbg_abs_addr           ),
@@ -416,7 +434,7 @@ beam_sort # (
     .i_symb_1st                                         (beams_symb_1st         ),
 
     .i_rbg_max                                          (rbg_num_max            ),
-    .i_rbg_load                                         (rbg_load               ),
+    .i_rbg_load                                         (r1_rbg_load[0]         ),
     .i_bid_rdinit                                       (rbg_sum_load           ),
     
     .o_score                                            (                       ),

@@ -138,6 +138,7 @@ rom_codeword_odd     u_rom_codeword_odd
 //--------------------------------------------------------------------------------------
 // select codewrds for each beam
 //--------------------------------------------------------------------------------------
+reg rbg_load = 0;
 reg            [   1: 0]                        symb_phx              =0;
 reg            [BEAM-1:0][1: 0]                 symb_phx_vec          =0;
 reg            [BEAM-1: 0]                      symb_1st_vec          ={BEAM{1'b1}};
@@ -147,13 +148,12 @@ reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_even        ='{default
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_odd         ='{default:0};
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_even_select        ='{default:0};
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_odd_select         ='{default:0};
-reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_even_symb1         ='{default:0};
-reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_odd_symb1          ='{default:0};
 reg            [BEAM-1:0][7: 0]                 beam_idx                ;
 
 
 always @(posedge i_clk) begin
     symb_phx <= i_symb_idx[1:0];
+    rbg_load <= i_rbg_load;
 end
 
 always @(posedge i_clk) begin
@@ -170,44 +170,35 @@ end
 
 always @(posedge i_clk) begin
     for(int i=0;i<BEAM;i=i+1) begin
-        case(symb_phx_vec[i])
-            2'd0:   begin
-                        cw_even_symb1[i]  <= codeword_map_0[i];
-                        cw_odd_symb1 [i]  <= codeword_map_1[i];
-                    end
-            2'd1:   begin
-                        cw_even_symb1[i]  <= codeword_map_0[i+16];
-                        cw_odd_symb1 [i]  <= codeword_map_1[i+16];
-                    end
-            2'd2:   begin
-                        cw_even_symb1[i]  <= codeword_map_0[i+32];
-                        cw_odd_symb1 [i]  <= codeword_map_1[i+32];
-                    end
-            2'd3:   begin
-                        cw_even_symb1[i]  <= codeword_map_0[i+48];
-                        cw_odd_symb1 [i]  <= codeword_map_1[i+48];
-                    end
-            default:begin
-                        cw_even_symb1[i]  <= codeword_map_0[i];
-                        cw_odd_symb1 [i]  <= codeword_map_1[i];
-                    end
-        endcase
-    end
-end
-
-always @(posedge i_clk) begin
-    for(int i=0;i<BEAM;i=i+1) begin
         if(i_symb_clr)begin
                 code_word_even[i]  <= codeword_map_0[i];
                 code_word_odd [i]  <= codeword_map_1[i];
         end else if(symb_1st_vec[i])begin
-                code_word_even[i]  <= cw_even_symb1[i];
-                code_word_odd [i]  <= cw_odd_symb1 [i];
+            case(symb_phx_vec[i])
+            2'd0:   begin
+                        code_word_even[i]  <= codeword_map_0[i];
+                        code_word_odd [i]  <= codeword_map_1[i];
+                    end
+            2'd1:   begin
+                        code_word_even[i]  <= codeword_map_0[i+16];
+                        code_word_odd [i]  <= codeword_map_1[i+16];
+                    end
+            2'd2:   begin
+                        code_word_even[i]  <= codeword_map_0[i+32];
+                        code_word_odd [i]  <= codeword_map_1[i+32];
+                    end
+            2'd3:   begin
+                        code_word_even[i]  <= codeword_map_0[i+48];
+                        code_word_odd [i]  <= codeword_map_1[i+48];
+                    end
+            default:begin
+                        code_word_even[i]  <= codeword_map_0[i];
+                        code_word_odd [i]  <= codeword_map_1[i];
+                    end
+            endcase
         end else begin
-            if(i_rbg_load)begin
                 code_word_even[i]  <= cw_even_select[i];
                 code_word_odd [i]  <= cw_odd_select [i];
-            end
         end
     end
 end
@@ -220,8 +211,10 @@ end
 
 always @(posedge i_clk) begin
     for(int i=0;i<BEAM;i=i+1) begin
-        cw_even_select[i] <= codeword_map_0[beam_idx[i]];
-        cw_odd_select[i]  <= codeword_map_1[beam_idx[i]];
+        if(i_rbg_load)begin
+            cw_even_select[i] <= codeword_map_0[beam_idx[i]];
+            cw_odd_select[i]  <= codeword_map_1[beam_idx[i]];
+        end
     end
 end
 
