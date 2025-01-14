@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <simPackage>
  <file
-   path="rom_1port_2020/sim/rom_65536x64_L1_rom_1port_2020_nvgfu2y.v"
+   path="rom_1port_2020/sim/rom_65536x64_L1_rom_1port_2020_vd7xkci.v"
    type="VERILOG"
    library="rom_1port_2020" />
  <file

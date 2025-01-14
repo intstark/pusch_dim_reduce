@@ -1,5 +1,5 @@
 
-# (C) 2001-2024 Intel Corporation. All rights reserved.
+# (C) 2001-2025 Intel Corporation. All rights reserved.
 # Your use of Intel Corporation's design tools, logic functions and 
 # other software and tools, and its AMPP partner logic functions, and 
 # any output files any of the foregoing (including device programming 
@@ -94,7 +94,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Intel IP within the design.
 # ----------------------------------------
-# ACDS 23.2 94 win32 2024.12.10.17:39:14
+# ACDS 23.2 94 win32 2025.01.06.17:35:54
 
 # ----------------------------------------
 # Initialize variables
@@ -113,7 +113,7 @@ if ![info exists QSYS_SIMDIR] {
 }
 
 if ![info exists QUARTUS_INSTALL_DIR] { 
-  set QUARTUS_INSTALL_DIR "E:/intel/intelfpga_pro/23.2/quartus/"
+  set QUARTUS_INSTALL_DIR "E:/quartus_23.2/quartus/"
 }
 
 if ![info exists USER_DEFINED_COMPILE_OPTIONS] { 

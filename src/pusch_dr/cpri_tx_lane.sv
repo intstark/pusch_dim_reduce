@@ -1,4 +1,3 @@
-`timescale 1 ns / 1 ps
 //----------------------------------------------------------------------------- 
 //Copyright @2023 ,  xxxxx. All rights reserved.
 //Author(s)       :  xxxxx 
@@ -14,10 +13,11 @@
 
 module cpri_tx_lane
 (
-    input  wire                                     sys_clk_491_52          ,
-    input  wire                                     sys_rst_491_52          ,
-    input  wire                                     sys_clk_368_64          ,
-    input  wire                                     sys_rst_368_64          ,
+    input  wire                                     i_sys_clk               ,// system clock
+    input  wire                                     i_sys_rst               ,// system reset
+
+    input  wire                                     i_tx_clk                ,
+    
     input  wire    [   3: 0]                        i_if_re_sel             ,
     input  wire    [   3: 0]                        i_if_re_vld             ,
     input  wire    [   3: 0]                        i_if_re_sop             ,
@@ -106,8 +106,8 @@ wire           [  31: 0]                        m_pkg7_power            ;
     
 ul_compress_data                                        ul_compress_data 
 (   
-    .clk                                                (sys_clk_491_52         ),
-    .rst                                                (sys_rst_491_52         ),
+    .clk                                                (i_sys_clk              ),
+    .rst                                                (i_sys_rst              ),
     .i_sel                                              (i_if_re_sel            ),
     .i_sop                                              (i_if_re_sop            ),
     .i_eop                                              (i_if_re_eop            ),
@@ -178,8 +178,8 @@ ul_compress_data                                        ul_compress_data
 //pkg=ant
 ul_package_data                                         ul_package_data
 (                                            
-    .clk                                                (sys_clk_491_52         ),
-    .rst                                                (sys_rst_491_52         ),
+    .clk                                                (i_sys_clk              ),
+    .rst                                                (i_sys_rst              ),
     .i_sel                                              (m_sel                  ),
     .i_vld                                              (m_vld                  ),
     .i_sop                                              (m_sop                  ),
@@ -238,14 +238,27 @@ ul_package_data                                         ul_package_data
 );
 
 
-            
+//--------------------------------------------------------------------------------------
+// Reset synchronizer 
+//--------------------------------------------------------------------------------------
+wire                                            w_tx_rst                ;
+// tx reset synchronizer
+alt_reset_synchronizer #(
+    .depth                                              (2                      ),
+    .rst_value                                          (1                      ) 
+)tx_rst_sync(
+    .clk                                                (i_tx_clk               ),
+    .reset_n                                            (!i_sys_rst             ),
+    .rst_out                                            (w_tx_rst               ) 
+);
+
 	              
 cpri_tx_gen                                             u_cpri_tx_gen
 (
-    .wr_clk                                             (sys_clk_491_52         ),
-    .wr_rst                                             (sys_rst_491_52         ),
-    .rd_clk                                             (sys_clk_368_64         ),
-    .rd_rst                                             (sys_rst_368_64         ),
+    .wr_clk                                             (i_sys_clk              ),
+    .wr_rst                                             (i_sys_rst              ),
+    .rd_clk                                             (i_tx_clk               ),
+    .rd_rst                                             (w_tx_rst               ),
     .i_cpri_wen                                         (m_cpri_wen             ),
     .i_cpri_waddr                                       (m_cpri_waddr           ),
     .i_cpri_wdata                                       (m_cpri_wdata           ),

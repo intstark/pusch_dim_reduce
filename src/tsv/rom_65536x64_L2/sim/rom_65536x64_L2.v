@@ -10,7 +10,7 @@ module rom_65536x64_L2 (
 		input  wire        rden     //    rden.rden
 	);
 
-	rom_65536x64_L2_rom_1port_2020_hddoafi rom_1port_0 (
+	rom_65536x64_L2_rom_1port_2020_abf2s4y rom_1port_0 (
 		.q       (q),       //  output,  width = 64,       q.dataout
 		.address (address), //   input,  width = 16, address.address
 		.clock   (clock),   //   input,   width = 1,   clock.clk

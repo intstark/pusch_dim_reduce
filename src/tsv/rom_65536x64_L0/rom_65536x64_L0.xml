@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <deploy
- date="2024.12.10.17:40:52"
- outputDirectory="M:/slw/AGF027_Project_8_12_master112811/sim/rom_65536x64_L0/">
+ date="2025.01.06.17:33:18"
+ outputDirectory="J:/slw/AGF027_Project_8_12_master1212/src/tsv/rom_65536x64_L0/">
  <perimeter>
   <parameter
      name="AUTO_GENERATION_ID"
@@ -87,34 +87,35 @@
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="2" />
   <generatedFiles>
    <file
-       path="M:\slw\AGF027_Project_8_12_master112811\sim\rom_65536x64_L0\synth\rom_65536x64_L0.v"
+       path="J:\slw\AGF027_Project_8_12_master1212\src\tsv\rom_65536x64_L0\synth\rom_65536x64_L0.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="M:\slw\AGF027_Project_8_12_master112811\sim\rom_65536x64_L0\synth\rom_65536x64_L0.v"
+       path="J:\slw\AGF027_Project_8_12_master1212\src\tsv\rom_65536x64_L0\synth\rom_65536x64_L0.v"
        attributes="CONTAINS_INLINE_CONFIGURATION" />
   </childGeneratedFiles>
   <sourceFiles>
-   <file path="M:/slw/AGF027_Project_8_12_master112811/sim/rom_65536x64_L0.ip" />
+   <file
+       path="J:/slw/AGF027_Project_8_12_master1212/src/tsv/rom_65536x64_L0.ip" />
   </sourceFiles>
   <childSourceFiles>
    <file
-       path="E:/intel/intelfpga_pro/23.2/ip/altera/megafunctions/rom_1port/rom_1_port_hw.tcl" />
+       path="E:/quartus_23.2/ip/altera/megafunctions/rom_1port/rom_1_port_hw.tcl" />
   </childSourceFiles>
   <messages>
    <message level="Info" culprit="rom_65536x64_L0">"Generating: rom_65536x64_L0"</message>
-   <message level="Info" culprit="rom_65536x64_L0">"Generating: rom_65536x64_L0_rom_1port_2020_opruxui"</message>
+   <message level="Info" culprit="rom_65536x64_L0">"Generating: rom_65536x64_L0_rom_1port_2020_etdxtby"</message>
   </messages>
  </entity>
  <entity
    kind="rom_1port"
    version="20.2.0"
-   name="rom_65536x64_L0_rom_1port_2020_opruxui">
+   name="rom_65536x64_L0_rom_1port_2020_etdxtby">
   <parameter name="GUI_CLOCK_ENABLE_INPUT_A" value="false" />
-  <parameter name="GUI_NUMWORDS_A" value="65536" />
+  <parameter name="GUI_NUMWORDS_A" value="44352" />
   <parameter name="DEVICE_FAMILY" value="Agilex 7" />
-  <parameter name="GUI_RAM_BLOCK_TYPE" value="Auto" />
+  <parameter name="GUI_RAM_BLOCK_TYPE" value="M20K" />
   <parameter name="GUI_SingleClock" value="0" />
   <parameter name="GUI_AclrAddr" value="false" />
   <parameter name="GUI_INIT_FILE_LAYOUT" value="PORT_A" />
@@ -126,9 +127,7 @@
   <parameter name="GUI_JTAG_ID" value="NONE" />
   <parameter name="GUI_WIDTH_A" value="64" />
   <parameter name="GUI_FORCE_TO_ZERO" value="false" />
-  <parameter
-     name="GUI_MIFfilename"
-     value="M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN1.mif" />
+  <parameter name="GUI_MIFfilename" value="../src/tsv/pusch_group1_mif/LAN1.mif" />
   <parameter name="GUI_OPTIMIZATION_OPTION" value="0" />
   <parameter name="GUI_RegAddr" value="true" />
   <parameter name="GUI_JTAG_ENABLED" value="false" />
@@ -143,22 +142,22 @@
   <parameter name="GUI_BlankMemory" value="1" />
   <generatedFiles>
    <file
-       path="M:\slw\AGF027_Project_8_12_master112811\sim\rom_65536x64_L0\rom_1port_2020\synth\rom_65536x64_L0_rom_1port_2020_opruxui.v"
+       path="J:\slw\AGF027_Project_8_12_master1212\src\tsv\rom_65536x64_L0\rom_1port_2020\synth\rom_65536x64_L0_rom_1port_2020_etdxtby.v"
        attributes="" />
   </generatedFiles>
   <childGeneratedFiles>
    <file
-       path="M:\slw\AGF027_Project_8_12_master112811\sim\rom_65536x64_L0\rom_1port_2020\synth\rom_65536x64_L0_rom_1port_2020_opruxui.v"
+       path="J:\slw\AGF027_Project_8_12_master1212\src\tsv\rom_65536x64_L0\rom_1port_2020\synth\rom_65536x64_L0_rom_1port_2020_etdxtby.v"
        attributes="" />
   </childGeneratedFiles>
   <sourceFiles>
    <file
-       path="E:/intel/intelfpga_pro/23.2/ip/altera/megafunctions/rom_1port/rom_1_port_hw.tcl" />
+       path="E:/quartus_23.2/ip/altera/megafunctions/rom_1port/rom_1_port_hw.tcl" />
   </sourceFiles>
   <childSourceFiles/>
   <instantiator instantiator="rom_65536x64_L0" as="rom_1port_0" />
   <messages>
-   <message level="Info" culprit="rom_65536x64_L0">"Generating: rom_65536x64_L0_rom_1port_2020_opruxui"</message>
+   <message level="Info" culprit="rom_65536x64_L0">"Generating: rom_65536x64_L0_rom_1port_2020_etdxtby"</message>
   </messages>
  </entity>
 </deploy>

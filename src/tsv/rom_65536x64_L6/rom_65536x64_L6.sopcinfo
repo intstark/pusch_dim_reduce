@@ -5,7 +5,7 @@
  version="1.0"
  fabric="QSYS">
  <!-- Format version 23.2 94 (Future versions may contain additional information.) -->
- <!-- 2024.12.10.17:33:26 -->
+ <!-- 2025.01.06.17:38:45 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -103,7 +103,7 @@
    name="rom_1port_0"
    kind="rom_1port"
    version="20.2.0"
-   entity="rom_65536x64_L6_rom_1port_2020_mgz2dqa"
+   entity="rom_65536x64_L6_rom_1port_2020_4mqxhgq"
    library="rom_1port_2020"
    path="rom_1port_0"
    hpath="rom_1port_0"
@@ -249,7 +249,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_NUMWORDS_A">
    <type>int</type>
-   <value>65536</value>
+   <value>44352</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -305,7 +305,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_MIFfilename">
    <type>java.lang.String</type>
-   <value>M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN7.mif</value>
+   <value>../src/tsv/pusch_group1_mif/LAN7.mif</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>

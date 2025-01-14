@@ -20,9 +20,8 @@
 
 module cpri_txdata_top 
 (
-    input  wire                                     i_clk                   ,
-    input  wire                                     i_reset                 ,
-
+    input  wire                                     i_clk                   ,// system clock
+    input  wire                                     i_reset                 ,// system reset
 
     input  wire                                     i_rx_sel                ,
     input  wire                                     i_rx_vld                ,
@@ -42,12 +41,17 @@ module cpri_txdata_top
     input          [   3: 0]                        i_symb_idx              ,
     input          [  15:0][7:0]                    i_fft_agc               ,
                 
-    input  wire                                     i_iq_tx_enable          ,
 
-    output wire    [  63: 0]                        o_iq_tx0_data           ,   // lane 0
-    output wire                                     o_iq_tx0_valid          ,
-    output wire    [  63: 0]                        o_iq_tx1_data           ,   // lane 1
-    output wire                                     o_iq_tx1_valid      
+
+    input  wire                                     i_tx0_clk               ,// lane 0 txdata clock
+    input  wire                                     i_tx0_enable            ,// lane 0 txdata enable
+    output wire    [  63: 0]                        o_tx0_data              ,// lane 0 txdata      
+    output wire                                     o_tx0_valid             ,// lane 0 txdata valid
+                                                                             
+    input  wire                                     i_tx1_clk               ,// lane 1 txdata clock
+    input  wire                                     i_tx1_enable            ,// lane 1 txdata enable
+    output wire    [  63: 0]                        o_tx1_data              ,// lane 1 txdata      
+    output wire                                     o_tx1_valid              // lane 1 txdata valid
 );
 
 //------------------------------------------------------------------------------------------
@@ -130,10 +134,11 @@ txdata_queue                                            txdata_queue_0
 
 cpri_tx_lane                                            cpri_tx_lane_0
 (
-    .sys_clk_491_52                                     (i_clk                  ),
-    .sys_rst_491_52                                     (i_reset                ),
-    .sys_clk_368_64                                     (i_clk                  ),
-    .sys_rst_368_64                                     (i_reset                ),
+    .i_sys_clk                                          (i_clk                  ),
+    .i_sys_rst                                          (i_reset                ),
+    
+    .i_tx_clk                                           (i_tx0_clk              ),
+
     .i_if_re_sel                                        (4'd0                   ),
     .i_if_re_vld                                        ({4{tx0_vld}}           ),
     .i_if_re_sop                                        ({4{tx0_sop}}           ),
@@ -170,9 +175,9 @@ cpri_tx_lane                                            cpri_tx_lane_0
     .i_ant_power2                                       (tx0_ant_pwr[2]         ),
     .i_ant_power3                                       (tx0_ant_pwr[3]         ),
 
-    .i_iq_tx_enable                                     (i_iq_tx_enable         ),
-    .o_iq_tx_data                                       (o_iq_tx0_data          ),
-    .o_iq_tx_valid                                      (o_iq_tx0_valid         ) 
+    .i_iq_tx_enable                                     (i_tx0_enable           ),
+    .o_iq_tx_data                                       (o_tx0_data             ),
+    .o_iq_tx_valid                                      (o_tx0_valid            ) 
 );
 
                                  
@@ -219,10 +224,11 @@ txdata_queue                                            txdata_queue_1
 
 cpri_tx_lane                                            cpri_tx_lane_1
 (
-    .sys_clk_491_52                                     (i_clk                  ),
-    .sys_rst_491_52                                     (i_reset                ),
-    .sys_clk_368_64                                     (i_clk                  ),
-    .sys_rst_368_64                                     (i_reset                ),
+    .i_sys_clk                                          (i_clk                  ),
+    .i_sys_rst                                          (i_reset                ),
+    
+    .i_tx_clk                                           (i_tx1_clk              ),
+
     .i_if_re_sel                                        (4'd0                   ),
     .i_if_re_vld                                        ({4{tx1_vld}}           ),
     .i_if_re_sop                                        ({4{tx1_sop}}           ),
@@ -259,9 +265,9 @@ cpri_tx_lane                                            cpri_tx_lane_1
     .i_ant_power2                                       (tx1_ant_pwr[2]         ),
     .i_ant_power3                                       (tx1_ant_pwr[3]         ),
 
-    .i_iq_tx_enable                                     (i_iq_tx_enable         ),
-    .o_iq_tx_data                                       (o_iq_tx1_data          ),
-    .o_iq_tx_valid                                      (o_iq_tx1_valid         ) 
+    .i_iq_tx_enable                                     (i_tx1_enable           ),
+    .o_iq_tx_data                                       (o_tx1_data             ),
+    .o_iq_tx_valid                                      (o_tx1_valid            ) 
 );
 
          

@@ -21,6 +21,7 @@
 
 module code_word_rev # (
     parameter ANTS      = 32,
+    parameter IW        = 32,
     parameter BEAM      = 16,
     parameter WIDTH     = 32
 )(
@@ -28,16 +29,42 @@ module code_word_rev # (
     input                                           i_reset                 ,
 
     input                                           i_enable                ,
+    input          [   7: 0]                        i_re_num                ,
+    input          [   7: 0]                        i_rbg_num               ,
     input                                           i_rbg_load              ,
+
+    input                                           i_rvalid                ,
+    input                                           i_sop                   ,
+    input                                           i_eop                   ,
+    input          [ANTS*IW-1: 0]                   i_ant_even              ,
+    input          [ANTS*IW-1: 0]                   i_ant_odd               ,
+    // input header info
+    input          [  63: 0]                        i_info_0                ,// IQ HD 
+    input          [  15: 0]                        i_info_1                ,// FFT AGC{odd,even}
 
     input          [BEAM-1:0][7: 0]                 i_beam_idx              ,
     input          [   7: 0]                        i_symb_idx              ,
     input                                           i_symb_clr              ,
     input                                           i_symb_1st              ,
+
+    output                                          o_ant_vld               ,
+    output                                          o_ant_sop               ,
+    output                                          o_ant_eop               ,
+    output         [ANTS*IW-1: 0]                   o_ant_even              ,
+    output         [ANTS*IW-1: 0]                   o_ant_odd               ,
+    output         [  63: 0]                        o_info_0                ,// IQ HD 
+    output         [  15: 0]                        o_info_1                ,// FFT AGC{odd,even}
+
+    output                                          o_symb_clr              ,
+    output                                          o_symb_1st              ,
+    output         [   7: 0]                        o_re_num                ,
+    output         [   7: 0]                        o_rbg_num               ,
+    output                                          o_rbg_load              ,
     
     output         [BEAM-1:0][WIDTH*ANTS-1: 0]      o_cw_even               ,
     output         [BEAM-1:0][WIDTH*ANTS-1: 0]      o_cw_odd                ,
-    output                                          o_tvalid                 
+    output                                          o_tvalid                ,
+    output                                          o_bid_rden               
 );
 
 localparam DEPTH = 64;
@@ -139,18 +166,22 @@ rom_codeword_odd     u_rom_codeword_odd
 // select codewrds for each beam
 //--------------------------------------------------------------------------------------
 reg            [   1: 0]                        symb_phx              =0;
+reg            [BEAM-1: 0]                      rbg_load_vec          =0;
 reg            [BEAM-1:0][1: 0]                 symb_phx_vec          =0;
 reg            [BEAM-1: 0]                      symb_1st_vec          ={BEAM{1'b1}};
+
 
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_even        ='{default:0};
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      code_word_odd         ='{default:0};
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_even_select        ='{default:0};
 reg            [BEAM-1:0][ANTS*WIDTH-1: 0]      cw_odd_select         ='{default:0};
-
+reg            [BEAM-1:0][7: 0]                 beam_idx                ;
+reg                                             bid_rden_out            ;
 
 
 always @(posedge i_clk) begin
-    symb_phx <= i_symb_idx[1:0];
+    symb_phx    <= i_symb_idx[1:0];
+    rbg_load_vec<= {BEAM{i_rbg_load}};
 end
 
 always @(posedge i_clk) begin
@@ -172,48 +203,136 @@ always @(posedge i_clk) begin
                 code_word_odd [i]  <= codeword_map_1[i];
         end else if(symb_1st_vec[i])begin
             case(symb_phx_vec[i])
-                2'd0:   begin
-                            code_word_even[i]  <= codeword_map_0[i];
-                            code_word_odd [i]  <= codeword_map_1[i];
-                        end
-                2'd1:   begin
-                            code_word_even[i]  <= codeword_map_0[i+16];
-                            code_word_odd [i]  <= codeword_map_1[i+16];
-                        end
-                2'd2:   begin
-                            code_word_even[i]  <= codeword_map_0[i+32];
-                            code_word_odd [i]  <= codeword_map_1[i+32];
-                        end
-                2'd3:   begin
-                            code_word_even[i]  <= codeword_map_0[i+48];
-                            code_word_odd [i]  <= codeword_map_1[i+48];
-                        end
-                default:begin
-                            code_word_even[i]  <= codeword_map_0[i];
-                            code_word_odd [i]  <= codeword_map_1[i];
-                        end
+            2'd0:   begin
+                        code_word_even[i]  <= codeword_map_0[i];
+                        code_word_odd [i]  <= codeword_map_1[i];
+                    end
+            2'd1:   begin
+                        code_word_even[i]  <= codeword_map_0[i+16];
+                        code_word_odd [i]  <= codeword_map_1[i+16];
+                    end
+            2'd2:   begin
+                        code_word_even[i]  <= codeword_map_0[i+32];
+                        code_word_odd [i]  <= codeword_map_1[i+32];
+                    end
+            2'd3:   begin
+                        code_word_even[i]  <= codeword_map_0[i+48];
+                        code_word_odd [i]  <= codeword_map_1[i+48];
+                    end
+            default:begin
+                        code_word_even[i]  <= codeword_map_0[i];
+                        code_word_odd [i]  <= codeword_map_1[i];
+                    end
             endcase
         end else begin
-            if(i_rbg_load)begin
                 code_word_even[i]  <= cw_even_select[i];
                 code_word_odd [i]  <= cw_odd_select [i];
-            end
         end
     end
 end
 
-
 always @(posedge i_clk) begin
     for(int i=0;i<BEAM;i=i+1) begin
-        cw_even_select[i] <= codeword_map_0[i_beam_idx[i]];
-        cw_odd_select[i]  <= codeword_map_1[i_beam_idx[i]];
+        beam_idx[i] <= i_beam_idx[i];
     end
 end
 
+always @(posedge i_clk) begin
+    for(int i=0;i<BEAM;i=i+1) begin
+        if(rbg_load_vec[i])begin
+            cw_even_select[i] <= codeword_map_0[beam_idx[i]];
+            cw_odd_select[i]  <= codeword_map_1[beam_idx[i]];
+        end
+    end
+end
 
-assign o_cw_even = code_word_even;
-assign o_cw_odd  = code_word_odd ;
-assign o_tvalid  = rom_vld[3];
+always @(posedge i_clk) begin
+    bid_rden_out <= rbg_load_vec[0];
+end
+
+
+
+
+//-----------------------------------------------------------------------------
+// ant data latency match: 2 Clock Latency
+//-----------------------------------------------------------------------------
+reg            [   1: 0]                        symb_clr_out          =0;
+reg            [   1: 0]                        symb_1st_out          =0;
+reg            [   1: 0]                        rvld_out              =0;
+reg            [   1: 0]                        sop_out               =0;
+reg            [   1: 0]                        eop_out               =0;
+reg            [ANTS*IW-1: 0]                   r1_ant_even           =0;
+reg            [ANTS*IW-1: 0]                   r1_ant_odd            =0;
+reg            [ANTS*IW-1: 0]                   r2_ant_even           =0;
+reg            [ANTS*IW-1: 0]                   r2_ant_odd            =0;
+
+reg            [1:0][63: 0]                     info0_out             =0;
+reg            [1:0][15: 0]                     info1_out             =0;
+reg            [1:0][7: 0]                      re_num_out            =0;
+reg            [1:0][7: 0]                      rbg_num_out           =0;
+reg                                             rbg_load_out          =0;
+
+
+always @ (posedge i_clk) begin
+    rvld_out <= {rvld_out[0], i_rvalid};
+    sop_out  <= {sop_out [0], i_sop   };
+    eop_out  <= {eop_out [0], i_eop   };
+
+    symb_clr_out <= {symb_clr_out [0], i_symb_clr};
+    symb_1st_out <= {symb_1st_out [0], i_symb_1st};
+
+    rbg_load_out <= rbg_load_vec[0];
+end
+
+always @(posedge i_clk) begin
+    r1_ant_even <= i_ant_even;       
+    r1_ant_odd  <= i_ant_odd ;
+
+    r2_ant_even <= r1_ant_even;       
+    r2_ant_odd  <= r1_ant_odd ;
+end
+
+// info latency match
+always @(posedge i_clk) begin
+    info0_out[0] <= i_info_0;
+    info1_out[0] <= i_info_1;
+    for(int i=1; i<2; i++)begin
+        info0_out[i] <= info0_out[i-1];
+        info1_out[i] <= info1_out[i-1];
+    end
+end
+
+// re_num/rbg_num/rbg_load latency match
+always @ (posedge i_clk)begin
+    re_num_out [0]  <= i_re_num;
+    rbg_num_out[0]  <= i_rbg_num;
+    for(int i=1; i<2; i++)begin
+        re_num_out [i] <= re_num_out [i-1];
+        rbg_num_out[i] <= rbg_num_out[i-1];
+    end
+end
+
+//-----------------------------------------------------------------------------
+// Output Assignment 
+//-----------------------------------------------------------------------------
+assign o_ant_vld  = rvld_out[1];
+assign o_ant_sop  = sop_out [1];
+assign o_ant_eop  = eop_out [1];
+assign o_ant_even = r2_ant_even;
+assign o_ant_odd  = r2_ant_odd ;
+assign o_info_0   = info0_out[1];
+assign o_info_1   = info1_out[1];
+
+assign o_re_num   = re_num_out [1];
+assign o_rbg_num  = rbg_num_out[1];
+assign o_rbg_load = rbg_load_out;
+assign o_symb_clr = symb_clr_out[0];
+assign o_symb_1st = symb_1st_out[0];
+
+assign o_cw_even  = code_word_even;
+assign o_cw_odd   = code_word_odd ;
+assign o_tvalid   = rom_vld[3];
+assign o_bid_rden = bid_rden_out;
 
 
 endmodule

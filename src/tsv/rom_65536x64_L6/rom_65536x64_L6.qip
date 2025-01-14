@@ -12,21 +12,21 @@ set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name
 set_global_assignment -name SYNTHESIS_ONLY_QIP ON
 set_global_assignment -library "rom_65536x64_L6" -name MISC_FILE [file join $::quartus(qip_path) "../rom_65536x64_L6.ip"]
 
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_NAME "cm9tXzY1NTM2eDY0X0w2X3JvbV8xcG9ydF8yMDIwX21nejJkcWE="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DISPLAY_NAME "Uk9NOiAxLVBPUlQgSW50ZWwgRlBHQSBJUA=="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_INTERNAL "Off"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_VERSION "MjAuMi4w"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_GROUP "QmFzaWMgRnVuY3Rpb25zL09uIENoaXAgTWVtb3J5"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzgyOC8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4Mzc3MS8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzE4MS8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzMwMS8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzI0MC8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzQyMy8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzI0MS8="
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzExMC8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_NAME "cm9tXzY1NTM2eDY0X0w2X3JvbV8xcG9ydF8yMDIwXzRtcXhoZ3E="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DISPLAY_NAME "Uk9NOiAxLVBPUlQgSW50ZWwgRlBHQSBJUA=="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_INTERNAL "Off"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_AUTHOR "SW50ZWwgQ29ycG9yYXRpb24="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_VERSION "MjAuMi4w"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_GROUP "QmFzaWMgRnVuY3Rpb25zL09uIENoaXAgTWVtb3J5"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzgyOC8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4Mzc3MS8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzE4MS8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzMwMS8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzI0MC8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzQyMy8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzI0MS8="
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_COMPONENT_DOCUMENTATION_LINK "aHR0cHM6Ly93d3cuaW50ZWwuY29tL2NvbnRlbnQvd3d3L3VzL2VuL2RvY3MvcHJvZ3JhbW1hYmxlLzY4MzExMC8="
 set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name IP_COMPONENT_NAME "cm9tXzY1NTM2eDY0X0w2"
 set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name IP_COMPONENT_DISPLAY_NAME "c3lzdGVt"
 set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name IP_COMPONENT_REPORT_HIERARCHY "On"
@@ -35,11 +35,11 @@ set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name
 set_global_assignment -entity "rom_65536x64_L6" -library "rom_65536x64_L6" -name IP_COMPONENT_VERSION "MS4w"
 
 
-set_global_assignment -library "rom_1port_2020" -name VERILOG_FILE [file join $::quartus(qip_path) "rom_1port_2020/synth/rom_65536x64_L6_rom_1port_2020_mgz2dqa.v"]
+set_global_assignment -library "rom_1port_2020" -name VERILOG_FILE [file join $::quartus(qip_path) "rom_1port_2020/synth/rom_65536x64_L6_rom_1port_2020_4mqxhgq.v"]
 set_global_assignment -library "rom_65536x64_L6" -name VERILOG_FILE [file join $::quartus(qip_path) "synth/rom_65536x64_L6.v"]
 
 
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_TOOL_NAME "rom_1port"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_TOOL_VERSION "20.2.0"
-set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_mgz2dqa" -library "rom_1port_2020" -name IP_TOOL_ENV "QsysPrimePro"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_TOOL_NAME "rom_1port"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_TOOL_VERSION "20.2.0"
+set_global_assignment -entity "rom_65536x64_L6_rom_1port_2020_4mqxhgq" -library "rom_1port_2020" -name IP_TOOL_ENV "QsysPrimePro"
 

@@ -10,7 +10,7 @@ module rom_65536x64_L0 (
 		input  wire        rden     //    rden.rden
 	);
 
-	rom_65536x64_L0_rom_1port_2020_opruxui rom_1port_0 (
+	rom_65536x64_L0_rom_1port_2020_etdxtby rom_1port_0 (
 		.q       (q),       //  output,  width = 64,       q.dataout
 		.address (address), //   input,  width = 16, address.address
 		.clock   (clock),   //   input,   width = 1,   clock.clk

@@ -8,7 +8,7 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 12 Clocks latency
+// Description: 13 Clocks latency(1 + 11 + 1)
 // 
 // Dependencies: 
 // 
@@ -41,6 +41,10 @@ module mac_beams #(
     input          [  63: 0]                        i_info_0                ,// IQ HD 
     input          [  15: 0]                        i_info_1                ,// FFT AGC{odd,even}
 
+    input          [   7: 0]                        i_re_num                ,
+    input          [   7: 0]                        i_rbg_num               ,
+    input                                           i_rbg_load              ,
+
     // output header info
     output         [  63: 0]                        o_info_0                ,// IQ HD 
     output         [  15: 0]                        o_info_1                ,// FFT AGC{odd,even}
@@ -54,11 +58,16 @@ module mac_beams #(
     // output
     output         [BEAM-1:0][OW-1: 0]              o_data_i                ,
     output         [BEAM-1:0][OW-1: 0]              o_data_q                ,
-    output                                          o_sop                   , 
-    output                                          o_eop                   , 
+    output                                          o_sop                   ,
+    output                                          o_eop                   ,
+    output                                          o_tvalid                ,
+
+    output         [   7: 0]                        o_re_num                ,
+    output         [   7: 0]                        o_rbg_num               ,
+    output                                          o_rbg_load              ,
+
     output                                          o_symb_clr              ,
-    output                                          o_symb_1st              ,
-    output                                          o_tvalid                 
+    output                                          o_symb_1st               
 );
 
 //--------------------------------------------------------------------------------------
@@ -70,15 +79,11 @@ genvar bi;
 //--------------------------------------------------------------------------------------
 // WIRE AND REGISTER
 //--------------------------------------------------------------------------------------
-reg                                             r_rvalid              =0;
-reg                                             r_sop                 =0;
-reg                                             r_eop                 =0;
-
+reg                                             rvalid                =0;
+reg                                             sop                   =0;
+reg                                             eop                   =0;
 reg            [ANT*IW-1: 0]                    ants_data_even        =0;
 reg            [ANT*IW-1: 0]                    ants_data_odd         =0;
-
-reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_even        ='{default:0};
-reg            [BEAM-1:0][ANT*IW-1: 0]          code_word_odd         ='{default:0};
 
 wire           [BEAM-1:0][OW-1: 0]              even_ants_re            ;
 wire           [BEAM-1:0][OW-1: 0]              even_ants_im            ;
@@ -99,18 +104,17 @@ wire           [BEAM-1: 0]                      even_sop                ;
 wire           [BEAM-1: 0]                      even_eop                ;
 wire           [BEAM-1: 0]                      odd_sop                 ;
 wire           [BEAM-1: 0]                      odd_eop                 ;
-reg            [   7: 0]                        tvalid_buf            =0;
-reg                                             eop_out               =0;
-reg                                             sop_out               =0;
+reg            [   1: 0]                        tvld_out              =0;
+reg            [   1: 0]                        eop_out               =0;
+reg            [   1: 0]                        sop_out               =0;
 
 //-----------------------------------------------------------------
-//  input register
+//  input register: 1 Clock Latency
 //-----------------------------------------------------------------
-
 always @ (posedge i_clk) begin
-    r_rvalid <= i_rvalid;
-    r_sop    <= i_sop   ;
-    r_eop    <= i_eop   ;
+    rvalid <= i_rvalid;
+    sop    <= i_sop   ;
+    eop    <= i_eop   ;
 end
 
 always @(posedge i_clk) begin
@@ -118,15 +122,9 @@ always @(posedge i_clk) begin
     ants_data_odd  <= i_ants_data_odd ;
 end
 
-always @(posedge i_clk) begin
-    for(int k=0; k<BEAM; k++)begin:data_re_pipe
-        code_word_even[k] <= i_code_word_even[k];
-        code_word_odd [k] <= i_code_word_odd [k];
-    end   
-end
 
 //--------------------------------------------------------------------------------------
-// EVEN ANTS of 16 Beams 
+// EVEN ANTS of 16 Beams: 11 Clock Latency 
 //--------------------------------------------------------------------------------------
 generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
     // Instantiate the DUT
@@ -137,9 +135,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
     ) mac_ants_even (
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (ants_data_even         ),
-        .i_rvalid                                           (r_rvalid               ),
-        .i_sop                                              (r_sop                  ),
-        .i_eop                                              (r_eop                  ),
+        .i_rvalid                                           (rvalid                 ),
+        .i_sop                                              (sop                    ),
+        .i_eop                                              (eop                    ),
         .i_code_word                                        (i_code_word_even[bi]   ),
         .o_data_i                                           (even_ants_re    [bi]   ),
         .o_data_q                                           (even_ants_im    [bi]   ),
@@ -151,7 +149,7 @@ end
 endgenerate
 
 //--------------------------------------------------------------------------------------
-// ODD ANTS of 16 Beams 
+// ODD ANTS of 16 Beams: 11 Clock Latency
 //--------------------------------------------------------------------------------------
 generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
     // Instantiate the DUT
@@ -162,9 +160,9 @@ generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
     ) mac_ants_odd (
         .i_clk                                              (i_clk                  ),
         .i_ants_data                                        (ants_data_odd          ),
-        .i_rvalid                                           (r_rvalid               ),
-        .i_sop                                              (r_sop                  ),
-        .i_eop                                              (r_eop                  ),
+        .i_rvalid                                           (rvalid                 ),
+        .i_sop                                              (sop                    ),
+        .i_eop                                              (eop                    ),
         .i_code_word                                        (i_code_word_odd[bi]    ),
         .o_data_i                                           (odd_ants_re    [bi]    ),
         .o_data_q                                           (odd_ants_im    [bi]    ),
@@ -178,7 +176,7 @@ endgenerate
 
 
 //--------------------------------------------------------------------------------------
-// EVEN + ODD ANTS REAL PART
+// EVEN + ODD ANTS REAL PART: 1 Clock Latency
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<BEAM; k++)begin:even_odd_real
@@ -188,7 +186,7 @@ end
 
 
 //--------------------------------------------------------------------------------------
-// EVEN + ODD ANTS IMAG PART
+// EVEN + ODD ANTS IMAG PART: 1 Clock Latency
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
     for(int k=0; k<BEAM; k++)begin:even_odd_imag
@@ -198,12 +196,17 @@ end
 
 
 //--------------------------------------------------------------------------------------
-// OUTPUT 
+// OUTPUT: 1+11+1=13 Clock Latency
 //--------------------------------------------------------------------------------------
-reg            [  11: 0]                        symb_clr_buf          =0;
-reg            [  11: 0]                        symb_1st_buf          =0;
-reg            [63:0]                           dout_info0 [14:0]     ='{default:0};
-reg            [15:0]                           dout_info1 [14:0]     ='{default:0};
+localparam                                      O_LATENCY             =13;
+
+reg            [O_LATENCY-1: 0]                 symb_clr_buf          =0;
+reg            [O_LATENCY-1: 0]                 symb_1st_buf          =0;
+reg            [63:0]                           dout_info0 [O_LATENCY-1:0] ='{default:0};
+reg            [15:0]                           dout_info1 [O_LATENCY-1:0] ='{default:0};
+reg            [O_LATENCY-1:0][7: 0]            re_num_dly            =0;
+reg            [O_LATENCY-1:0][7: 0]            rbg_num_dly           =0;
+reg            [O_LATENCY-1: 0]                 rbg_load_dly          =0;
 
 
 always @(posedge i_clk) begin
@@ -220,40 +223,60 @@ always @(posedge i_clk) begin
     end
 end
 
+// tvalid latency match
 always @(posedge i_clk) begin
-    tvalid_buf  <= {tvalid_buf[6:0], even_tvalid[0]};
-    sop_out     <= even_sop[0];
-    eop_out     <= even_eop[0];
+    tvld_out  <= {tvld_out[0], even_tvalid[0]};
+    sop_out   <= {sop_out[0], even_sop[0]};
+    eop_out   <= {eop_out[0], even_eop[0]};
 end
 
+// info latency match
 always @(posedge i_clk) begin
     dout_info0[0] <= i_info_0;
     dout_info1[0] <= i_info_1;
-    for(int i=1; i<15; i++)begin
+    for(int i=1; i<O_LATENCY; i++)begin
         dout_info0[i] <= dout_info0[i-1];
         dout_info1[i] <= dout_info1[i-1];
     end
 end
 
-always @(posedge i_clk) begin
-    symb_1st_buf<= {symb_1st_buf[10:0], i_symb_1st};
-    symb_clr_buf<= {symb_clr_buf[10:0], i_symb_clr};
+// re_num/rbg_num/rbg_load latency match
+always @ (posedge i_clk)begin
+    re_num_dly[0]   <= i_re_num;
+    rbg_num_dly[0]  <= i_rbg_num;
+    rbg_load_dly    <= {rbg_load_dly[O_LATENCY-2:0], i_rbg_load};
+
+    for(int i=1; i<O_LATENCY; i++)begin
+        re_num_dly [i] <= re_num_dly [i-1];
+        rbg_num_dly[i] <= rbg_num_dly[i-1];
+    end
 end
 
+// symb_clr/symb_1st latency match
+always @(posedge i_clk) begin
+    symb_1st_buf<= {symb_1st_buf[O_LATENCY-2:0], i_symb_1st};
+    symb_clr_buf<= {symb_clr_buf[O_LATENCY-2:0], i_symb_clr};
+end
+
+// output assignment
 assign o_data_even_i    = ants_even_re;
 assign o_data_even_q    = ants_even_im;
 assign o_data_odd_i     = ants_odd_re ;
 assign o_data_odd_q     = ants_odd_im ;
 assign o_data_i         = ants_sum_re ;
 assign o_data_q         = ants_sum_im ;
-assign o_tvalid         = tvalid_buf[0];
-assign o_sop            = sop_out;
-assign o_eop            = eop_out;
+assign o_tvalid         = tvld_out[0];
+assign o_sop            = sop_out [0];
+assign o_eop            = eop_out [0];
 
-assign o_info_0         = dout_info0[12];
-assign o_info_1         = dout_info1[12];
-assign o_symb_clr       = symb_clr_buf[11];
-assign o_symb_1st       = symb_1st_buf[11];
+assign o_info_0         = dout_info0  [O_LATENCY-1];
+assign o_info_1         = dout_info1  [O_LATENCY-1];
+assign o_re_num         = re_num_dly  [O_LATENCY-1];
+assign o_rbg_num        = rbg_num_dly [O_LATENCY-1];
+assign o_rbg_load       = rbg_load_dly[O_LATENCY-1];
+
+assign o_symb_clr       = symb_clr_buf[O_LATENCY-1];
+assign o_symb_1st       = symb_1st_buf[O_LATENCY-1];
 
 
 endmodule

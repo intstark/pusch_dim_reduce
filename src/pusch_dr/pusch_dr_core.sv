@@ -71,6 +71,7 @@ genvar gi;
 //------------------------------------------------------------------------------------------
 // RAM BLOCK FOR CPRI DATA FOR 7 SYMBOLS 
 //------------------------------------------------------------------------------------------
+wire                                            aiu_idx                 ;
 wire           [LANE-1:0][63: 0]                ant_info_0              ;
 wire           [LANE-1:0][15: 0]                ant_info_1              ;
 wire           [LANE-1:0][ 6: 0]                ant_slot_idx            ;
@@ -82,10 +83,22 @@ wire           [LANE-1: 0]                      ant_tvalid              ;
 wire           [LANE-1: 0]                      ant_symb_clr            ;
 wire           [LANE-1: 0]                      ant_sop                 ;
 wire           [LANE-1: 0]                      ant_eop                 ;
-
-
 wire           [LANE*4*32-1: 0]                 ant_data_even           ;
 wire           [LANE*4*32-1: 0]                 ant_data_odd            ;
+
+wire           [LANE-1: 0]                      rev_symb_clr            ;
+wire           [LANE-1: 0]                      rev_symb_1st            ;
+wire           [LANE-1: 0]                      rev_ant_vld             ;
+wire           [LANE-1: 0]                      rev_ant_sop             ;
+wire           [LANE-1: 0]                      rev_ant_eop             ;
+wire           [LANE*4*32-1: 0]                 rev_ant_even            ;
+wire           [LANE*4*32-1: 0]                 rev_ant_odd             ;
+
+wire                                            rev_rbg_load            ;
+wire           [   7: 0]                        rev_re_num              ;
+wire           [   7: 0]                        rev_rbg_num             ;
+wire           [  63: 0]                        rev_ant_info_0          ;
+wire           [  15: 0]                        rev_ant_info_1          ;
 
 wire           [63: 0]                          beams_info_0            ;
 wire           [15: 0]                          beams_info_1            ;
@@ -96,6 +109,9 @@ wire                                            beams_sop               ;
 wire                                            beams_eop               ;
 wire                                            beams_symb_clr          ;
 wire                                            beams_symb_1st          ;
+wire                                            beams_rbg_load          ;
+wire           [   7: 0]                        beams_re_num            ;
+wire           [   7: 0]                        beams_rbg_num           ;
 
 wire           [LANE-1: 0]                      w_cpri_clk              ;
 wire           [LANE-1: 0]                      w_cpri_rst              ;
@@ -111,7 +127,7 @@ wire                                            beams_pick_load         ;
 wire           [BEAM-1:0][31: 0]                beams_pick_pwr          ;
 wire           [63: 0]                          beams_pick_info_0       ;
 wire           [15:0][ 7: 0]                    beams_pick_info_1       ;
-
+wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
 
 //------------------------------------------------------------------------------------------
 // Buffer to align even & odd ants data
@@ -169,8 +185,6 @@ endgenerate
 //------------------------------------------------------------------------------------------
 reg                                             symb_is_1st           =1;
 reg            [   7: 0]                        ant_buffer_sym        =0;
-
-wire           [BEAM-1:0][7: 0]                 beam_sort_idx           ;
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
 reg            [   7: 0]                        re_num                =0;
@@ -208,23 +222,24 @@ assign rbg_num_max = (i_rbg_size == 2'b00) ? 8'd32  :
                      (i_rbg_size == 2'b01) ? 8'd16  :
                      (i_rbg_size == 2'b10) ? 8'd8   : 8'd8;
 
+assign aiu_idx = i_aiu_idx[0];
 
 // re number per rbG based on rbg size
 always @ (posedge i_clk) begin
     case(i_rbg_size)
         2'b00:  re_num_per_rbg <= 'd48;    // rbG=4 PRRs
         2'b01:  begin
-                    if(i_aiu_idx==0 && rbg_num==0)
+                    if(aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd96;     // rbG=8 PRRs
                 end
         2'b10:  begin
-                    if(i_aiu_idx==0 && rbg_num==0)
+                    if(aiu_idx==0 && rbg_num==0)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
-                    else if(i_aiu_idx==1 && rbg_num==rbg_num_max)
+                    else if(aiu_idx==1 && rbg_num==rbg_num_max)
                         re_num_per_rbg <= 'd48;     // rbG=4 PRRs
                     else
                         re_num_per_rbg <= 'd192;    // rbG=16 PRRs
@@ -248,6 +263,7 @@ end
 assign rbg_slip = (re_num == re_num_per_rbg-1) ? 1'b1 : 1'b0;
 assign rbg_load = (ant_tvalid[0] && re_num == 0) ? 1'b1 : 1'b0;
 
+
 // rbG number
 always @ (posedge i_clk)begin
     if(i_reset)
@@ -265,6 +281,7 @@ end
 //------------------------------------------------------------------------------------------
 wire           [BEAM-1:0][ANT*IW-1: 0]          code_word_even          ;
 wire           [BEAM-1:0][ANT*IW-1: 0]          code_word_odd           ;
+wire                                            bid_rden_2nd            ;
 
 code_word_rev                                           code_word_rev
 (
@@ -272,16 +289,41 @@ code_word_rev                                           code_word_rev
     .i_reset                                            (i_reset                ),
 
     .i_enable                                           (1'b1                   ),
+    .i_re_num                                           (re_num                 ),
+    .i_rbg_num                                          (rbg_num                ),
     .i_rbg_load                                         (rbg_load               ),
-    
+
+    .i_rvalid                                           (ant_tvalid[0]          ),
+    .i_sop                                              (ant_sop   [0]          ),
+    .i_eop                                              (ant_eop   [0]          ),
+    .i_ant_even                                         (ant_data_even          ),
+    .i_ant_odd                                          (ant_data_odd           ),
+    .i_info_0                                           (ant_info_0[0]          ),// IQ HD
+    .i_info_1                                           (ant_info_1[0]          ),// FFT AGC{odd, even}
+
     .i_beam_idx                                         (beam_sort_idx          ),
     .i_symb_idx                                         (ant_buffer_sym         ),
-    .i_symb_clr                                         (symb_clr               ),   
-    .i_symb_1st                                         (symb_is_1st            ),   
+    .i_symb_clr                                         (symb_clr               ),
+    .i_symb_1st                                         (symb_is_1st            ),
     
+    .o_ant_vld                                          (rev_ant_vld            ),
+    .o_ant_sop                                          (rev_ant_sop            ),
+    .o_ant_eop                                          (rev_ant_eop            ),
+    .o_ant_even                                         (rev_ant_even           ),
+    .o_ant_odd                                          (rev_ant_odd            ),
+    .o_info_0                                           (rev_ant_info_0         ),// IQ HD
+    .o_info_1                                           (rev_ant_info_1         ),// FFT AGC{odd, even}
+
+    .o_symb_clr                                         (rev_symb_clr           ),
+    .o_symb_1st                                         (rev_symb_1st           ),
+    .o_re_num                                           (rev_re_num             ),
+    .o_rbg_num                                          (rev_rbg_num            ),
+    .o_rbg_load                                         (rev_rbg_load           ),
+
     .o_cw_even                                          (code_word_even         ),
     .o_cw_odd                                           (code_word_odd          ),
-    .o_tvalid                                           (                       ) 
+    .o_tvalid                                           (                       ),
+    .o_bid_rden                                         (bid_rden_2nd           ) 
 );
 
 
@@ -296,33 +338,42 @@ mac_beams #(
 )mac_beams(
     .i_clk                                              (i_clk                  ),
 
-    .i_rvalid                                           (ant_tvalid[0]          ),
-    .i_sop                                              (ant_sop   [0]          ),
-    .i_eop                                              (ant_eop   [0]          ),
-    .i_symb_clr                                         (symb_clr               ),   
-    .i_symb_1st                                         (symb_is_1st            ),   
+    .i_rvalid                                           (rev_ant_vld            ),
+    .i_sop                                              (rev_ant_sop            ),
+    .i_eop                                              (rev_ant_eop            ),
+    .i_symb_clr                                         (rev_symb_clr           ),
+    .i_symb_1st                                         (rev_symb_1st           ),
 
-    .i_ants_data_even                                   (ant_data_even          ),
-    .i_ants_data_odd                                    (ant_data_odd           ),
+    .i_ants_data_even                                   (rev_ant_even           ),
+    .i_ants_data_odd                                    (rev_ant_odd            ),
     .i_code_word_even                                   (code_word_even         ),
     .i_code_word_odd                                    (code_word_odd          ),
 
-    .i_info_0                                           (ant_info_0[0]          ),  // IQ HD
-    .i_info_1                                           (ant_info_1[0]          ),  // FFT AGC{odd, even}
+    .i_info_0                                           (rev_ant_info_0         ),// IQ HD
+    .i_info_1                                           (rev_ant_info_1         ),// FFT AGC{odd, even}
+    
+    .i_re_num                                           (rev_re_num             ),
+    .i_rbg_num                                          (rev_rbg_num            ),
+    .i_rbg_load                                         (rev_rbg_load           ),
 
-    .o_info_0                                           (beams_info_0           ),  // IQ HD
-    .o_info_1                                           (beams_info_1           ),  // FFT AGC{odd, even}
+    .o_info_0                                           (beams_info_0           ),// IQ HD
+    .o_info_1                                           (beams_info_1           ),// FFT AGC{odd, even}
     .o_data_even_i                                      (                       ),
     .o_data_even_q                                      (                       ),
     .o_data_odd_i                                       (                       ),
     .o_data_odd_q                                       (                       ),
     .o_data_i                                           (beams_ants_i           ),
     .o_data_q                                           (beams_ants_q           ),
-    .o_sop                                              (beams_sop              ), 
-    .o_eop                                              (beams_eop              ), 
-    .o_symb_clr                                         (beams_symb_clr         ),  
-    .o_symb_1st                                         (beams_symb_1st         ),  
-    .o_tvalid                                           (beams_tvalid           ) 
+    .o_sop                                              (beams_sop              ),
+    .o_eop                                              (beams_eop              ),
+    .o_tvalid                                           (beams_tvalid           ),
+    
+    .o_re_num                                           (beams_re_num           ),
+    .o_rbg_num                                          (beams_rbg_num          ),
+    .o_rbg_load                                         (beams_rbg_load         ),
+
+    .o_symb_clr                                         (beams_symb_clr         ),
+    .o_symb_1st                                         (beams_symb_1st         ) 
 );
 
 
@@ -353,9 +404,9 @@ beam_power_calc # (
     .i_data_eop                                         (beams_eop              ),
     .i_data_sop                                         (beams_sop              ),
     
-    .i_re_num                                           (re_num                 ),
-    .i_rbg_num                                          (rbg_num                ),
-    .i_rbg_load                                         (rbg_load               ),
+    .i_re_num                                           (beams_re_num           ),
+    .i_rbg_num                                          (beams_rbg_num          ),
+    .i_rbg_load                                         (beams_rbg_load         ),
     
     .o_data_sum                                         (rbg_sum_abs            ),
     .o_data_addr                                        (rbg_abs_addr           ),
@@ -414,7 +465,7 @@ beam_sort # (
     .i_symb_1st                                         (beams_symb_1st         ),
 
     .i_rbg_max                                          (rbg_num_max            ),
-    .i_rbg_load                                         (rbg_load               ),
+    .i_rbg_load                                         (bid_rden_2nd           ),
     .i_bid_rdinit                                       (rbg_sum_load           ),
     
     .o_score                                            (                       ),

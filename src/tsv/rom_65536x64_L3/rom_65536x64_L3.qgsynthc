@@ -74,7 +74,7 @@
           </parameter>
           <parameter>
             <name>GUI_MIFfilename</name>
-            <value>M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN4.mif</value>
+            <value>../src/tsv/pusch_group1_mif/LAN4.mif</value>
           </parameter>
           <parameter>
             <name>GUI_MODULE_NAME</name>
@@ -82,7 +82,7 @@
           </parameter>
           <parameter>
             <name>GUI_NUMWORDS_A</name>
-            <value>65536</value>
+            <value>44352</value>
           </parameter>
           <parameter>
             <name>GUI_OPTIMIZATION_OPTION</name>
@@ -90,7 +90,7 @@
           </parameter>
           <parameter>
             <name>GUI_RAM_BLOCK_TYPE</name>
-            <value>Auto</value>
+            <value>M20K</value>
           </parameter>
           <parameter>
             <name>GUI_RESOURCE_USAGE</name>
@@ -133,7 +133,7 @@
         <className>rom_1port</className>
         <version>20.2.0</version>
         <name>rom_1port_0</name>
-        <uniqueName>rom_65536x64_L3_rom_1port_2020_xtqx4ga</uniqueName>
+        <uniqueName>rom_65536x64_L3_rom_1port_2020_ab4pytq</uniqueName>
         <nonce>0</nonce>
         <incidentConnections></incidentConnections>
         <path>rom_65536x64_L3.rom_1port_0</path>
