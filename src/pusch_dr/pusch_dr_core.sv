@@ -183,7 +183,7 @@ endgenerate
 //------------------------------------------------------------------------------------------
 // rbG number and re number
 //------------------------------------------------------------------------------------------
-reg                                             symb_is_1st           =1;
+reg                                             symb_is_1st           =0;
 reg            [   7: 0]                        ant_buffer_sym        =0;
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
@@ -208,13 +208,13 @@ end
 
 always @(posedge i_clk) begin
     if(i_reset)
-        symb_is_1st <= 'd1;
-    else if(symb_clr)
-        symb_is_1st <= 'd1;
-    else if(ant_buffer_sym < 'd4)
-        symb_is_1st <= 'd1;
-    else
         symb_is_1st <= 'd0;
+    else if(symb_clr)
+        symb_is_1st <= 'd0;
+    else if(ant_buffer_sym >= 'd4)
+            symb_is_1st <= 'd0;
+    else if(ant_sop[0])
+        symb_is_1st <= 'd1;
 end
 
 
@@ -249,9 +249,7 @@ always @ (posedge i_clk) begin
 end
 
 always @ (posedge i_clk)begin
-    if(i_reset)
-        re_num <= 'd0;
-    else if(re_num == re_num_per_rbg-1)
+    if(re_num == re_num_per_rbg-1)
         re_num <= 'd0;
     else if(ant_tvalid[0])
         re_num <= re_num + 1'b1;
@@ -266,9 +264,7 @@ assign rbg_load = (ant_tvalid[0] && re_num == 0) ? 1'b1 : 1'b0;
 
 // rbG number
 always @ (posedge i_clk)begin
-    if(i_reset)
-        rbg_num <= 'd0;
-    else if(!ant_tvalid[0])
+    if(!ant_tvalid[0])
         rbg_num <= 'd0;
     else if(rbg_num == rbg_num_max && rbg_slip)
         rbg_num <= 'd0;

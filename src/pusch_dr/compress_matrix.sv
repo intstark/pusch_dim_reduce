@@ -321,7 +321,7 @@ mem_streams_ram # (
     .RAM_TYPE                                           (1                      ) 
 )mem_beam_pwr(
     .i_clk                                              (clk                    ),
-    .i_reset                                            (rst                    ),
+    .i_reset                                            (1'b0                   ),
     .i_rvalid                                           (i_vld                  ),
     .i_wr_wen                                           (i_rbg_load             ),
     .i_wr_data                                          (i_beam_pwr             ),

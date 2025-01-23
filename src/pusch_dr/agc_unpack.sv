@@ -15,6 +15,7 @@
 // 
 // Revision:
 // Revision 0.01 - File Created
+// Revision 0.02 - Take the negative sign of the input fft agc
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
@@ -76,11 +77,14 @@ end
 assign rvalid = rvalid_buf[0];
 assign rx_eop = rx_eop_buf[0];
 
+//--------------------------------------------------------------------------------------
+// get the every fft agc(inverse:algo) 
+//--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
     for(int i=0;i<8;i++) begin
         for(int j=0;j<4;j++)begin
-            data_cmp_0[i*4 + j] <= i_fft_agc[i][ 0+j*8 +: 8]; // even
-            data_cmp_1[i*4 + j] <= i_fft_agc[i][32+j*8 +: 8]; // odd 
+            data_cmp_0[i*4 + j] <= ~i_fft_agc[i][ 0+j*8 +: 8] + 'd1; // even
+            data_cmp_1[i*4 + j] <= ~i_fft_agc[i][32+j*8 +: 8] + 'd1; // odd 
         end
     end
 end

@@ -17,7 +17,7 @@ aiu_idx = 1;    % AIU编号识别
 width = 64;
 depth = 44352;
 
-vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-0109';
+vector_dir1 = '../../../../AlgoVec/ulrxDimRedu-0113';
 fpga_dir   = sprintf('pusch_group%d_mif',(aau_idx*2+aiu_idx));
 
 for ii=1:8

@@ -1,6 +1,7 @@
 ../../tb/ant_symbol_buffer.sv
 
 ../../src/tbu/*
+../../src/cpri_prb_comb_pusch/*.v
 
 ../../src/tsv/cpri_prb_comb_gen.v
 ../../src/tsv/rom_65536x64_L0/sim/rom_65536x64_L0.v

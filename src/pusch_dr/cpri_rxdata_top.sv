@@ -25,6 +25,9 @@ module cpri_rxdata_top # (
     input                                           i_clk                   ,// data clock
     input                                           i_reset                 ,// system reset
     input          [   1: 0]                        i_dr_mode               ,// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+    
+    input                                           i_rx_rfp                ,
+    input                                           i_enable                ,
 
     input          [LANE-1: 0]                      i_cpri_clk              ,// cpri rx clock
     input          [LANE-1: 0]                      i_cpri_rst              ,// cpri rx reset
@@ -121,6 +124,10 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
         .i_clk                                              (i_clk                  ),
         .i_reset                                            (i_reset                ),
         .i_dr_mode                                          (i_dr_mode              ),
+        
+        .i_rx_rfp                                           (i_rx_rfp               ),
+        .i_enable                                           (i_enable               ),
+        
         .i_rx_data                                          (i_cpri_rx_data[gi]     ),
         .i_rvalid                                           (i_cpri_rx_vld [gi]     ),
         .i_rready                                           (cpri_rx_ready [gi]     ),
@@ -143,7 +150,7 @@ endgenerate
 agc_unpack                                              agc_unpack
 (
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (sys_reset              ),
 
     .i_cpri_data                                        (cpri_data_buf          ),
     .i_cpri_addr                                        (cpri_addr_buf          ),
@@ -173,7 +180,7 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin:gen_rxdata_unpack
     (
 
         .i_clk                                              (i_clk                  ),
-        .i_reset                                            (i_reset                ),
+        .i_reset                                            (sys_reset              ),
 
         .i_cpri_data                                        (tx_data      [gi]      ),
         .i_cpri_addr                                        (tx_addr      [gi]      ),

@@ -121,21 +121,16 @@ reg  [3:0]   group_cnt_d4_1,group_cnt_d4_2 /*synthesis preserve*/;
 
 always @ (posedge clk)
     begin
-         if(rst) 
-            begin             
-             pkg_sel_1 <= 3'd0; 
-//             pkg_sel_2 <= 3'd0; 
-            end   
-         else if(i_eop == 1'd1)
-            begin
-             pkg_sel_1 <= pkg_sel_1 + 3'd1 ;
-//             pkg_sel_2 <= pkg_sel_2 + 3'd1 ;
-            end                            
-         else                              
-            begin                          
-             pkg_sel_1 <= pkg_sel_1        ;
-//             pkg_sel_2 <= pkg_sel_2        ;
+        if(rst) begin             
+            pkg_sel_1 <= 3'd0; 
+        end else if(i_vld) 
+            if(i_eop == 1'd1)begin
+                pkg_sel_1 <= pkg_sel_1 + 3'd1 ;
+            end else begin                          
+                pkg_sel_1 <= pkg_sel_1        ;
             end
+        else
+            pkg_sel_1 <= 3'd0;
     end
     
 
@@ -359,7 +354,8 @@ always @ (posedge clk)
                     pkg_waddr <= pkg_waddr + 7'd1;
             end
         else
-            pkg_waddr <= pkg_waddr;
+            pkg_waddr <= 7'd0;
+//            pkg_waddr <= pkg_waddr;
     end
 
 always @ (posedge clk)begin

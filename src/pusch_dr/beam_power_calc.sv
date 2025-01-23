@@ -201,8 +201,8 @@ lp_buffer_syn # (
     .i_clk                                              (i_clk                              ),
     .i_reset                                            (i_reset                            ),
     .i_wr_data                                          ({rbg_load_acc,iq_abs_vld}          ),
-    .i_wr_wen                                           (rbg_load_acc                       ),
-    .i_wr_vld                                           (iq_abs_vld                         ),
+    .i_wr_wen                                           (rbg_load_acc && iq_abs_vld         ),
+    .i_wr_vld                                           (symb_1st_dly[1]                    ),
     .o_rd_data                                          ({rbg_sum_load_lp,rbg_sum_vld_lp}   ),
     .o_rd_vld                                           (                                   ),
     .o_rd_sop                                           (                                   ) 

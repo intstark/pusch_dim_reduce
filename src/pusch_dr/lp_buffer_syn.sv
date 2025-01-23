@@ -56,6 +56,8 @@ reg            [ADDR_WIDTH-1: 0]                rd_addr               =0;
 reg                                             rd_ren                =0;
 reg                                             wr_wen                =0;
 wire           [DATA_WIDTH-1: 0]                rd_data                 ;
+wire                                            empty                   ;
+wire                                            full                    ;
 
 
 //--------------------------------------------------------------------------------------
@@ -63,13 +65,17 @@ wire           [DATA_WIDTH-1: 0]                rd_data                 ;
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk)begin
     if(i_reset)
-        wr_wen<= 1'b0;
-    else if(i_wr_wen)
+        wr_wen <= 1'b0;
+    else if(i_wr_vld)
         wr_wen <= 1'b1;
+    else
+        wr_wen <= 1'b0;
 end
 
 always @(posedge i_clk)begin
     if(i_reset)
+        wr_addr <= {ADDR_WIDTH{1'b0}};
+    else if(!i_wr_vld)
         wr_addr <= {ADDR_WIDTH{1'b0}};
     else if(i_wr_wen)
         wr_addr <= wr_addr + 'd1;
@@ -84,12 +90,16 @@ end
 always @(posedge i_clk)begin
     if(i_reset)
         rd_ren <= 1'b0;
-    else if(wr_addr[0] && i_wr_wen)
+    if(empty)
+        rd_ren <= 1'b0;
+    else if(wr_addr==1 && i_wr_wen)
         rd_ren <= 1'b1;
 end
 
 always @(posedge i_clk)begin
     if(i_reset)
+        rd_addr <= {ADDR_WIDTH{1'b0}};
+    else if(empty)
         rd_addr <= {ADDR_WIDTH{1'b0}};
     else if(rd_ren)
         rd_addr <= wr_addr - 'd1;
@@ -112,8 +122,8 @@ FIFO_SYNC_XPM_intel #(
     .rd_en                                              (rd_ren                 ),
     .dout                                               (rd_data                ),
     .dout_valid                                         (                       ),
-    .empty                                              (                       ),
-    .full                                               (                       ),
+    .empty                                              (empty                  ),
+    .full                                               (full                   ),
     .usedw                                              (                       ),
     .almost_full                                        (                       ),
     .almost_empty                                       (                       ) 

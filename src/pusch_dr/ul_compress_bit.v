@@ -156,7 +156,8 @@ begin
 	else if(i_vld)
 		wr_addr <= wr_addr + 5'd1;
 	else
-	  wr_addr <= wr_addr;
+        wr_addr <= 5'd0;
+//	  wr_addr <= wr_addr;
 end
 
 
@@ -171,7 +172,8 @@ begin
     else if (rx_vld_dly[11])
         rd_addr <= rd_addr + 5'd1;       
     else
-        rd_addr <= rd_addr;
+        rd_addr <= 5'd0;
+//        rd_addr <= rd_addr;
 end
 
 always@(posedge clk)

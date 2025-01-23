@@ -36,6 +36,9 @@ module cpri_rx_buffer#(
     input                                           i_reset                 ,
     input          [   1: 0]                        i_dr_mode               ,
 
+    input                                           i_rx_rfp                ,
+    input                                           i_enable                ,
+    
     input          [WDATA_WIDTH-1: 0]               i_rx_data               ,
     input                                           i_rvalid                ,
     input                                           i_rready                ,
@@ -64,6 +67,7 @@ localparam [6: 0]             CHIP_DW    = 95;
 // WIRE & REGISTER
 //--------------------------------------------------------------------------------------
 genvar gi;
+wire                                            rrst_rfp                ;
 wire                                            rrst_wr_sync            ;
 reg                                             cpri_reset            =0;
 reg                                             rd_rdy                =0;
@@ -97,20 +101,30 @@ reg            [   6: 0]                        slot_idx              =0;
 reg            [   3: 0]                        symb_idx              =0;
 reg            [   7: 0]                        prb0_idx              =0;
 reg            [   7: 0]                        prb1_idx              =0;
+reg            [   3: 0]                        pkg_type              =0;
+reg            [   3: 0]                        ant0_idx              =0;
+reg            [   3: 0]                        ant1_idx              =0;
 reg                                             rx_vld                =0;
 reg            [  63: 0]                        cpri_rx_data          =0;
 reg                                             cpri_rx_vld           =0;
 reg            [   6: 0]                        slot_idx_out          =0;
 reg            [   3: 0]                        symb_idx_out          =0;
+reg            [   7: 0]                        prb1_idx_out          =0;
 reg                                             pusch_en              =0;
+reg                                             pusch_pkg             =0;
+reg                                             rx_sop                =0;
 
 //--------------------------------------------------------------------------------------
 // Reset synchronizer 
 //--------------------------------------------------------------------------------------
 alt_reset_synchronizer #(.depth(2),.rst_value(1)) wreset_sync (.clk(i_cpri_clk),.reset_n(!i_reset),.rst_out(rrst_wr_sync));
 
+alt_reset_synchronizer #(.depth(2),.rst_value(1)) rfprst_sync (.clk(i_cpri_clk),.reset_n(!i_rx_rfp),.rst_out(rrst_rfp));
+
 always @ (posedge i_cpri_clk)begin
     if(i_cpri_reset)
+        cpri_reset <= 1'b1;
+    else if(rrst_rfp)
         cpri_reset <= 1'b1;
     else if(rrst_wr_sync)
         cpri_reset <= 1'b1;
@@ -123,11 +137,33 @@ end
 //--------------------------------------------------------------------------------------
 always @(posedge i_cpri_clk) begin
     rx_vld_buf[4:0] <= {rx_vld_buf[3:0],i_rvalid};
-    if(rx_vld_buf[2])begin
-        slot_idx <= i_rx_data[18:12];
-        symb_idx <= i_rx_data[11: 8];
+    if(cpri_reset)begin
+        pkg_type <= 'd0;
+        prb0_idx <= 'd0;
+        prb1_idx <= 'd0;
+        slot_idx <= 'd0;
+        symb_idx <= 'd0;
+        ant0_idx <= 'd0;
+        ant1_idx <= 'd0;
+    end else if(rx_vld_buf[2])begin
+        pkg_type <= i_rx_data[39:36];
         prb0_idx <= i_rx_data[35:28];
         prb1_idx <= i_rx_data[27:20];
+        slot_idx <= i_rx_data[18:12];
+        symb_idx <= i_rx_data[11: 8];
+        ant0_idx <= i_rx_data[ 7: 4];
+        ant1_idx <= i_rx_data[ 3: 0];
+    end
+end
+
+// filter up-stream
+always @(posedge i_cpri_clk) begin
+    if(cpri_reset)
+        pusch_pkg <= 1'b0;
+    else if(pkg_type == 4'd8)
+        pusch_pkg <= 1'b1;
+    else begin
+        pusch_pkg <= 1'b0;
     end
 end
 
@@ -161,14 +197,20 @@ end
 // generate cpri valid
 always @(posedge i_cpri_clk) begin
     if(cpri_reset)
+        rx_sop <= 1'b0;
+    else if(!i_enable) 
+        rx_sop <= 1'b0;
+    else if(pusch_en && pusch_pkg && symb_idx == 4'd0 && prb0_idx==0 && prb1_idx==4)
+        rx_sop <= 1'b1;
+end
+
+always @(posedge i_cpri_clk) begin
+    if(cpri_reset)
         cpri_rx_vld <= 1'b0;
-    else if(pusch_en)begin
-        if(symb_idx == 0 && prb0_idx == 0 && rx_vld_buf[4])
-            cpri_rx_vld <= 1'b1;
-        else
-            cpri_rx_vld <= cpri_rx_vld;
-    end else
-        cpri_rx_vld <= 1'b0;
+    else if(i_enable && pusch_en && pusch_pkg)
+        cpri_rx_vld <= 1'b1;
+    else
+        cpri_rx_vld <= 1'b0; 
 end
 
 // generate cpri data
@@ -181,21 +223,23 @@ always @(posedge i_cpri_clk) begin
 end
 
 
-
 //--------------------------------------------------------------------------------------
 // Write logic
 //--------------------------------------------------------------------------------------
 always @(posedge i_cpri_clk) begin
     if(cpri_reset)
         wr_wen <= 1'b0;
+    else if(rx_sop && cpri_rx_vld)
+        wr_wen <= 1'b1;
+    else if(wr_wlast)
+        wr_wen <= 1'b0;
     else
-        wr_wen <= cpri_rx_vld;
+        wr_wen <= 1'b0;
 end
 
 always @(posedge i_cpri_clk) begin
     wr_data <= cpri_rx_data;
 end
-
 
 always @(posedge i_cpri_clk) begin
     if(cpri_reset)
@@ -204,8 +248,6 @@ always @(posedge i_cpri_clk) begin
         wr_addr <= 'd0;
     else if(wr_wen)
         wr_addr <= wr_addr + 'd1;
-    else
-        wr_addr <= 'd0;
 end
 
 always @(posedge i_cpri_clk) begin
@@ -216,8 +258,6 @@ always @(posedge i_cpri_clk) begin
     else
         wr_wlast <= 1'b0;
 end
-
-//assign wr_info = (wr_addr==1) ? 1'b1 : 1'b0;
 
 reg            [  31: 0]                        fft_agc_eve           =0;
 reg            [  31: 0]                        fft_agc_odd           =0;
