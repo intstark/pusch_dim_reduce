@@ -25,6 +25,7 @@ module mac_beams #(
     parameter   OW   =   48      // output width
 )(
     input                                           i_clk                   ,
+    input                                           i_reset                 ,
 
     input                                           i_rvalid                ,
     input                                           i_sop                   ,
@@ -134,6 +135,7 @@ generate for(bi=0; bi<BEAM; bi++) begin : even_ants_of_16beams
         .OW                                                 (OW                     ) 
     ) mac_ants_even (
         .i_clk                                              (i_clk                  ),
+        .i_reset                                            (i_reset                ),
         .i_ants_data                                        (ants_data_even         ),
         .i_rvalid                                           (rvalid                 ),
         .i_sop                                              (sop                    ),
@@ -159,6 +161,7 @@ generate for(bi=0; bi<BEAM; bi++) begin : odd_ants_of_16beams
         .OW                                                 (OW                     ) 
     ) mac_ants_odd (
         .i_clk                                              (i_clk                  ),
+        .i_reset                                            (i_reset                ),
         .i_ants_data                                        (ants_data_odd          ),
         .i_rvalid                                           (rvalid                 ),
         .i_sop                                              (sop                    ),
@@ -225,9 +228,15 @@ end
 
 // tvalid latency match
 always @(posedge i_clk) begin
-    tvld_out  <= {tvld_out[0], even_tvalid[0]};
-    sop_out   <= {sop_out[0], even_sop[0]};
-    eop_out   <= {eop_out[0], even_eop[0]};
+    if(i_reset)begin
+        tvld_out  <= 'd0;
+        sop_out   <= 'd0;
+        eop_out   <= 'd0;
+    end else begin   
+        tvld_out  <= {tvld_out[0], even_tvalid[0]};
+        sop_out   <= {sop_out[0], even_sop[0]};
+        eop_out   <= {eop_out[0], even_eop[0]};
+    end
 end
 
 // info latency match
@@ -242,13 +251,21 @@ end
 
 // re_num/rbg_num/rbg_load latency match
 always @ (posedge i_clk)begin
-    re_num_dly[0]   <= i_re_num;
-    rbg_num_dly[0]  <= i_rbg_num;
-    rbg_load_dly    <= {rbg_load_dly[O_LATENCY-2:0], i_rbg_load};
+    if(i_reset)begin
+        rbg_load_dly <= 'd0;
+        for(int i=0; i<O_LATENCY; i++)begin
+            re_num_dly [i] <= 'd0;
+            rbg_num_dly[i] <= 'd0;
+        end
+    end else begin
+        re_num_dly[0]   <= i_re_num;
+        rbg_num_dly[0]  <= i_rbg_num;
+        rbg_load_dly    <= {rbg_load_dly[O_LATENCY-2:0], i_rbg_load};
 
-    for(int i=1; i<O_LATENCY; i++)begin
-        re_num_dly [i] <= re_num_dly [i-1];
-        rbg_num_dly[i] <= rbg_num_dly[i-1];
+        for(int i=1; i<O_LATENCY; i++)begin
+            re_num_dly [i] <= re_num_dly [i-1];
+            rbg_num_dly[i] <= rbg_num_dly[i-1];
+        end
     end
 end
 

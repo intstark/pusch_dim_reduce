@@ -17,7 +17,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-module mem_streams # (
+module mem_streams_1 # (
     parameter integer CHANNELS           =  16   ,
     parameter integer WDATA_WIDTH        =  64   ,
     parameter integer WADDR_WIDTH        =  11   ,
@@ -34,6 +34,7 @@ module mem_streams # (
     input          [WADDR_WIDTH-1: 0]               i_wr_addr               ,
     input          [CHANNELS-1:0][WDATA_WIDTH-1: 0] i_wr_data               ,
     input                                           i_rd_ren                ,
+    input          [RADDR_WIDTH-1: 0]               i_rd_addr               ,
 
     output         [CHANNELS-1:0][RDATA_WIDTH-1: 0] o_rd_data               ,
     output         [RADDR_WIDTH-1: 0]               o_rd_addr               ,
@@ -83,22 +84,6 @@ wire           [CHANNELS-1: 0]                  wr_full                 ;
 
 always @(posedge i_clk) begin
     if(i_reset)
-        rd_ren <= 'd0;
-    else if(data_vld[0])
-        rd_ren <= {CHANNELS{i_rd_ren}};
-    else
-        rd_ren <= 'd0;
-end
-
-always @(posedge i_clk) begin
-    if(i_reset)
-        rd_addr_syn <= 'd0;
-    else if(i_rd_ren)
-        rd_addr_syn <= rd_addr_syn + 'd1;
-end
-
-always @(posedge i_clk) begin
-    if(i_reset)
         wr_wen <= {CHANNELS{1'b0}};
     else
         wr_wen <= {CHANNELS{i_wr_wen}};
@@ -106,7 +91,7 @@ always @(posedge i_clk) begin
     for(int i=0;i<CHANNELS;i=i+1) begin
         wr_addr[i] <= i_wr_addr;
         wr_data[i] <= i_wr_data[i];
-        rd_addr[i] <= rd_addr_syn;
+        rd_addr[i] <= i_rd_addr;
     end
 end
 
@@ -115,22 +100,20 @@ end
 // Read data from memory at the same time
 //--------------------------------------------------------------------------------------
 generate for(gi=0;gi<CHANNELS;gi=gi+1)begin : fifo_blocks
-    FIFO_SYNC_XPM_intel #(
-        .NUMWORDS                                           (WDATA_DEPTH            ),
-        .DATA_WIDTH                                         (WDATA_WIDTH            )
-    )INST_INFO(                                                                   
-        .rst                                                (i_reset                ),
-        .clk                                                (i_clk                  ),
-        .wr_en                                              (wr_wen  [gi]           ),
-        .din                                                (wr_data [gi]           ),
-        .rd_en                                              (rd_ren  [gi]           ),
-        .dout                                               (rd_data [gi]           ),
-        .dout_valid                                         (data_vld[gi]           ),
-        .empty                                              (rd_empty[gi]           ),
-        .full                                               (wr_full [gi]           ),
-        .usedw                                              (                       ),
-        .almost_full                                        (                       ),
-        .almost_empty                                       (                       ) 
+    Simple_Dual_Port_BRAM_XPM_intel #(
+        
+        .WDATA_WIDTH                                        (WDATA_WIDTH            ),
+        .NUMWORDS_A                                         (WDATA_DEPTH            ),
+        .RDATA_WIDTH                                        (RDATA_WIDTH            ),
+        .NUMWORDS_B                                         (RDATA_DEPTH            ),
+        .INI_FILE                                           (                       ) 
+    )INST_RAM(
+        .clock                                              (i_clk                  ),
+        .wren                                               (wr_wen [gi]            ),
+        .wraddress                                          (wr_addr[gi]            ),
+        .data                                               (wr_data[gi]            ),
+        .rdaddress                                          (rd_addr[gi]            ),
+        .q                                                  (rd_data[gi]            ) 
     );
 end
 endgenerate

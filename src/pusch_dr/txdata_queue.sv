@@ -274,9 +274,15 @@ end
 
 
 always @ (posedge i_clk)begin
-    rd_ren_buf[0] <= rd_ren;
-    for(int i=1;i<4;i=i+1) begin
-        rd_ren_buf[i] <= rd_ren_buf[i-1];
+    if(i_reset)begin
+        for(int i=0;i<4;i=i+1) begin
+            rd_ren_buf[i] <= 'd0;
+        end
+    end else begin
+        rd_ren_buf[0] <= rd_ren;
+        for(int i=1;i<4;i=i+1) begin
+            rd_ren_buf[i] <= rd_ren_buf[i-1];
+        end
     end
 end
 
@@ -289,7 +295,9 @@ always @ (posedge i_clk)begin
 end
 
 always @ (posedge i_clk)begin
-    if(|rd_ren_buf[3])
+    if(i_reset)
+        rd_dout_vld <= 1'b0;
+    else if(|rd_ren_buf[3])
         rd_dout_vld <= 1'b1;
     else
         rd_dout_vld <= 1'b0;

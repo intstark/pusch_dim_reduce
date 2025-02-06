@@ -160,13 +160,24 @@ reg            [  15: 0]                        fft_agc_out           =0;
 // gnenerate valid and read enable signals
 //--------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    if(data_cnt == DATA_DEPTH-2)
+    if(i_reset)
+        sft_num_vld <= 1'b0;
+    else if(data_cnt == DATA_DEPTH-2)
         sft_num_vld <= 1'b1;
     else
         sft_num_vld <= 1'b0;
 
-    sft_num_vld_d1 <= sft_num_vld;
-    rvld_buf <= {rvld_buf[DATA_DEPTH+1:0], i_rvalid[0]};
+    if(i_reset)
+        sft_num_vld_d1 <= 'd0;
+    else
+        sft_num_vld_d1 <= sft_num_vld;
+end
+
+always @ (posedge i_clk)begin
+    if(i_reset)
+        rvld_buf <= 0;
+    else
+        rvld_buf <= {rvld_buf[DATA_DEPTH+1:0], i_rvalid[0]};
 end
 
 assign rd_ren = rvld_buf[DATA_DEPTH];

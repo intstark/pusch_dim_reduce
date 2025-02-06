@@ -260,6 +260,7 @@ register_shift # (
     .DEPTH                                              (TOT_CYCLE              ) 
 )u_dly_vld(
     .clk                                                (clk                    ),
+    .rst                                                (rst                    ),
     .in                                                 ({i_sel,i_sop,i_eop,i_vld}),
     .out                                                ({o_sel,o_sop,o_eop,o_vld}) 
 );
@@ -269,6 +270,7 @@ register_shift # (
     .DEPTH                                              (TOT_CYCLE-1            ) 
 )u_dly_rbg_load(
     .clk                                                (clk                    ),
+    .rst                                                (rst                    ),
     .in                                                 (i_rbg_load             ),
     .out                                                (rbg_load_dly           ) 
 );
@@ -278,6 +280,7 @@ register_shift # (
     .DEPTH                                              (TOT_CYCLE              ) 
 )u_dly_info_0(
     .clk                                                (clk                    ),
+    .rst                                                (rst                    ),
     .in                                                 ({pkg_type,cell_idx,slot_idx,symb_idx}),
     .out                                                ({o_pkg_type,o_cell_idx,o_slot_idx,o_symb_idx}) 
 );
@@ -288,6 +291,7 @@ generate for(gb=0;gb<16;gb=gb+1)begin : dly_info1
         .DEPTH                                              (TOT_CYCLE-1            ) 
     )u_dly_info_1(
         .clk                                                (clk                    ),
+        .rst                                                (rst                    ),
         .in                                                 (i_info_1[gb]           ),
         .out                                                (fft_agc [gb]           ) 
     );

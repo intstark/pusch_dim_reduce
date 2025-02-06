@@ -36,6 +36,7 @@
 ../../src/pusch_dr/compress_shift.sv
 ../../src/pusch_dr/beam_buffer.sv
 ../../src/pusch_dr/beam_power_calc.sv
+../../src/pusch_dr/mem_streams_1.sv
 ../../src/pusch_dr/mem_streams.sv
 ../../src/pusch_dr/mem_streams_ram.sv
 ../../src/pusch_dr/beams_mem_pick.sv

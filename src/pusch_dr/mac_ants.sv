@@ -24,6 +24,7 @@ module mac_ants #(
     parameter   OW  =   48      // output width
 )(
     input                                           i_clk                   ,
+    input                                           i_reset                 ,
 
     input          [ANT*IW-1: 0]                    i_ants_data             ,
     input                                           i_rvalid                ,
@@ -174,12 +175,20 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    tvalid_buf[5:0] <= {tvalid_buf[4:0], mult_valid[4]};
+    if(i_reset)
+        tvalid_buf[5:0] <= 0;
+    else
+        tvalid_buf[5:0] <= {tvalid_buf[4:0], mult_valid[4]};
 end
 
 always @(posedge i_clk) begin
-    sop_buf[10:0] <= {sop_buf[9:0],i_sop}; 
-    eop_buf[10:0] <= {eop_buf[9:0],i_eop}; 
+    if(i_reset)begin
+        sop_buf[10:0] <= 'd0; 
+        eop_buf[10:0] <= 'd0; 
+    end else begin
+        sop_buf[10:0] <= {sop_buf[9:0],i_sop}; 
+        eop_buf[10:0] <= {eop_buf[9:0],i_eop};
+    end
 end
 
 

@@ -376,8 +376,13 @@ always @ (posedge i_clk)begin
 end
 
 always @ (posedge i_clk)begin
-    rd_rlast_buf<= {rd_rlast_buf[1:0],rd_rlast};
-    rd_en_buf   <= {rd_en_buf[1:0],rd_en};
+    if(rd_reset)begin
+        rd_rlast_buf<= 'd0;
+        rd_en_buf   <= 'd0;
+    end else begin
+        rd_rlast_buf<= {rd_rlast_buf[1:0],rd_rlast};
+        rd_en_buf   <= {rd_en_buf[1:0],rd_en};
+    end
 end
 
 always @ (posedge i_clk)begin
@@ -500,7 +505,10 @@ end
 assign symb_eop = (rd_addr_buf[2] == 'd3167) ? 1'b1 : 1'b0;
 
 always @(posedge i_clk) begin
-    symb_eop_out <= {symb_eop_out[3:0], symb_eop};
+    if(rd_reset)
+        symb_eop_out <= 'd0;
+    else
+        symb_eop_out <= {symb_eop_out[3:0], symb_eop};
 end
 
 //--------------------------------------------------------------------------------------
@@ -514,8 +522,13 @@ always @ (posedge i_clk)begin
         tx_addr_out[i] <= tx_addr_out[i-1];
     end
 
-    tvalid_out  <= {tvalid_out [3:0], rd_en_buf[2]};
-    txlast_out  <= {txlast_out [3:0], data_last};
+    if(rd_reset)begin
+        tvalid_out  <= 'd0;
+        txlast_out  <= 'd0;
+    end else begin
+        tvalid_out  <= {tvalid_out [3:0], rd_en_buf[2]};
+        txlast_out  <= {txlast_out [3:0], data_last};
+    end 
 end
 
 

@@ -285,3 +285,11 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + txdata_queue：waddr/raddr归零问题
   + ul_comress_bot: waddr/raddr归零问题
   + ul_package_data：waddr/raddr归零问题
+
+### 2025.02.04
++ 复位后valid信号延时问题：
+  + 涉及模块较多，主要将延时中的vld等信号在复位时同时清零;
+  + beam_buffer：其中num_block在sym_is_1st无效时候清零；
+  + beams_mem_pick：其中num_block在sym_is_1st无效时候清零；
+  + beam_power_calc：去掉lp_buffer_syn模块；
+  + register_shift：加入rst端口

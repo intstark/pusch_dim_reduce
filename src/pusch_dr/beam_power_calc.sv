@@ -25,7 +25,7 @@ module beam_power_calc # (
     input                                           i_clk                   ,// data clock
     input                                           i_reset                 ,// reset
 
-    input          [   1: 0]                        i_rbg_size              ,// default:2'b10 16rb
+    input                                           i_aiu_idx               ,
     input                                           i_symb_clr              ,
     input                                           i_symb_1st              ,
 
@@ -46,7 +46,9 @@ module beam_power_calc # (
     output         [   7: 0]                        o_data_addr             ,
     output                                          o_data_vld              ,
     output                                          o_data_load             ,
-    output                                          o_data_wen               
+    output                                          o_data_wen              ,               
+    output                                          o_symb_clr              ,               
+    output                                          o_symb_1st               
 
 );
 
@@ -54,8 +56,8 @@ module beam_power_calc # (
 // PARAMETER
 //--------------------------------------------------------------------------------------
 genvar gi;
-reg            [   5: 0]                        symb_clr_dly          =0;
-reg            [   5: 0]                        symb_1st_dly          =0;
+reg            [   1: 0]                        symb_clr_dly          =0;
+reg            [   1: 0]                        symb_1st_dly          =0;
 
 
 
@@ -63,8 +65,8 @@ reg            [   5: 0]                        symb_1st_dly          =0;
 // delay symb_clr and symb_1st
 //------------------------------------------------------------------------------------------
 always @ (posedge i_clk)begin
-    symb_clr_dly <= {symb_clr_dly[4:0], i_symb_clr};
-    symb_1st_dly <= {symb_1st_dly[4:0], i_symb_1st};
+    symb_clr_dly <= {symb_clr_dly[0], i_symb_clr};
+    symb_1st_dly <= {symb_1st_dly[0], i_symb_1st};
 end
 
 //------------------------------------------------------------------------------------------
@@ -194,33 +196,51 @@ always @(posedge i_clk) begin
 end
 
 
-lp_buffer_syn # (
-    .DATA_WIDTH                                         (2                                  ),
-    .ADDR_WIDTH                                         (8                                  ) 
-)lp_buffer_0(
-    .i_clk                                              (i_clk                              ),
-    .i_reset                                            (i_reset                            ),
-    .i_wr_data                                          ({rbg_load_acc,iq_abs_vld}          ),
-    .i_wr_wen                                           (rbg_load_acc && iq_abs_vld         ),
-    .i_wr_vld                                           (symb_1st_dly[1]                    ),
-    .o_rd_data                                          ({rbg_sum_load_lp,rbg_sum_vld_lp}   ),
-    .o_rd_vld                                           (                                   ),
-    .o_rd_sop                                           (                                   ) 
-);
+reg            [ 192: 0]                        rbg_sum_load_obuf     =0;
+reg            [ 192: 0]                        rbg_sum_vld_obuf      =0;
+reg            [ 192: 0]                        symb_1st_dly_obuf     =0;
+wire           [   7: 0]                        dly_num                 ;
+reg                                             rbg_sum_load_out      =0;
+reg                                             rbg_sum_vld_out       =0;
+reg                                             symb_1st_out          =0;
+reg                                             symb_1st              =0;
+
+assign dly_num = (i_aiu_idx) ? 8'd192 : 8'd48;
+
+always @(posedge i_clk) begin
+    if(i_reset)begin
+        rbg_sum_load_obuf <= 'd0;
+        rbg_sum_vld_obuf  <= 'd0;
+        symb_1st_dly_obuf <= 'd0;
+    end else begin
+        rbg_sum_load_obuf <= {rbg_sum_load_obuf[191:0], rbg_load_acc & iq_abs_vld};
+        rbg_sum_vld_obuf  <= {rbg_sum_vld_obuf [191:0], iq_abs_vld};
+        symb_1st_dly_obuf <= {symb_1st_dly_obuf[191:0], symb_1st_dly[1]};
+    end
+end
+
+always @(posedge i_clk) begin
+    rbg_sum_load_out <= rbg_sum_load_obuf[dly_num];
+    rbg_sum_vld_out  <= rbg_sum_vld_obuf [dly_num];
+    symb_1st_out     <= symb_1st_dly_obuf[dly_num];
+end
 
 always @ (posedge i_clk) begin
-    if(rbg_sum_vld_lp)
+    if(rbg_sum_vld_out)
         rbg_sum_wen <= rbg_store_en[1];
     else 
         rbg_sum_wen <= 0;
-    rbg_sum_vld  <= rbg_sum_vld_lp;
-    rbg_sum_load <= rbg_sum_load_lp;
+    rbg_sum_vld  <= rbg_sum_vld_out;
+    rbg_sum_load <= rbg_sum_load_out;
+    symb_1st     <= symb_1st_out;
 end
 
 always @ (posedge i_clk) begin
     if(i_data_sop)
         rbg_abs_addr <= 8'd0;
-    else if(rbg_sum_vld && rbg_sum_wen)
+    else if(!rbg_sum_vld)
+        rbg_abs_addr <= 8'd0;
+    else if(rbg_sum_wen)
         rbg_abs_addr <= rbg_abs_addr + 8'd1;
 end
 
@@ -231,5 +251,6 @@ assign o_data_addr = rbg_abs_addr;
 assign o_data_vld  = rbg_sum_vld;
 assign o_data_load = rbg_sum_load;
 assign o_data_wen  = rbg_sum_wen;
+assign o_symb_1st  = symb_1st;
 
 endmodule

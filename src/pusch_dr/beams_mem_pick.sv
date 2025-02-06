@@ -79,6 +79,7 @@ wire           [15:0][RDATA_WIDTH-1: 0]         rd_data_3               ;
 reg            [63:0][RDATA_WIDTH-1: 0]         rd_data_matrix        =0;
 reg                                             wr_wen_d1             =0;
 reg                                             wr_eop_d1             =0;
+reg                                             sym_1st_d1            =0;
 
 wire           [   3: 0]                        data_vld                ;
 wire           [   3: 0]                        rd_empty                ;
@@ -93,12 +94,15 @@ wire                                            sort_sop_pos            ;
 reg            [15:0][WDATA_WIDTH-1: 0]         sort_data             =0;
 reg            [15:0][WDATA_WIDTH-1: 0]         data_out              =0;
 reg                                             sym_is_1st            =0;
+reg                                             sym_is_1st_d1         =0;
 reg            [   2: 0]                        rd_last_buf           =0;
 wire                                            rd_last                 ;
 reg            [63: 0]                          symb1_info_0          =0;
 reg            [63: 0]                          dout_info_0           =0;
 wire                                            wr_wen_1st              ;
 wire                                            wr_eop_1st              ;
+wire                                            sym_1st_neg             ;
+wire                                            mem_rst                 ;
 
 //--------------------------------------------------------------------------------------
 // generate data block number due to cutting data into 4 blocks 
@@ -112,12 +116,17 @@ assign wr_wen_1st = i_wr_wen & i_sym_1st;
 assign wr_eop_1st = i_wr_eop & i_sym_1st;
 
 always @(posedge i_clk) begin
-    wr_wen_d1 <= wr_wen_1st;
-    wr_eop_d1 <= wr_eop_1st;
+    wr_wen_d1   <= wr_wen_1st;
+    wr_eop_d1   <= wr_eop_1st;
+    sym_1st_d1  <= i_sym_1st ;
 end
+
+assign sym_1st_neg = ~sym_is_1st & sym_is_1st_d1;
 
 always @(posedge i_clk) begin
     if(i_reset)
+        num_blocks <= 'd0;
+    else if(!sym_1st_d1)
         num_blocks <= 'd0;
     else if(wr_eop_d1)
         num_blocks <= num_blocks + 'd1;
@@ -148,7 +157,11 @@ end
 
 always @(posedge i_clk) begin
     for(int i=0;i<4;i=i+1)begin
-        if(wr_eop_d1)
+        if(i_reset)
+            wr_addr[i] <= 'd0;
+        else if(!sym_1st_d1)
+            wr_addr[i] <= 'd0;
+        else if(wr_eop_d1)
             wr_addr[i] <= 'd0;
         else if(wr_wen_d1)
             wr_addr[i] <= wr_addr[i] + 'd1;
@@ -206,6 +219,8 @@ end
 // Read data from memory at the same time
 // Latency is 3 cycles
 //--------------------------------------------------------------------------------------
+assign mem_rst = i_reset | sym_1st_neg;
+
 mem_streams # (
     .CHANNELS                                           (16                     ),
     .WDATA_WIDTH                                        (WDATA_WIDTH            ),
@@ -216,7 +231,7 @@ mem_streams # (
     .RAM_TYPE                                           (1                      ) 
 )mem_streams_0(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (mem_rst                ),
     .i_rvalid                                           (i_rvalid               ),
     .i_wr_wen                                           (wr_wen  [0]            ),
     .i_wr_addr                                          (wr_addr [0]            ),
@@ -237,7 +252,7 @@ mem_streams # (
     .RAM_TYPE                                           (1                      ) 
 )mem_streams_1(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (mem_rst                ),
     .i_rvalid                                           (i_rvalid               ),
     .i_wr_wen                                           (wr_wen  [1]            ),
     .i_wr_addr                                          (wr_addr [1]            ),
@@ -258,7 +273,7 @@ mem_streams # (
     .RAM_TYPE                                           (1                      ) 
 )mem_streams_2(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (mem_rst                ),
     .i_rvalid                                           (i_rvalid               ),
     .i_wr_wen                                           (wr_wen  [2]            ),
     .i_wr_addr                                          (wr_addr [2]            ),
@@ -279,7 +294,7 @@ mem_streams # (
     .RAM_TYPE                                           (1                      ) 
 )mem_streams_3(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (mem_rst                ),
     .i_rvalid                                           (i_rvalid               ),
     .i_wr_wen                                           (wr_wen  [3]            ),
     .i_wr_addr                                          (wr_addr [3]            ),
@@ -310,12 +325,19 @@ end
 assign rd_last = (rd_addr[3] == addr_max) ? 1'b1 : 1'b0;
 
 always @(posedge i_clk) begin
-    rd_last_buf <= {rd_last_buf[1:0], rd_last};
+    if(i_reset)
+        rd_last_buf <= 'd0;
+    else
+        rd_last_buf <= {rd_last_buf[1:0], rd_last};
 end
 
 
 always @ (posedge i_clk)begin
-    if(i_sym_1st)
+    sym_is_1st_d1  <= sym_is_1st;
+
+    if(i_reset)
+        sym_is_1st <= 1'b0;
+    else if(i_sym_1st)
         sym_is_1st <= 1'b1;
     else if(rd_last_buf[2])
         sym_is_1st <= 1'b0;
@@ -402,15 +424,22 @@ wire                                            rden_pos_d2             ;
 
 
 always @(posedge i_clk) begin
-    data_vld_r <= data_vld[3];
-    rd_rden_buf <= {rd_rden_buf[2:0], rd_ren[3]};
+    if(i_reset)begin
+        data_vld_r  <= 'd0;
+        rd_rden_buf <= 'd0;
+    end else begin
+        data_vld_r  <= data_vld[3];
+        rd_rden_buf <= {rd_rden_buf[2:0], rd_ren[3]};
+    end
 end
 
 assign rden_pos_d1 = rd_rden_buf[1] & (~rd_rden_buf[2]);
 assign rden_pos_d2 = rd_rden_buf[2] & (~rd_rden_buf[3]);
 
 always @(posedge i_clk) begin
-    if(i_sym_1st || sym_is_1st)
+    if(i_reset)
+        tvalid <= 1'b0;
+    else if(i_sym_1st || sym_is_1st)
         tvalid <= rd_rden_buf[2];
     else
         tvalid <= i_rvalid;

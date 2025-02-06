@@ -131,6 +131,7 @@ register_shift # (
     .DEPTH                                              (4                      ) 
 )dly_rbg_load(
     .clk                                                (i_clk                  ),
+    .rst                                                (i_reset                ),
     .in                                                 (i_rbg_load             ),
     .out                                                (o_rbg_load             ) 
 );
@@ -142,6 +143,7 @@ generate for (genvar i = 0; i < 16; i++) begin : delay_match
         .DEPTH                                              (4                      ) 
     )dly_sort_pwr(
         .clk                                                (i_clk                  ),
+        .rst                                                (1'b0                   ),
         .in                                                 (i_sort_pwr[i]          ),
         .out                                                (o_sort_pwr[i]          ) 
     );

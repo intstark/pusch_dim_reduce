@@ -112,6 +112,8 @@ integer fid_drout0_hex, fid_drout15_hex;
 // Inputs
 reg                                             i_clk                 =0;
 reg                                             reset                 =1;
+reg                                             dr1_reset             =1;
+reg                                             dr2_reset             =1;
 reg                                             tx_hfp                =0;
 reg            [   1: 0]                        rbg_size              =2;
 
@@ -183,12 +185,12 @@ assign tx_hfp_pos = tx_hfp_buf[0] & (~tx_hfp_buf[1]);
 //------------------------------------------------------------------------------------------
 pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (reset                  ),
+    .i_reset                                            (dr1_reset              ),
     
     .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_rx_rfp                                           (1'b0                   ),// tx_hfp_pos
     .i_enable                                           (buffer_enable          ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [0][0]     ),// lane0 cpri rx clock
@@ -249,12 +251,12 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
 //------------------------------------------------------------------------------------------
 pusch_dr_top                                            pusch_dr_top_aiu1(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (reset                  ),
+    .i_reset                                            (dr2_reset              ),
     
     .i_aiu_idx                                          (2'b01                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_rx_rfp                                           (1'b0                   ),// tx_hfp_pos
     .i_enable                                           (buffer_enable          ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [1][0]     ),// lane0 cpri rx clock
@@ -379,15 +381,23 @@ end
 
 // Reset generation
 initial begin
-    #(`CLOCK_PERIOD*10) reset = 1'b0;
+    #(`CLOCK_PERIOD*10) reset = 1'b0; 
+    dr1_reset = 1'b0;
+    dr2_reset = 1'b0;
     #(`TCLK0_DELAY) cpri_tx_rst = 0;
-    #(`T1US*90) reset = 1'b1;
+    #(`T1US*100) reset = 1'b1;
     #(`CLOCK_PERIOD*10) reset = 1'b0;
+    #(`T1US*200) dr1_reset = 1'b1;
+    #(`CLOCK_PERIOD*10) dr1_reset = 1'b0;
+    #(`T1US*700) dr2_reset = 1'b1;
+    #(`CLOCK_PERIOD*10) dr2_reset = 1'b0;
 end
 
 // Reset generation
 initial begin
     #(`CLOCK_PERIOD*4 ) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*1200) tx_hfp = 1'b1;
     #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
 end
 
