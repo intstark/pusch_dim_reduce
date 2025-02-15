@@ -63,7 +63,8 @@ begin
 	else if(i_vld)
 		wr_addr <= wr_addr + 'd1;
 	else
-	  wr_addr <= wr_addr;
+        wr_addr <= 'd0;
+//        wr_addr <= wr_addr;
 end
 
 
@@ -80,7 +81,8 @@ begin
     else if (rx_vld_dly[DLY_CYCLE-1])
         rd_addr <= rd_addr + 'd1;       
     else
-        rd_addr <= rd_addr;
+        rd_addr <= 'd0;
+//        rd_addr <= rd_addr;
 end
 
 always@(posedge clk)

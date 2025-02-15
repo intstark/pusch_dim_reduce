@@ -23,7 +23,7 @@
 `define T1US            1000
 `define TCLK0_DELAY     `T1US*100
 `define TCLK1_DELAY     `T1US*100+5
-`define SIM_ENDS_TIME   2000000
+`define SIM_ENDS_TIME   4000000
 
 
 module pusch_dr_top_vec128;
@@ -38,7 +38,6 @@ parameter                                           FILE_IQDATA04          = "..
 parameter                                           FILE_IQDATA05          = "../vector/datain/pusch_group0/LAN6.txt";
 parameter                                           FILE_IQDATA06          = "../vector/datain/pusch_group0/LAN7.txt";
 parameter                                           FILE_IQDATA07          = "../vector/datain/pusch_group0/LAN8.txt";
-
 parameter                                           FILE_IQDATA10          = "../vector/datain/pusch_group1/LAN1.txt";
 parameter                                           FILE_IQDATA11          = "../vector/datain/pusch_group1/LAN2.txt";
 parameter                                           FILE_IQDATA12          = "../vector/datain/pusch_group1/LAN3.txt";
@@ -113,6 +112,8 @@ integer fid_drout0_hex, fid_drout15_hex;
 // Inputs
 reg                                             i_clk                 =0;
 reg                                             reset                 =1;
+reg                                             dr1_reset             =1;
+reg                                             dr2_reset             =1;
 reg                                             tx_hfp                =0;
 reg            [   1: 0]                        rbg_size              =2;
 
@@ -124,34 +125,46 @@ wire           [1:0][   7: 0]                   cpri_rx_vld             ;
 
 
 reg            [1:0][7:0][63: 0]                cpri_datain           =0;
-reg                                             cpri_data_vld         =0;
-reg            [   6: 0]                        chip_num              =0;
+reg            [63: 0]                          cpri_datain_0[0:7][0:44351] ='{default:0};
+reg            [63: 0]                          cpri_datain_1[0:7][0:44351] ='{default:0};
+wire                                            cpri_data_vld           ;
+reg                                             cpri_sopin            =0;
+reg                                             cpri1_sopin           =0;
+reg            [   6: 0]                        chip_num              =96;
 wire                                            cpri_iq_vld             ;
 
 wire           [3:0][63: 0]                     cpri_tx_data            ;
 reg            [   3: 0]                        cpri_tx_clk           =0;
 wire           [   3: 0]                        cpri_tx_vld             ;
 reg                                             cpri_tx_rst           =1;
+reg            [   1: 0]                        rxbuf_en              =3;
+reg            [   3: 0]                        symb_dly              =0;
+reg                                             srs_slot_en           =0;
+reg                                             data_sel              =0;
+wire           [   7: 0]                        pus_rx_rst              ;
+wire           [7:0][63: 0]                     pus_rx_data             ;
+wire           [   7: 0]                        pus_rx_vld              ;
 
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-
 assign cpri_clk    [0] = {8{i_clk}};
 assign cpri_rst    [0] = {8{reset}};
 assign cpri_rx_data[0] = cpri_datain[0]; 
-assign cpri_rx_vld [0] = {8{cpri_iq_vld}};
+assign cpri_rx_vld [0] = {{4{cpri1_sopin}},{4{cpri_sopin}}};
 
 assign cpri_clk    [1] = {8{i_clk}};
 assign cpri_rst    [1] = {8{reset}};
 assign cpri_rx_data[1] = cpri_datain[1]; 
-assign cpri_rx_vld [1] = {8{cpri_iq_vld}};
+assign cpri_rx_vld [1] = {8{cpri_sopin}};
 
 
 
 
 reg            [3:0][7: 0]                      cpri_cnt              =0;
 wire           [   3: 0]                        iq_tx_enable            ;
+reg            [   1: 0]                        tx_hfp_buf            =0;
+wire                                            tx_hfp_pos              ;
 
 generate for(gi=0;gi<4;gi=gi+1) begin:gen_iq_tx_enable
     always @(posedge cpri_tx_clk[gi]) begin
@@ -167,17 +180,26 @@ generate for(gi=0;gi<4;gi=gi+1) begin:gen_iq_tx_enable
 end
 endgenerate
 
+always @ (posedge i_clk)begin
+    tx_hfp_buf <= {tx_hfp_buf[0],tx_hfp};
+end
+
+assign tx_hfp_pos = tx_hfp_buf[0] & (~tx_hfp_buf[1]);
+
 
 //------------------------------------------------------------------------------------------
 // UL -- dut
 //------------------------------------------------------------------------------------------
 pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (reset                  ),
+    .i_reset                                            (dr1_reset              ),
     
     .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+    
+    .i_rx_rfp                                           (tx_hfp                 ),
+    .i_enable                                           (rxbuf_en[0]            ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [0][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [0][0]     ),// lane0 cpri rx reset
@@ -219,15 +241,15 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_l7_cpri_rx_data                                  (cpri_rx_data[0][7]     ),
     .i_l7_cpri_rx_vld                                   (cpri_rx_vld [0][7]     ),
 	 
-    .i_cpri0_tx_clk                                     (cpri_tx_clk    [0]     ),
-    .i_cpri0_tx_enable                                  (iq_tx_enable   [0]     ),
-    .o_cpri0_tx_data                                    (cpri_tx_data   [0]     ),
-    .o_cpri0_tx_vld                                     (cpri_tx_vld    [0]     ),
+    .i_cpri0_tx_clk                                     (cpri_tx_clk [0]        ),
+    .i_cpri0_tx_enable                                  (iq_tx_enable[0]        ),
+    .o_cpri0_tx_data                                    (cpri_tx_data[0]        ),
+    .o_cpri0_tx_vld                                     (cpri_tx_vld [0]        ),
                                                                      
-    .i_cpri1_tx_clk                                     (cpri_tx_clk    [1]     ),
-    .i_cpri1_tx_enable                                  (iq_tx_enable   [1]     ),
-    .o_cpri1_tx_data                                    (cpri_tx_data   [1]     ),
-    .o_cpri1_tx_vld                                     (cpri_tx_vld    [1]     ) 
+    .i_cpri1_tx_clk                                     (cpri_tx_clk [1]        ),
+    .i_cpri1_tx_enable                                  (iq_tx_enable[1]        ),
+    .o_cpri1_tx_data                                    (cpri_tx_data[1]        ),
+    .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
 );
 
 
@@ -237,11 +259,14 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
 //------------------------------------------------------------------------------------------
 pusch_dr_top                                            pusch_dr_top_aiu1(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (reset                  ),
+    .i_reset                                            (dr2_reset              ),
     
     .i_aiu_idx                                          (2'b01                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+
+    .i_rx_rfp                                           (tx_hfp                 ),
+    .i_enable                                           (rxbuf_en[1]            ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [1][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [1][0]     ),// lane0 cpri rx reset
@@ -294,6 +319,54 @@ pusch_dr_top                                            pusch_dr_top_aiu1(
     .o_cpri1_tx_vld                                     (cpri_tx_vld    [3]     ) 
 );
 
+reg            [   3: 0]                        cpri_tx_sopo          =0;
+wire                                            cpri_sop_cprio[0:3]     ;
+wire           [  63: 0]                        cpri_dat_cprio[0:3]     ;
+
+
+always @(posedge i_clk) begin
+    cpri_tx_sopo <= iq_tx_enable;
+end
+
+Cpri_Ant_Prb_Rearrange_Top                              u_Cpri_Ant_Prb_Rearrange_Top(
+    .clk                                                (i_clk                  ),
+    .rst                                                (reset                  ),
+					
+    .pus_sop0_i                                         (cpri_tx_sopo [0]        ),//AIU slave
+    .pus_dat0_i                                         (cpri_tx_data[0]        ),//AIU slave  			
+    .pus_sop1_i                                         (cpri_tx_sopo [1]        ),//AIU slave
+    .pus_dat1_i                                         (cpri_tx_data[1]        ),//AIU slave  			
+    .pus_sop2_i                                         (cpri_tx_sopo [2]        ),//AIU master
+    .pus_dat2_i                                         (cpri_tx_data[2]        ),//AIU master      			  
+    .pus_sop3_i                                         (cpri_tx_sopo [3]        ),//AIU master
+    .pus_dat3_i                                         (cpri_tx_data[3]        ),//AIU master       
+							
+    .pus_sop0_o                                         (cpri_sop_cprio[0]      ),
+    .pus_dat0_o                                         (cpri_dat_cprio[0]      ),
+    .pus_sop1_o                                         (cpri_sop_cprio[1]      ),
+    .pus_dat1_o                                         (cpri_dat_cprio[1]      ),
+    .pus_sop2_o                                         (cpri_sop_cprio[2]      ),
+    .pus_dat2_o                                         (cpri_dat_cprio[2]      ),
+    .pus_sop3_o                                         (cpri_sop_cprio[3]      ),
+    .pus_dat3_o                                         (cpri_dat_cprio[3]      ) 
+);
+
+//aiu --> bbu 
+for(genvar cpri_j=0;cpri_j<4;cpri_j=cpri_j+1)begin: cpri_tx_gen
+    cpri_tx_gen_top                                         u_cpri_tx_gen_top(
+        .wr_clk                                             (i_clk                  ),
+        .wr_rst                                             (reset                  ),
+        .rd_clk                                             (i_clk                  ),
+        .rd_rst                                             (reset                  ),
+        .i_cpri_sop                                         (cpri_sop_cprio[cpri_j] ),
+        .i_cpri_wdata                                       (cpri_dat_cprio[cpri_j] ),
+
+        .i_iq_tx_enable                                     (iq_tx_enable[cpri_j]   ),
+        .o_iq_tx_valid                                      (                       ),
+        .o_iq_tx_data                                       (                       ) 
+
+    );
+end
 
 
 // Clock generation
@@ -317,10 +390,32 @@ end
 
 // Reset generation
 initial begin
-    #(`CLOCK_PERIOD*10) reset = 1'b0;
-    tx_hfp = 1'b1;
-    #(`CLOCK_PERIOD) tx_hfp = 1'b0;
+    #(`CLOCK_PERIOD*10) reset = 1'b0; 
+    dr1_reset = 1'b0;
+    dr2_reset = 1'b0;
     #(`TCLK0_DELAY) cpri_tx_rst = 0;
+//    #(`T1US*100) reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) reset = 1'b0;
+//    #(`T1US*200) dr1_reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) dr1_reset = 1'b0;
+//    #(`T1US*700) dr2_reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) dr2_reset = 1'b0;
+end
+
+// Reset generation
+initial begin
+    #(`CLOCK_PERIOD*4 ) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*500) rxbuf_en = 2'b11;
+    #(`T1US*100) rxbuf_en = 2'b11;
+    #(`T1US*300) srs_slot_en   = 1'b1;
+    #(`T1US*300) srs_slot_en   = 1'b0;
+    #(`T1US*100) tx_hfp = 1'b1;symb_dly = 2;rxbuf_en = 3;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*1000) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*1000) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
 end
 
 // Tx Clock generation
@@ -383,36 +478,127 @@ initial begin
 end
 
 
+initial begin
+    $readmemh(FILE_IQDATA00, cpri_datain_0[0]);
+    $readmemh(FILE_IQDATA01, cpri_datain_0[1]);
+    $readmemh(FILE_IQDATA02, cpri_datain_0[2]);
+    $readmemh(FILE_IQDATA03, cpri_datain_0[3]);
+    $readmemh(FILE_IQDATA04, cpri_datain_0[4]);
+    $readmemh(FILE_IQDATA05, cpri_datain_0[5]);
+    $readmemh(FILE_IQDATA06, cpri_datain_0[6]);
+    $readmemh(FILE_IQDATA07, cpri_datain_0[7]);
 
-always @(posedge i_clk) begin
-    if(!reset)begin
-        $fscanf(fid_iq_data00, "%h\n", cpri_datain[0][0]);
-        $fscanf(fid_iq_data01, "%h\n", cpri_datain[0][1]);
-        $fscanf(fid_iq_data02, "%h\n", cpri_datain[0][2]);
-        $fscanf(fid_iq_data03, "%h\n", cpri_datain[0][3]);
-        $fscanf(fid_iq_data04, "%h\n", cpri_datain[0][4]);
-        $fscanf(fid_iq_data05, "%h\n", cpri_datain[0][5]);
-        $fscanf(fid_iq_data06, "%h\n", cpri_datain[0][6]);
-        $fscanf(fid_iq_data07, "%h\n", cpri_datain[0][7]);
-
-        $fscanf(fid_iq_data10, "%h\n", cpri_datain[1][0]);
-        $fscanf(fid_iq_data11, "%h\n", cpri_datain[1][1]);
-        $fscanf(fid_iq_data12, "%h\n", cpri_datain[1][2]);
-        $fscanf(fid_iq_data13, "%h\n", cpri_datain[1][3]);
-        $fscanf(fid_iq_data14, "%h\n", cpri_datain[1][4]);
-        $fscanf(fid_iq_data15, "%h\n", cpri_datain[1][5]);
-        $fscanf(fid_iq_data16, "%h\n", cpri_datain[1][6]);
-        $fscanf(fid_iq_data17, "%h\n", cpri_datain[1][7]);
-        cpri_data_vld <= 1'b1;
-
-        if(chip_num == 95)
-            chip_num <= 0;
-        else if(cpri_data_vld)
-            chip_num <= chip_num + 1;
-    end
+    $readmemh(FILE_IQDATA10, cpri_datain_1[0]);
+    $readmemh(FILE_IQDATA11, cpri_datain_1[1]);
+    $readmemh(FILE_IQDATA12, cpri_datain_1[2]);
+    $readmemh(FILE_IQDATA13, cpri_datain_1[3]);
+    $readmemh(FILE_IQDATA14, cpri_datain_1[4]);
+    $readmemh(FILE_IQDATA15, cpri_datain_1[5]);
+    $readmemh(FILE_IQDATA16, cpri_datain_1[6]);
+    $readmemh(FILE_IQDATA17, cpri_datain_1[7]);
 end
 
-assign cpri_iq_vld = (cpri_data_vld && chip_num == 0) ? 1'b1 : 1'b0;
+
+reg            [  15: 0]                        addr                  =0;
+reg            [  15: 0]                        addr1                 =0;
+reg            [  7: 0]                         dw_num                =0;
+reg            [  11: 0]                        hold_cnt              =0;
+reg                                             cpri1_en              =0;
+wire                                            cpri1_data_vld          ;
+wire                                            cpri1_iq_vld            ;
+wire                                            dw_num_vld              ;
+
+
+always_ff @ (posedge i_clk)begin
+    if(reset | tx_hfp_pos)
+        cpri1_en <= 1'b0;
+    else if(symb_dly == 14)
+        cpri1_en <= 1'b0;
+    else if(symb_dly == 0)
+        cpri1_en <= 1'b1;
+    else if(cpri_iq_vld && addr == 3168*symb_dly)
+        cpri1_en <= 1'b1;
+end
+
+always_ff @ (posedge i_clk)begin
+    if(reset | tx_hfp_pos)
+        addr <= 0;
+    else if(addr >= 44352)
+        addr <= 44352;
+    else if(cpri_data_vld)
+        addr <= addr + 1;
+
+    if(reset | tx_hfp_pos)
+        dw_num <= 96;
+    else if(dw_num >= 95)
+        dw_num <= 0;
+    else
+        dw_num <= dw_num + 1;
+
+    if(reset | tx_hfp_pos)
+        chip_num <= 0;
+    else if(chip_num == 50 && dw_num == 95)
+        chip_num <= 0;
+    else if(dw_num == 95)
+        chip_num <= chip_num + 1;
+end
+
+always_ff @ (posedge i_clk)begin
+    if(reset | tx_hfp_pos)
+        addr1 <= 0;
+    else if(addr1 >= 44352)
+        addr1 <= 44352;
+    else if(cpri1_data_vld)
+        addr1 <= addr1 + 1;
+end
+
+assign dw_num_vld = (dw_num< 96 && chip_num<33) ? 1'b1 : 1'b0;
+assign cpri_data_vld = (dw_num_vld && addr <44352) ? 1'b1 : 1'b0;
+assign cpri_iq_vld = (dw_num == 0) ? 1'b1 : 1'b0;
+
+assign cpri1_data_vld = (cpri1_en && dw_num_vld && addr1 <44352) ? 1'b1 : 1'b0;;
+assign cpri1_iq_vld = cpri1_en & cpri_iq_vld;
+
+// aiu0 lane 0-3
+always @ (posedge i_clk)begin
+    for(int i=0; i<4; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[0][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri_data_vld)begin
+            cpri_datain[0][i] <= 'd0;
+        end else begin
+            cpri_datain[0][i] <= cpri_datain_0[i][addr];
+        end
+    end
+    cpri_sopin <= cpri_iq_vld;
+end
+
+// aiu0 lane 4-7 delay
+always @ (posedge i_clk)begin
+    for(int i=4; i<8; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[0][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri1_data_vld)begin
+            cpri_datain[0][i] <= 'd0;
+        end else begin
+            cpri_datain[0][i] <= cpri_datain_0[i][addr1];
+        end
+    end
+    cpri1_sopin <= cpri1_iq_vld;
+end
+
+// aiu1 lane 0-7
+always @ (posedge i_clk)begin
+    for(int i=0; i<8; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[1][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri_data_vld)begin
+            cpri_datain[1][i] <= 'd0;
+        end else begin
+            cpri_datain[1][i] <= cpri_datain_1[i][addr];
+        end
+    end
+end
 
 reg            [7:0][63: 0]                     fft_agc               =0;
 always @(posedge i_clk) begin
@@ -421,6 +607,7 @@ always @(posedge i_clk) begin
             fft_agc[i] <= cpri_datain[0][i];
     end
 end
+
 
 //------------------------------------------------------------------------------------------
 // Output data check 

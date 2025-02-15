@@ -183,7 +183,7 @@ endgenerate
 //------------------------------------------------------------------------------------------
 // rbG number and re number
 //------------------------------------------------------------------------------------------
-reg                                             symb_is_1st           =1;
+reg                                             symb_is_1st           =0;
 reg            [   7: 0]                        ant_buffer_sym        =0;
 wire                                            rbg_slip                ;
 wire                                            rbg_load                ;
@@ -208,13 +208,13 @@ end
 
 always @(posedge i_clk) begin
     if(i_reset)
-        symb_is_1st <= 'd1;
-    else if(symb_clr)
-        symb_is_1st <= 'd1;
-    else if(ant_buffer_sym < 'd4)
-        symb_is_1st <= 'd1;
-    else
         symb_is_1st <= 'd0;
+    else if(symb_clr)
+        symb_is_1st <= 'd0;
+    else if(ant_buffer_sym >= 'd4)
+            symb_is_1st <= 'd0;
+    else if(ant_sop[0])
+        symb_is_1st <= 'd1;
 end
 
 
@@ -249,9 +249,7 @@ always @ (posedge i_clk) begin
 end
 
 always @ (posedge i_clk)begin
-    if(i_reset)
-        re_num <= 'd0;
-    else if(re_num == re_num_per_rbg-1)
+    if(re_num == re_num_per_rbg-1)
         re_num <= 'd0;
     else if(ant_tvalid[0])
         re_num <= re_num + 1'b1;
@@ -266,9 +264,7 @@ assign rbg_load = (ant_tvalid[0] && re_num == 0) ? 1'b1 : 1'b0;
 
 // rbG number
 always @ (posedge i_clk)begin
-    if(i_reset)
-        rbg_num <= 'd0;
-    else if(!ant_tvalid[0])
+    if(!ant_tvalid[0])
         rbg_num <= 'd0;
     else if(rbg_num == rbg_num_max && rbg_slip)
         rbg_num <= 'd0;
@@ -337,6 +333,7 @@ mac_beams #(
     .OW                                                 (OW                     ) 
 )mac_beams(
     .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
 
     .i_rvalid                                           (rev_ant_vld            ),
     .i_sop                                              (rev_ant_sop            ),
@@ -385,6 +382,8 @@ wire           [   7: 0]                        rbg_abs_addr            ;
 wire                                            rbg_sum_vld             ;
 wire                                            rbg_sum_load            ;
 wire                                            rbg_sum_wen             ;
+wire                                            pwr_symb_1st            ;
+wire                                            pwr_symb_clr            ;
 
 beam_power_calc # (
     .BEAM                                               (BEAM                   ),
@@ -394,7 +393,7 @@ beam_power_calc # (
     .i_clk                                              (i_clk                  ),// data clock
     .i_reset                                            (i_reset                ),// reset
 
-    .i_rbg_size                                         (i_rbg_size             ),// default:2'b10 16rb
+    .i_aiu_idx                                          (aiu_idx                ),
     .i_symb_clr                                         (beams_symb_clr         ),
     .i_symb_1st                                         (beams_symb_1st         ),
 
@@ -412,7 +411,10 @@ beam_power_calc # (
     .o_data_addr                                        (rbg_abs_addr           ),
     .o_data_vld                                         (rbg_sum_vld            ),
     .o_data_load                                        (rbg_sum_load           ),
-    .o_data_wen                                         (rbg_sum_wen            ) 
+    .o_data_wen                                         (rbg_sum_wen            ),
+
+    .o_symb_clr                                         (pwr_symb_clr           ),
+    .o_symb_1st                                         (pwr_symb_1st           ) 
 );
 
 //------------------------------------------------------------------------------------------
@@ -436,6 +438,9 @@ beam_buffer #(
 )beam_buffer (
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (i_reset                ),
+    
+    .i_symb_1st                                         (pwr_symb_1st           ),
+    
     .i_rvalid                                           (rbg_sum_vld            ),
     .i_wr_wen                                           (rbg_sum_wen            ),
     .i_wr_data                                          (rbg_sum_abs            ),

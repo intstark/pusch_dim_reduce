@@ -1,6 +1,7 @@
 ../../tb/ant_symbol_buffer.sv
 
 ../../src/tbu/*
+../../src/cpri_prb_comb_pusch/*.v
 
 ../../src/tsv/cpri_prb_comb_gen.v
 ../../src/tsv/rom_65536x64_L0/sim/rom_65536x64_L0.v
@@ -28,7 +29,6 @@
 ../../src/pusch_dr/cpri_txdata_top.sv
 ../../src/pusch_dr/cpri_tx_lane.sv
 ../../src/pusch_dr/txdata_queue.sv
-../../src/pusch_dr/lp_buffer_syn.sv
 ../../src/pusch_dr/code_word_rev.sv
 ../../src/pusch_dr/compress_matrix.sv
 ../../src/pusch_dr/search_max.sv
@@ -68,9 +68,4 @@
 ../../src/intel_xpm/FIFO_ASYNC_XPM_intel.v
 ../../src/intel_xpm/Simple_Dual_Port_BRAM_XPM_intel.v
 ../../src/intel_xpm/ASYNC_Dual_Port_BRAM_XPM_intel.v
-
-../../src/dl_symb_cmpr/dl_package_data.sv
-../../src/cpri_package_tx_zyl/dl_sym_if.v
-../../src/cpri_package_tx_zyl/dl_data_gen.sv
-../../src/cpri_package_tx_zyl/compress_data.v
 

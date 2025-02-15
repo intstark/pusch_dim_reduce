@@ -26,6 +26,7 @@ module beam_buffer # (
     input                                           i_clk                   ,
     input                                           i_reset                 ,
 
+    input                                           i_symb_1st              ,
     input                                           i_rvalid                ,
     input                                           i_wr_wen                ,
     input          [WADDR_WIDTH-1: 0]               i_wr_addr               ,
@@ -86,6 +87,8 @@ assign rvld_neg = ~i_rvalid & (rvalid_r[0]);
 
 always @(posedge i_clk) begin
     if(i_reset)
+        num_blocks <= 'd0;
+    else if(!i_symb_1st)
         num_blocks <= 'd0;
     else if(rvld_neg)
         num_blocks <= num_blocks + 'd1;

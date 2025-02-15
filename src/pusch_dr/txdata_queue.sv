@@ -79,6 +79,8 @@ localparam DINFO_WIDTH = 52;
 // WIRE & REGISTER
 //--------------------------------------------------------------------------------------
 genvar gi;
+reg                                             rx_vld_d1             =0;
+wire                                            rx_neg                  ;
 reg            [GRP_NUM-1: 0]                   rd_rdy                  ;
 reg                                             wr_wlast                ;
 reg                                             wr_wen                =0;
@@ -119,6 +121,12 @@ always @ (posedge i_clk)begin
 end
 
 always @ (posedge i_clk)begin
+    rx_vld_d1 <=  i_rx_vld;
+end
+
+assign rx_neg = (~i_rx_vld) & rx_vld_d1;
+
+always @ (posedge i_clk)begin
     wr_data[0] <= {i_ant_data[ 6],i_ant_data[ 4],i_ant_data[ 2],i_ant_data[ 0]};
     wr_data[1] <= {i_ant_data[ 7],i_ant_data[ 5],i_ant_data[ 3],i_ant_data[ 1]};
 end
@@ -143,10 +151,12 @@ end
 always @ (posedge i_clk)begin
     if(i_reset)
         wr_addr <= 'd0;
-    else if(wr_addr==DATA_DEPTH)
+    else if(wr_addr==DATA_DEPTH)// half packs can not reach DATA_DEPTH
         wr_addr <= 'd0;
     else if(wr_wen)
-        wr_addr <= wr_addr + 'd1;    
+        wr_addr <= wr_addr + 'd1;
+    else
+        wr_addr <= 'd0;
 end
 
 always @ (posedge i_clk)begin
@@ -164,7 +174,7 @@ assign wr_info = (wr_addr==1) ? 1'b1 : 1'b0;
 always @ (posedge i_clk)begin
     if(i_reset)
         wr_block_num <= 1'd0;
-    else if(wr_wlast)
+    else if(wr_wlast || rx_neg)// half packs can not reach DATA_DEPTH
         wr_block_num <= wr_block_num + 1'd1;
 end
 
@@ -172,8 +182,8 @@ end
 //--------------------------------------------------------------------------------------
 // Read logic
 //--------------------------------------------------------------------------------------
-reg wr_pwr_wen = 0;
-reg            [3: 0]               wr_pwr_addr               =0;
+reg                                             wr_pwr_wen            =0;
+reg            [   3: 0]                        wr_pwr_addr           =0;
 always @ (posedge i_clk)begin
     if(i_reset)
         wr_pwr_wen <= 1'b0;
@@ -237,6 +247,8 @@ always @ (posedge i_clk)begin
             rd_addr[i] <= 'd0;
         else if(rd_ren[i])
             rd_addr[i] <= rd_addr[i] + 'd1;
+        else
+            rd_addr[i] <= 'd0;
     end
 end
 
@@ -262,9 +274,15 @@ end
 
 
 always @ (posedge i_clk)begin
-    rd_ren_buf[0] <= rd_ren;
-    for(int i=1;i<4;i=i+1) begin
-        rd_ren_buf[i] <= rd_ren_buf[i-1];
+    if(i_reset)begin
+        for(int i=0;i<4;i=i+1) begin
+            rd_ren_buf[i] <= 'd0;
+        end
+    end else begin
+        rd_ren_buf[0] <= rd_ren;
+        for(int i=1;i<4;i=i+1) begin
+            rd_ren_buf[i] <= rd_ren_buf[i-1];
+        end
     end
 end
 
@@ -277,7 +295,9 @@ always @ (posedge i_clk)begin
 end
 
 always @ (posedge i_clk)begin
-    if(|rd_ren_buf[3])
+    if(i_reset)
+        rd_dout_vld <= 1'b0;
+    else if(|rd_ren_buf[3])
         rd_dout_vld <= 1'b1;
     else
         rd_dout_vld <= 1'b0;

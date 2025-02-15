@@ -95,8 +95,6 @@ end
 //    end 
 //end 
 
-reg [7:0] chip_cnt;
-
 always @(posedge clk) begin 
     if(rst) begin 
         chip_cnt <= 'd200;

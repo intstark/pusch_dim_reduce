@@ -268,3 +268,27 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + mac_beams：
     + 将之前的re_num/rbg_num/rbg_load输入延时对齐放到code_word_rev中
     + 本模块目前延时13拍（1+11+1）
+  
+### 2025.01.20
++ FFT AGC取反问题：
+  + agc_unpack：输入FFT AGC取反
++ 解决输入数据存在空包的问题：
+  + cpri_rx_buffer：加入enable/rfp，增加rx_sop/pusch_pkg判断
++ 复位异常的问题：
+  + pusch_dr_core: symb_is_1st/re_num等清零问题
+  + beam_power_calc：lp_bufer_syn的问题
+  + lp_buffer_syn：vld使能及raddr清零问题
+  + beams_mem_pick：symb_is_1st修改之后的同步修改
+  + compress_matrix：mem_stream_ram的i_reset不接
+  + compress_shift：waddr/raddr归零问题
+  + txdata_queue：waddr/raddr归零问题
+  + ul_comress_bot: waddr/raddr归零问题
+  + ul_package_data：waddr/raddr归零问题
+
+### 2025.02.04
++ 复位后valid信号延时问题：
+  + 涉及模块较多，主要将延时中的vld等信号在复位时同时清零;
+  + beam_buffer：其中num_block在sym_is_1st无效时候清零；
+  + beams_mem_pick：其中num_block在sym_is_1st无效时候清零；
+  + beam_power_calc：去掉lp_buffer_syn模块；
+  + register_shift：加入rst端口

@@ -130,16 +130,16 @@ wire           [   3: 0]                        cpri_tx_vld             ;
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-reg            [3:0][7: 0]                      cpri_cnt              =0;
-wire           [  15: 0]                        io_rst                  ;
-wire           [   3: 0]                        iq_tx_enable            ;
-reg            [  23: 0]                        chip_cnt              =0;
-reg            [   3: 0]                        slot_cnt              =0;
+reg                [  3:0][7:   0]              cpri_cnt              =0;
+wire               [      15:   0]              io_rst                  ;
+wire               [       3:   0]              iq_tx_enable            ;
+reg                [      23:   0]              chip_cnt              =0;
+reg                [       3:   0]              slot_cnt              =0;
 reg                                             slot_head             =0;
-reg            [   1: 0]                        tx_hfp_buf            =0;
+reg                [       1:   0]              tx_hfp_buf            =0;
 wire                                            tx_hfp_pos              ;
 wire                                            cpri_gen_rst            ;
-wire           [   7: 0]                        cpri_slot_num           ;
+wire               [       7:   0]              cpri_slot_num           ;
 wire                                            cpri_slot_head          ;
 
 assign reset = reset0;
@@ -194,7 +194,8 @@ end
 //------------------------------------------------------------------------------------
 // TBU
 //------------------------------------------------------------------------------------
-reg start;
+reg                                             start                 =0;
+reg                                             buffer_enable         =1;
 
 always @ (posedge i_clk) begin
 if(io_rst[0])
@@ -290,6 +291,8 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_aiu_idx                                          (2'b00                  ),
     .i_rbg_size                                         (rbg_size               ),
     .i_dr_mode                                          (2'b00                  ),
+    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_enable                                           (buffer_enable          ),
 
     .i_l0_cpri_clk                                      (i_clk                  ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (io_rst   [0]           ),// lane0 cpri rx reset
@@ -369,6 +372,8 @@ pusch_dr_top                                            pusch_dr_top_aiu1(
     .i_aiu_idx                                          (2'b00                  ),
     .i_rbg_size                                         (rbg_size               ),
     .i_dr_mode                                          (2'b00                  ),
+    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_enable                                           (1'b1                   ),
 
     .i_l0_cpri_clk                                      (i_clk                  ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (io_rst   [1]           ),// lane0 cpri rx reset
@@ -468,14 +473,16 @@ initial begin
     #(`CLOCK_PERIOD*10) reset0 = 1'b1;reset1 = 1'b1;
     #(`CLOCK_PERIOD*10) reset0 = 1'b0;reset1 = 1'b0;
 
-    #(`T1US*70) src_reset1 = 1'b1;
-    #(`CLOCK_PERIOD*10) src_reset1 = 1'b0;
-    #(`CLOCK_PERIOD*10) reset1 = 1'b1;
-    #(`CLOCK_PERIOD*10) reset1 = 1'b0;
+//    #(`T1US*70) src_reset1 = 1'b1;
+//    #(`CLOCK_PERIOD*10) src_reset1 = 1'b0;
+//    #(`CLOCK_PERIOD*10) reset1 = 1'b1;
+//    #(`CLOCK_PERIOD*10) reset1 = 1'b0;
+    #(`T1US*720) buffer_enable = 1'b0;
+    #(`T1US*300) buffer_enable = 1'b1;
 end
 
 
-// Reset generation
+// hfp
 initial begin
     #(`CLOCK_PERIOD*40) tx_hfp = 1'b1;
     #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;

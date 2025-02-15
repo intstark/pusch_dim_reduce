@@ -98,7 +98,10 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    wr_wen <= {CHANNELS{i_wr_wen}};
+    if(i_reset)
+        wr_wen <= {CHANNELS{1'b0}};
+    else
+        wr_wen <= {CHANNELS{i_wr_wen}};
     
     for(int i=0;i<CHANNELS;i=i+1) begin
         wr_addr[i] <= i_wr_addr;

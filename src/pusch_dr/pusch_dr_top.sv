@@ -27,6 +27,8 @@ module pusch_dr_top #(
     input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
     input          [   1: 0]                        i_dr_mode               , // re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
+    input                                           i_rx_rfp                ,
+    input                                           i_enable                ,
     // cpri rxdata
     input                                           i_l0_cpri_clk           , // cpri clkout
     input                                           i_l0_cpri_rst           , // cpri reset
@@ -160,6 +162,9 @@ cpri_rxdata_top                                         cpri_rxdata_top
     .i_reset                                            (i_reset                ),
     .i_dr_mode                                          (i_dr_mode              ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
+    .i_rx_rfp                                           (i_rx_rfp               ),
+    .i_enable                                           (i_enable               ),
+    
     .i_cpri_clk                                         (w_cpri_clk             ),
     .i_cpri_rst                                         (w_cpri_rst             ),
     .i_cpri_rx_data                                     (w_cpri_rx_data         ),

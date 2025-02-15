@@ -5,7 +5,7 @@
  version="1.0"
  fabric="QSYS">
  <!-- Format version 23.2 94 (Future versions may contain additional information.) -->
- <!-- 2025.01.06.17:38:00 -->
+ <!-- 2024.12.10.17:34:11 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
@@ -103,7 +103,7 @@
    name="rom_1port_0"
    kind="rom_1port"
    version="20.2.0"
-   entity="rom_65536x64_L5_rom_1port_2020_2jqfrma"
+   entity="rom_65536x64_L5_rom_1port_2020_bqf2xwy"
    library="rom_1port_2020"
    path="rom_1port_0"
    hpath="rom_1port_0"
@@ -235,7 +235,7 @@ the requested settings for a module instance. -->
    <type>boolean</type>
    <value>false</value>
    <derived>false</derived>
-   <enabled>true</enabled>
+   <enabled>false</enabled>
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
@@ -249,7 +249,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_NUMWORDS_A">
    <type>int</type>
-   <value>44352</value>
+   <value>65536</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -265,7 +265,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_RAM_BLOCK_TYPE">
    <type>java.lang.String</type>
-   <value>M20K</value>
+   <value>Auto</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -299,13 +299,13 @@ the requested settings for a module instance. -->
    <type>int</type>
    <value>0</value>
    <derived>false</derived>
-   <enabled>true</enabled>
+   <enabled>false</enabled>
    <visible>true</visible>
    <valid>true</valid>
   </parameter>
   <parameter name="GUI_MIFfilename">
    <type>java.lang.String</type>
-   <value>../src/tsv/pusch_group1_mif/LAN6.mif</value>
+   <value>M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN6.mif</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>

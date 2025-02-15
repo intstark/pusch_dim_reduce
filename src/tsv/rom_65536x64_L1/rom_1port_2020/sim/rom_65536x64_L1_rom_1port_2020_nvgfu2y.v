@@ -70,7 +70,7 @@ module  rom_65536x64_L1_rom_1port_2020_nvgfu2y  (
         altera_syncram_component.address_aclr_a  = "NONE",
         altera_syncram_component.clock_enable_input_a  = "BYPASS",
         altera_syncram_component.clock_enable_output_a  = "BYPASS",
-        altera_syncram_component.init_file = "M:/slw/AGF027_Project_8_12_master112811/sim/pusch_group0_mif/LAN2.mif",
+        altera_syncram_component.init_file = "../pusch_group0_mif/LAN2.mif",
         altera_syncram_component.intended_device_family  = "Agilex 7",
         altera_syncram_component.lpm_type  = "altera_syncram",
         altera_syncram_component.numwords_a  = 65536,

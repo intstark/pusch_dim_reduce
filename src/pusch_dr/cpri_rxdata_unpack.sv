@@ -144,7 +144,10 @@ assign re_reached_12    = (re_cnt_prb==11) ? 1'b1 : 1'b0;
 // generate DW number 
 //--------------------------------------------------------------------------------------
 always @(posedge i_clk) begin
-    ant_package_valid <= cpri_iq_vld;
+    if(i_reset)
+        ant_package_valid <= 1'b0;
+    else
+        ant_package_valid <= cpri_iq_vld;
 end
 
 always @(posedge i_clk) begin
@@ -283,8 +286,14 @@ generate
 endgenerate
 
 always @(posedge i_clk) begin
-    unpack_vld_buf      <= {unpack_vld_buf[0],ant_package_valid};
-    data_unpack_vld     <= unpack_vld_buf[1];
+    if(i_reset)begin
+        unpack_vld_buf  <= 'd0;
+        data_unpack_vld <= 'd0;
+    end else begin
+        unpack_vld_buf  <= {unpack_vld_buf[0],ant_package_valid};
+        data_unpack_vld <= unpack_vld_buf[1];
+    end
+
 end
 
 
@@ -371,7 +380,10 @@ endgenerate
 
 
 always @(posedge i_clk) begin
-    data_fft_uncprs_vld <= data_unpack_vld;
+    if(i_reset)
+        data_fft_uncprs_vld <= 0;
+    else
+        data_fft_uncprs_vld <= data_unpack_vld;
 end
 
 always @(posedge i_clk) begin
@@ -421,9 +433,17 @@ always @(posedge i_clk) begin
 end
 
 always @(posedge i_clk) begin
-    iq_vld_out  <= data_fft_uncprs_vld;
-    iq_addr_out <= iq_addr;
-    if(iq_addr == RE_PER_SYMBOL)
+    if(i_reset)begin
+        iq_vld_out  <= 'd0;
+        iq_addr_out <= 'd0;
+    end else begin
+        iq_vld_out  <= data_fft_uncprs_vld;
+        iq_addr_out <= iq_addr;
+    end
+
+    if(i_reset)
+        iq_last_out <= 0;
+    else if(iq_addr == RE_PER_SYMBOL)
         iq_last_out <= 1;
     else
         iq_last_out <= 0;

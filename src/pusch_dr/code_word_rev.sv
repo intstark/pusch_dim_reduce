@@ -122,7 +122,10 @@ always @(posedge i_clk) begin
     else
         cwd_valid <= 1'b0;
 
-    rom_vld <= {rom_vld[2:0], cwd_valid};
+    if(i_reset)
+        rom_vld <= 'd0;
+    else
+        rom_vld <= {rom_vld[2:0], cwd_valid};
 end
 
 always @(posedge i_clk) begin
@@ -274,14 +277,23 @@ reg                                             rbg_load_out          =0;
 
 
 always @ (posedge i_clk) begin
-    rvld_out <= {rvld_out[0], i_rvalid};
-    sop_out  <= {sop_out [0], i_sop   };
-    eop_out  <= {eop_out [0], i_eop   };
+    if(i_reset)begin
+        rvld_out    <= 'd0;
+        sop_out     <= 'd0;
+        eop_out     <= 'd0;
 
-    symb_clr_out <= {symb_clr_out [0], i_symb_clr};
-    symb_1st_out <= {symb_1st_out [0], i_symb_1st};
+        symb_clr_out<= 'd0;
+        symb_1st_out<= 'd0;
+        rbg_load_out<= 'd0;
+    end else begin
+        rvld_out <= {rvld_out[0], i_rvalid};
+        sop_out  <= {sop_out [0], i_sop   };
+        eop_out  <= {eop_out [0], i_eop   };
 
-    rbg_load_out <= rbg_load_vec[0];
+        symb_clr_out <= {symb_clr_out [0], i_symb_clr};
+        symb_1st_out <= {symb_1st_out [0], i_symb_1st};
+        rbg_load_out <= rbg_load_vec[0];
+    end
 end
 
 always @(posedge i_clk) begin
@@ -304,11 +316,18 @@ end
 
 // re_num/rbg_num/rbg_load latency match
 always @ (posedge i_clk)begin
-    re_num_out [0]  <= i_re_num;
-    rbg_num_out[0]  <= i_rbg_num;
-    for(int i=1; i<2; i++)begin
-        re_num_out [i] <= re_num_out [i-1];
-        rbg_num_out[i] <= rbg_num_out[i-1];
+    if(i_reset)begin
+        for(int i=0; i<2; i++)begin
+            re_num_out [i] <='d0;
+            rbg_num_out[i] <='d0;
+        end
+    end else begin
+        re_num_out [0]  <= i_re_num;
+        rbg_num_out[0]  <= i_rbg_num;
+        for(int i=1; i<2; i++)begin
+            re_num_out [i] <= re_num_out [i-1];
+            rbg_num_out[i] <= rbg_num_out[i-1];
+        end
     end
 end
 
