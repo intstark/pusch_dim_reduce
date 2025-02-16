@@ -43,7 +43,8 @@ module cpri_rxdata_top # (
     output         [LANE-1:0][10: 0]                o_iq_addr               ,// CPRI addr 0-1583
     output         [LANE-1:0][ANT*32-1: 0]          o_iq_data               ,// CPRI data
     output         [LANE-1:0]                       o_iq_vld                ,// CPRI valid
-    output         [LANE-1:0]                       o_iq_last                
+    output         [LANE-1: 0]                      o_iq_last               ,
+    output         [  15: 0]                        o_rx_err                 
 );
 
 
@@ -61,6 +62,7 @@ module cpri_rxdata_top # (
 //--------------------------------------------------------------------------------------
 genvar gi;
 
+wire           [LANE-1: 0]                      rx_buf_sop              ;
 wire           [LANE-1: 0]                      rx_buf_vld              ;
 wire           [LANE-1: 0]                      symb_eop                ;
 wire                                            rx_buf_rden             ;
@@ -68,6 +70,7 @@ wire           [LANE-1:0]                       cpri_rx_ready           ;
 wire           [LANE-1:0][63: 0]                cpri_data_buf           ;
 wire           [LANE-1:0][63: 0]                fft_agc_buf             ;
 
+wire           [LANE-1:0][7: 0]                 cpri_rx_err             ;
 wire           [LANE-1:0][6: 0]                 cpri_addr_buf           ;
 wire           [LANE-1: 0]                      cpri_buf_last           ;
 wire           [LANE-1: 0]                      cpri_buf_vld            ;
@@ -110,11 +113,102 @@ always @ (posedge i_clk)begin
         sys_reset <= 1'b0;
 end
 
+//--------------------------------------------------------------------------------------
+// BIST 
+//--------------------------------------------------------------------------------------
+(* DONT_TOUCH = "True" *) reg                     rx_vld_fst            =0;
+(* DONT_TOUCH = "True" *) reg                     rx_vld_lst            =0;
+(* DONT_TOUCH = "True" *) reg                     rx_vld_hit            =0;
+(* DONT_TOUCH = "True" *) reg                     rx_buf_err            =0;
+(* DONT_TOUCH = "True" *) reg                     rx_skew_err           =0;
+(* DONT_TOUCH = "True" *) reg      [  15: 0]      rx_skew_num           =0;
+(* DONT_TOUCH = "True" *) reg      [  15: 0]      rx_err                =0;
+
+// count rx data skew number
+always @ (posedge i_clk)begin
+    rx_vld_fst <= |rx_buf_vld;
+    rx_vld_lst <= &rx_buf_vld;
+    if(i_reset)
+        rx_vld_hit <= 1'b0;
+    else if((!rx_vld_fst) && (|rx_buf_vld))
+        rx_vld_hit <= 1'b0;
+    else if(!(&rx_buf_vld) && rx_vld_lst)
+        rx_vld_hit <= 1'b1;
+
+    if(i_reset)
+        rx_skew_num <= 16'd0;
+    else if((!rx_vld_fst) && (|rx_buf_vld))
+        rx_skew_num <= 'd0;
+    else if((!rx_vld_hit) && (rx_vld_fst) && (!rx_vld_lst))
+        rx_skew_num <= rx_skew_num + 'd1;
+end
+
+// rx data skew larger than 4 symbol error
+always @ (posedge i_clk)begin
+    if(i_reset)
+        rx_skew_err <= 1'b0;
+    else if((!rx_vld_fst) && (|rx_buf_vld))
+        rx_skew_err <= 1'b0;
+    else if(rx_skew_num > 16'd12672) // 4 symbol
+        rx_skew_err <= 1'b1;
+end
+
+// rx buffer overflow error 
+always @ (posedge i_clk)begin
+    if(i_reset)
+        rx_buf_err <= 1'b0;
+    else if(&cpri_buf_rdy)
+        rx_buf_err <= 1'b1;
+    else
+        rx_buf_err <= 1'b0;
+end
+
+//--------------------------------------------------------------------------------------
+// output rx error flag
+//--------------------------------------------------------------------------------------
+// 0:   rx buffer overflow error
+// 1:   rx data skew error
+// 9:2  rx buffer symbol mismatch error
+//--------------------------------------------------------------------------------------
+always @ (posedge i_clk)begin
+    rx_err = {  6'd0                ,   // reserved
+                cpri_rx_err[7][0]   ,   // rx buffer7 symbol mismatch
+                cpri_rx_err[6][0]   ,   // rx buffer6 symbol mismatch
+                cpri_rx_err[5][0]   ,   // rx buffer5 symbol mismatch
+                cpri_rx_err[4][0]   ,   // rx buffer4 symbol mismatch
+                cpri_rx_err[3][0]   ,   // rx buffer3 symbol mismatch
+                cpri_rx_err[2][0]   ,   // rx buffer2 symbol mismatch
+                cpri_rx_err[1][0]   ,   // rx buffer1 symbol mismatch
+                cpri_rx_err[0][0]   ,   // rx buffer0 symbol mismatch
+                rx_skew_err         ,   // rx skew error
+                rx_buf_err              // rx buffer overflow error
+            };
+end
+
+assign o_rx_err = rx_err;
+
 
 //--------------------------------------------------------------------------------------
 // cpri rx data buffer
 //--------------------------------------------------------------------------------------
-assign rx_buf_rden = &rx_buf_vld;
+reg                                             rx_sop_fst            =0;
+reg                                             rx_sop_lst            =0;
+reg                                             rx_sop_hit            =0;
+reg                                             rx_buf_clr            =0;
+reg            [   7: 0]                        rx_skew_err_buf       =0;
+
+// if skew is beyond 4 symbol, clear buffer and disable buffer read
+assign rx_buf_rden = (&rx_buf_vld) & (!rx_skew_err);
+
+always @ (posedge i_clk)begin
+    rx_buf_clr <= rx_skew_err_buf[0] && (!rx_skew_err_buf[7]);
+
+    if(i_reset)
+        rx_skew_err_buf <= 8'd0;
+    else
+        rx_skew_err_buf <= {rx_skew_err_buf[7:0],rx_skew_err};
+end
+
 
 generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
     cpri_rx_buffer                                          cpri_rx_buffer
@@ -125,7 +219,7 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
         .i_reset                                            (i_reset                ),
         .i_dr_mode                                          (i_dr_mode              ),
         
-        .i_rx_rfp                                           (i_rx_rfp               ),
+        .i_rx_rfp                                           (i_rx_rfp | rx_buf_clr  ),
         .i_enable                                           (i_enable               ),
         
         .i_rx_data                                          (i_cpri_rx_data[gi]     ),
@@ -133,13 +227,15 @@ generate for(gi=0;gi<LANE;gi=gi+1) begin: gen_rx_buffer
         .i_rready                                           (cpri_rx_ready [gi]     ),
         .i_rd_en                                            (rx_buf_rden            ),
         .o_rd_vld                                           (rx_buf_vld    [gi]     ),
+        .o_rx_sop                                           (rx_buf_sop    [gi]     ),
         .o_symb_eop                                         (symb_eop      [gi]     ),
         .o_fft_agc                                          (fft_agc_buf   [gi]     ),
         .o_tx_data                                          (cpri_data_buf [gi]     ),
         .o_tx_addr                                          (cpri_addr_buf [gi]     ),
         .o_tx_last                                          (cpri_buf_last [gi]     ),
         .o_tready                                           (cpri_buf_rdy  [gi]     ),
-        .o_tvalid                                           (cpri_buf_vld  [gi]     ) 
+        .o_tvalid                                           (cpri_buf_vld  [gi]     ), 
+        .o_rx_err                                           (cpri_rx_err   [gi]     ) 
     );
 end
 endgenerate

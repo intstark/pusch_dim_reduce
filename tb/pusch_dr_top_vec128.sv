@@ -23,7 +23,7 @@
 `define T1US            1000
 `define TCLK0_DELAY     `T1US*100
 `define TCLK1_DELAY     `T1US*100+5
-`define SIM_ENDS_TIME   2000000
+`define SIM_ENDS_TIME   4000000
 
 
 module pusch_dr_top_vec128;
@@ -129,6 +129,7 @@ reg            [63: 0]                          cpri_datain_0[0:7][0:44351] ='{d
 reg            [63: 0]                          cpri_datain_1[0:7][0:44351] ='{default:0};
 wire                                            cpri_data_vld           ;
 reg                                             cpri_sopin            =0;
+reg                                             cpri1_sopin           =0;
 reg            [   6: 0]                        chip_num              =96;
 wire                                            cpri_iq_vld             ;
 
@@ -136,16 +137,21 @@ wire           [3:0][63: 0]                     cpri_tx_data            ;
 reg            [   3: 0]                        cpri_tx_clk           =0;
 wire           [   3: 0]                        cpri_tx_vld             ;
 reg                                             cpri_tx_rst           =1;
-reg                                             buffer_enable         =1;
+reg            [   1: 0]                        rxbuf_en              =3;
+reg            [   3: 0]                        symb_dly              =0;
+reg                                             srs_slot_en           =0;
+reg                                             data_sel              =0;
+wire           [   7: 0]                        pus_rx_rst              ;
+wire           [7:0][63: 0]                     pus_rx_data             ;
+wire           [   7: 0]                        pus_rx_vld              ;
 
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
-
 assign cpri_clk    [0] = {8{i_clk}};
 assign cpri_rst    [0] = {8{reset}};
 assign cpri_rx_data[0] = cpri_datain[0]; 
-assign cpri_rx_vld [0] = {8{cpri_sopin}};
+assign cpri_rx_vld [0] = {{4{cpri1_sopin}},{4{cpri_sopin}}};
 
 assign cpri_clk    [1] = {8{i_clk}};
 assign cpri_rst    [1] = {8{reset}};
@@ -180,6 +186,8 @@ end
 
 assign tx_hfp_pos = tx_hfp_buf[0] & (~tx_hfp_buf[1]);
 
+
+
 //------------------------------------------------------------------------------------------
 // UL -- dut
 //------------------------------------------------------------------------------------------
@@ -190,8 +198,8 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (1'b0                   ),// tx_hfp_pos
-    .i_enable                                           (buffer_enable          ),
+    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_enable                                           (rxbuf_en[0]            ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [0][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [0][0]     ),// lane0 cpri rx reset
@@ -233,15 +241,15 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_l7_cpri_rx_data                                  (cpri_rx_data[0][7]     ),
     .i_l7_cpri_rx_vld                                   (cpri_rx_vld [0][7]     ),
 	 
-    .i_cpri0_tx_clk                                     (cpri_tx_clk    [0]     ),
-    .i_cpri0_tx_enable                                  (iq_tx_enable   [0]     ),
-    .o_cpri0_tx_data                                    (cpri_tx_data   [0]     ),
-    .o_cpri0_tx_vld                                     (cpri_tx_vld    [0]     ),
+    .i_cpri0_tx_clk                                     (cpri_tx_clk [0]        ),
+    .i_cpri0_tx_enable                                  (iq_tx_enable[0]        ),
+    .o_cpri0_tx_data                                    (cpri_tx_data[0]        ),
+    .o_cpri0_tx_vld                                     (cpri_tx_vld [0]        ),
                                                                      
-    .i_cpri1_tx_clk                                     (cpri_tx_clk    [1]     ),
-    .i_cpri1_tx_enable                                  (iq_tx_enable   [1]     ),
-    .o_cpri1_tx_data                                    (cpri_tx_data   [1]     ),
-    .o_cpri1_tx_vld                                     (cpri_tx_vld    [1]     ) 
+    .i_cpri1_tx_clk                                     (cpri_tx_clk [1]        ),
+    .i_cpri1_tx_enable                                  (iq_tx_enable[1]        ),
+    .o_cpri1_tx_data                                    (cpri_tx_data[1]        ),
+    .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
 );
 
 
@@ -256,8 +264,8 @@ pusch_dr_top                                            pusch_dr_top_aiu1(
     .i_aiu_idx                                          (2'b01                  ),// AIU index 0-3
     .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
     .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (1'b0                   ),// tx_hfp_pos
-    .i_enable                                           (buffer_enable          ),
+    .i_rx_rfp                                           (tx_hfp_pos             ),
+    .i_enable                                           (rxbuf_en[1]            ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [1][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [1][0]     ),// lane0 cpri rx reset
@@ -310,9 +318,9 @@ pusch_dr_top                                            pusch_dr_top_aiu1(
     .o_cpri1_tx_vld                                     (cpri_tx_vld    [3]     ) 
 );
 
-reg            [   3: 0]                        cpri_tx_sopo           =0;
-wire                                            cpri_sop_cprio      [0:3]  ;
-wire           [  63: 0]                        cpri_dat_cprio      [0:3]  ;
+reg            [   3: 0]                        cpri_tx_sopo          =0;
+wire                                            cpri_sop_cprio[0:3]     ;
+wire           [  63: 0]                        cpri_dat_cprio[0:3]     ;
 
 
 always @(posedge i_clk) begin
@@ -385,19 +393,27 @@ initial begin
     dr1_reset = 1'b0;
     dr2_reset = 1'b0;
     #(`TCLK0_DELAY) cpri_tx_rst = 0;
-    #(`T1US*100) reset = 1'b1;
-    #(`CLOCK_PERIOD*10) reset = 1'b0;
-    #(`T1US*200) dr1_reset = 1'b1;
-    #(`CLOCK_PERIOD*10) dr1_reset = 1'b0;
-    #(`T1US*700) dr2_reset = 1'b1;
-    #(`CLOCK_PERIOD*10) dr2_reset = 1'b0;
+//    #(`T1US*100) reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) reset = 1'b0;
+//    #(`T1US*200) dr1_reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) dr1_reset = 1'b0;
+//    #(`T1US*700) dr2_reset = 1'b1;
+//    #(`CLOCK_PERIOD*10) dr2_reset = 1'b0;
 end
 
 // Reset generation
 initial begin
     #(`CLOCK_PERIOD*4 ) tx_hfp = 1'b1;
     #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
-    #(`T1US*1200) tx_hfp = 1'b1;
+    #(`T1US*500) rxbuf_en = 2'b11;
+    #(`T1US*100) rxbuf_en = 2'b11;
+    #(`T1US*300) srs_slot_en   = 1'b1;
+    #(`T1US*300) srs_slot_en   = 1'b0;
+    #(`T1US*100) tx_hfp = 1'b1;symb_dly = 2;rxbuf_en = 3;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*1000) tx_hfp = 1'b1;
+    #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
+    #(`T1US*1000) tx_hfp = 1'b1;
     #(`CLOCK_PERIOD*2 ) tx_hfp = 1'b0;
 end
 
@@ -481,10 +497,27 @@ initial begin
     $readmemh(FILE_IQDATA17, cpri_datain_1[7]);
 end
 
+
 reg            [  15: 0]                        addr                  =0;
+reg            [  15: 0]                        addr1                 =0;
 reg            [  7: 0]                         dw_num                =0;
 reg            [  11: 0]                        hold_cnt              =0;
+reg                                             cpri1_en              =0;
+wire                                            cpri1_data_vld          ;
+wire                                            cpri1_iq_vld            ;
+wire                                            dw_num_vld              ;
 
+
+always_ff @ (posedge i_clk)begin
+    if(reset | tx_hfp_pos)
+        cpri1_en <= 1'b0;
+    else if(symb_dly == 14)
+        cpri1_en <= 1'b0;
+    else if(symb_dly == 0)
+        cpri1_en <= 1'b1;
+    else if(cpri_iq_vld && addr == 3168*symb_dly)
+        cpri1_en <= 1'b1;
+end
 
 always_ff @ (posedge i_clk)begin
     if(reset | tx_hfp_pos)
@@ -509,23 +542,62 @@ always_ff @ (posedge i_clk)begin
         chip_num <= chip_num + 1;
 end
 
-assign cpri_data_vld = (dw_num< 96 && chip_num<33 && addr <44352) ? 1'b1 : 1'b0;
+always_ff @ (posedge i_clk)begin
+    if(reset | tx_hfp_pos)
+        addr1 <= 0;
+    else if(addr1 >= 44352)
+        addr1 <= 44352;
+    else if(cpri1_data_vld)
+        addr1 <= addr1 + 1;
+end
+
+assign dw_num_vld = (dw_num< 96 && chip_num<33) ? 1'b1 : 1'b0;
+assign cpri_data_vld = (dw_num_vld && addr <44352) ? 1'b1 : 1'b0;
 assign cpri_iq_vld = (dw_num == 0) ? 1'b1 : 1'b0;
 
+assign cpri1_data_vld = (cpri1_en && dw_num_vld && addr1 <44352) ? 1'b1 : 1'b0;;
+assign cpri1_iq_vld = cpri1_en & cpri_iq_vld;
 
+// aiu0 lane 0-3
 always @ (posedge i_clk)begin
-    for(int i=0; i<8; i=i+1)begin
-        if(!cpri_data_vld)begin
+    for(int i=0; i<4; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[0][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri_data_vld)begin
             cpri_datain[0][i] <= 'd0;
-            cpri_datain[1][i] <= 'd0;
         end else begin
             cpri_datain[0][i] <= cpri_datain_0[i][addr];
-            cpri_datain[1][i] <= cpri_datain_1[i][addr];
         end
     end
     cpri_sopin <= cpri_iq_vld;
 end
 
+// aiu0 lane 4-7 delay
+always @ (posedge i_clk)begin
+    for(int i=4; i<8; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[0][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri1_data_vld)begin
+            cpri_datain[0][i] <= 'd0;
+        end else begin
+            cpri_datain[0][i] <= cpri_datain_0[i][addr1];
+        end
+    end
+    cpri1_sopin <= cpri1_iq_vld;
+end
+
+// aiu1 lane 0-7
+always @ (posedge i_clk)begin
+    for(int i=0; i<8; i=i+1)begin
+        if(srs_slot_en)
+            cpri_datain[1][i] <= 64'h0000_0080_0000_3000;
+        else if(!cpri_data_vld)begin
+            cpri_datain[1][i] <= 'd0;
+        end else begin
+            cpri_datain[1][i] <= cpri_datain_1[i][addr];
+        end
+    end
+end
 
 reg            [7:0][63: 0]                     fft_agc               =0;
 always @(posedge i_clk) begin

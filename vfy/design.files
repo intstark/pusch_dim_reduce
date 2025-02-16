@@ -29,14 +29,12 @@
 ../../src/pusch_dr/cpri_txdata_top.sv
 ../../src/pusch_dr/cpri_tx_lane.sv
 ../../src/pusch_dr/txdata_queue.sv
-../../src/pusch_dr/lp_buffer_syn.sv
 ../../src/pusch_dr/code_word_rev.sv
 ../../src/pusch_dr/compress_matrix.sv
 ../../src/pusch_dr/search_max.sv
 ../../src/pusch_dr/compress_shift.sv
 ../../src/pusch_dr/beam_buffer.sv
 ../../src/pusch_dr/beam_power_calc.sv
-../../src/pusch_dr/mem_streams_1.sv
 ../../src/pusch_dr/mem_streams.sv
 ../../src/pusch_dr/mem_streams_ram.sv
 ../../src/pusch_dr/beams_mem_pick.sv

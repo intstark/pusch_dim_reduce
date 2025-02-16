@@ -45,6 +45,7 @@ module cpri_rx_buffer#(
 
     input                                           i_rd_en                 ,
     output                                          o_rd_vld                ,
+    output                                          o_rx_sop                ,
     output                                          o_symb_1st              ,
     output                                          o_symb_clr              ,
     output                                          o_symb_eop              ,
@@ -54,7 +55,10 @@ module cpri_rx_buffer#(
     output         [   6: 0]                        o_tx_addr               ,// cpri chip addr
     output                                          o_tx_last               ,// cpri chip last
     output                                          o_tready                ,
-    output                                          o_tvalid                 
+    output                                          o_tvalid                ,
+
+    // bist
+    output                                          o_rx_err                 // rx data error flag
 );
 
 //--------------------------------------------------------------------------------------
@@ -113,6 +117,7 @@ reg            [   7: 0]                        prb1_idx_out          =0;
 reg                                             pusch_en              =0;
 reg                                             pusch_pkg             =0;
 reg                                             rx_sop                =0;
+reg            [   3: 0]                        symb_in_loc           =0;
 
 //--------------------------------------------------------------------------------------
 // Reset synchronizer 
@@ -222,6 +227,28 @@ always @(posedge i_cpri_clk) begin
     end 
 end
 
+always @(posedge i_cpri_clk) begin
+    if(cpri_reset)
+        symb_in_loc <= 0;
+    else if(symb_in_loc=='d13 && wr_wlast)
+        symb_in_loc = 0;
+    else if(wr_wlast)
+        symb_in_loc <= symb_in_loc + 'd1;
+end
+
+reg            [   3: 0]                        symb_idx_d1           =0;
+reg                                             symb_mismatch         =0;
+always @(posedge i_cpri_clk) begin
+    symb_idx_d1 <= symb_idx;
+    if(cpri_reset)
+        symb_mismatch <= 1'b0;
+    else if(!pusch_en)
+        symb_mismatch <= 1'b0;
+    else if((symb_in_loc ^ symb_idx_d1))
+        symb_mismatch <= 1'b1;
+end
+
+assign o_rx_err = {7'd0,symb_mismatch};
 
 //--------------------------------------------------------------------------------------
 // Write logic
@@ -541,6 +568,7 @@ assign o_symb_eop = symb_eop_out[0];
 
 assign o_tready   = (free_size==0) ? 1'b0 : 1'b1;
 assign o_rd_vld   = rd_vld;
+assign o_rx_sop   = rx_sop;
 
 assign o_symb_1st = symb_1st_out[5];
 assign o_symb_clr = symb_clr;

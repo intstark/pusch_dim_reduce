@@ -293,3 +293,13 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + beams_mem_pick：其中num_block在sym_is_1st无效时候清零；
   + beam_power_calc：去掉lp_buffer_syn模块；
   + register_shift：加入rst端口
+
+### 2025.02.12
++ 加入接收异常告警功能：
+  + 输入CBUF溢出告警
+  + 输入通道间偏斜延时过大告警
+  + 输入符号与本地符号计数不匹配告警
++ 容错处理：
+  + 输入通道间偏斜超出4个符号时清除CBUF，并且禁止读使能
++ SRS时隙符号1时复位整个模块
+  + pusch_dr_top：顶层接口加入i_cfg_mode
