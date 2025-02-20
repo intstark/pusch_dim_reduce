@@ -66,10 +66,10 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 ### 使用方法
 
 + 使用方法
-    1. 将Modelsim的安装目录的win64文件夹加入系统环境变量PATH，点击sim文件夹中的.bat文件
-    2. 运行结束后，会在pdsch_dr_128ants_tb_work文件夹产生数据文件
-    3. 运行Matlab程序dr128_vector_vfy.m进行数据分析
-+ 使用方法2：打开ModleSim，在下方tcl界面输入do run_pdsch_dr_128ants_vsim.do，其他步骤同上。
+    1. 将Modelsim的安装目录的win64文件夹加入系统环境变量PATH，点击sim文件夹中的run_pusch_dr_top_vec128_vsim.bat文件
+    2. 运行结束后，会在pusch_dr_top_vec128_work文件夹产生数据文件
+    3. 最终输出的CPRI数据包为pusch_dr_top_vec128_work文件夹中的des_tx_cpri0.txt等
++ 使用方法2：打开ModleSim，在下方tcl界面输入do run_pusch_dr_top_vec128_vsim.do，其他步骤同上。
 
 ## Methodology
 
@@ -82,7 +82,6 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 ## Releases
 
 ### 2024.11.02
-
 + 根据时序分析结果，改进了code word选择部分的实现，主要涉及pdsch_dr_core模块
 + 根据向量比对结果，修正了4RB置于头和尾不同case时的问题，主要涉及pdsch_dr_core模块和beam_sort模块
 + 根据向量比对结果，修正了压缩算法中的四舍五入误差问题，主要涉及compress_shift模块和max_search模块
@@ -90,7 +89,6 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 + 增加了cpri_txdata_top用于打包并行4天线数据成cpri数据格式。
 
 ### 2024.11.08
-
 + 增加能量值的读出，涉及修改的模块有：
   + beam_sort：能量值读取时序
   + beams_pick_top：能量值伴随延迟
@@ -112,7 +110,6 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + 文件名问题：所有pdsch开头的文件都改成了pusch
 
 ### 2024.11.19
-
 + 全链路打通了IQ_HD以及beam power的打包输出
 + 修改降维后的16天线通过两条CPRI传输，分别传输ant0-ant7和ant8-ant15
 + 修改了解压缩模块
@@ -126,11 +123,9 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + 增加了cpri_rx_buffer模块，缓存8个符号，同时读取以对齐不同Lane延时差
 
 ### 2024.11.21
-
 + 增加何时重新计算降维码本选择序号的模式
 
 ### 2024.11.29
-
 + 增加FFT AGC相关功能，涉及的模块包括：
   + cpri_rx_buffer：分奇偶天线解析FFT AGC字段
   + agc_unpack：比较所有偶或奇天线中FFT AGC的值大小，找到最小值作为基值，并计算差值作为移位值
@@ -157,7 +152,6 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
 
 
 ### 2024.12.06
-
 + 修复FFT AGC相关问题，涉及模块包括：
   + cpri_rx_bufer: o_symb_eop只在31678处产生
   + agc_unpack：修改FFT AGC按照有符号数进行判断
@@ -287,6 +281,7 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + ul_package_data：waddr/raddr归零问题
 
 ### 2025.02.04
+**此版本，配合周期复位通过了信号源打桩物理层联调**。
 + 复位后valid信号延时问题：
   + 涉及模块较多，主要将延时中的vld等信号在复位时同时清零;
   + beam_buffer：其中num_block在sym_is_1st无效时候清零；
@@ -301,5 +296,16 @@ PUSCH信道降维模块大致可以划分为如下3个大模块：频域数据�
   + 输入符号与本地符号计数不匹配告警
 + 容错处理：
   + 输入通道间偏斜超出4个符号时清除CBUF，并且禁止读使能
-+ SRS时隙符号1时复位整个模块
+
+### 2025.02.16
++ 周期复位功能
+  + 加入sys_rst_gen模块，主要增加两个复位时机：
+    + 一是enable取消之后(因为异步取消enable时可能发生在数据中间导致异常)
+    + 二是PUS的前一个slot(3/8结尾)的符号0时刻复位
+    + 周期复位功开关控制
++ 输入偏斜过大自动复位功能开关：
+  + cpri_rxdata_top：增加i_skew_auto_chk开关，默认开启，可以禁用该功能
++ 其他改动：
   + pusch_dr_top：顶层接口加入i_cfg_mode
+  + cpri_rxdata_top：rx_buf_err修复，故障为1，正常为0(上一版反了)
+  + 增加pus_data_mux模块：选择CPRI数据或ROM打桩数据，用在顶层，与pusch_dr_top无关

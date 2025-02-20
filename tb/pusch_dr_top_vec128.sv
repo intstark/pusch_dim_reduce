@@ -144,7 +144,9 @@ reg                                             data_sel              =0;
 wire           [   7: 0]                        pus_rx_rst              ;
 wire           [7:0][63: 0]                     pus_rx_data             ;
 wire           [   7: 0]                        pus_rx_vld              ;
-
+wire           [   7: 0]                        pus1_rx_rst             ;
+wire           [7:0][63: 0]                     pus1_rx_data            ;
+wire           [   7: 0]                        pus1_rx_vld             ;
 //------------------------------------------------------------------------------------------
 // UL data
 //------------------------------------------------------------------------------------------
@@ -187,19 +189,18 @@ end
 assign tx_hfp_pos = tx_hfp_buf[0] & (~tx_hfp_buf[1]);
 
 
-
 //------------------------------------------------------------------------------------------
-// UL -- dut
+// pus_data_mux
 //------------------------------------------------------------------------------------------
-pusch_dr_top                                            pusch_dr_top_aiu0(
+pus_data_mux                                            pus_data_mux
+(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (dr1_reset              ),
     
-    .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
-    .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
-    .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (tx_hfp_pos             ),
-    .i_enable                                           (rxbuf_en[0]            ),
+    .i_data_sel                                         (data_sel               ),
+
+    .i_tv_data                                          (cpri_rx_data[1]        ),// lane0 cpri rx data
+    .i_tv_vld                                           (cpri_rx_vld [1]        ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [0][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [0][0]     ),// lane0 cpri rx reset
@@ -240,6 +241,64 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .i_l7_cpri_rst                                      (cpri_rst    [0][7]     ),
     .i_l7_cpri_rx_data                                  (cpri_rx_data[0][7]     ),
     .i_l7_cpri_rx_vld                                   (cpri_rx_vld [0][7]     ),
+                                                                     
+    .o_pus_rx_rst                                       (pus_rx_rst             ),
+    .o_pus_rx_data                                      (pus_rx_data            ),
+    .o_pus_rx_vld                                       (pus_rx_vld             ) 
+);
+
+
+//------------------------------------------------------------------------------------------
+// UL -- dut
+//------------------------------------------------------------------------------------------
+pusch_dr_top                                            pusch_dr_top_aiu0(
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (dr1_reset              ),
+    
+    .i_aiu_idx                                          (2'b00                  ),// AIU index 0-3
+    .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
+    .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+    .i_cfg_mode                                         ({1'b1,rxbuf_en[0],1'b1}),
+
+    .i_l0_cpri_clk                                      (i_clk                  ),// lane0 cpri rx clock
+    .i_l0_cpri_rst                                      (pus_rx_rst  [0]        ),// lane0 cpri rx reset
+    .i_l0_cpri_rx_data                                  (pus_rx_data [0]        ),// lane0 cpri rx data
+    .i_l0_cpri_rx_vld                                   (pus_rx_vld  [0]        ),
+    
+    .i_l1_cpri_clk                                      (i_clk                  ),
+    .i_l1_cpri_rst                                      (pus_rx_rst  [1]        ),
+    .i_l1_cpri_rx_data                                  (pus_rx_data [1]        ),
+    .i_l1_cpri_rx_vld                                   (pus_rx_vld  [1]        ),
+
+    .i_l2_cpri_clk                                      (i_clk                  ),
+    .i_l2_cpri_rst                                      (pus_rx_rst  [2]        ),
+    .i_l2_cpri_rx_data                                  (pus_rx_data [2]        ),
+    .i_l2_cpri_rx_vld                                   (pus_rx_vld  [2]        ),
+                                                                     
+    .i_l3_cpri_clk                                      (i_clk                  ),
+    .i_l3_cpri_rst                                      (pus_rx_rst  [3]        ),
+    .i_l3_cpri_rx_data                                  (pus_rx_data [3]        ),
+    .i_l3_cpri_rx_vld                                   (pus_rx_vld  [3]        ),
+
+    .i_l4_cpri_clk                                      (i_clk                  ),
+    .i_l4_cpri_rst                                      (pus_rx_rst  [4]        ),
+    .i_l4_cpri_rx_data                                  (pus_rx_data [4]        ),
+    .i_l4_cpri_rx_vld                                   (pus_rx_vld  [4]        ),
+                                                                     
+    .i_l5_cpri_clk                                      (i_clk                  ),
+    .i_l5_cpri_rst                                      (pus_rx_rst  [5]        ),
+    .i_l5_cpri_rx_data                                  (pus_rx_data [5]        ),
+    .i_l5_cpri_rx_vld                                   (pus_rx_vld  [5]        ),
+                                                                     
+    .i_l6_cpri_clk                                      (i_clk                  ),
+    .i_l6_cpri_rst                                      (pus_rx_rst  [6]        ),
+    .i_l6_cpri_rx_data                                  (pus_rx_data [6]        ),
+    .i_l6_cpri_rx_vld                                   (pus_rx_vld  [6]        ),
+                                                        
+    .i_l7_cpri_clk                                      (i_clk                  ),
+    .i_l7_cpri_rst                                      (pus_rx_rst  [7]        ),
+    .i_l7_cpri_rx_data                                  (pus_rx_data [7]        ),
+    .i_l7_cpri_rx_vld                                   (pus_rx_vld  [7]        ),
 	 
     .i_cpri0_tx_clk                                     (cpri_tx_clk [0]        ),
     .i_cpri0_tx_enable                                  (iq_tx_enable[0]        ),
@@ -252,20 +311,18 @@ pusch_dr_top                                            pusch_dr_top_aiu0(
     .o_cpri1_tx_vld                                     (cpri_tx_vld [1]        ) 
 );
 
-
-
 //------------------------------------------------------------------------------------------
-// UL -- dut
+// pus_data_mux
 //------------------------------------------------------------------------------------------
-pusch_dr_top                                            pusch_dr_top_aiu1(
+pus_data_mux                                            pus_data_mux_1
+(
     .i_clk                                              (i_clk                  ),
     .i_reset                                            (dr2_reset              ),
     
-    .i_aiu_idx                                          (2'b01                  ),// AIU index 0-3
-    .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
-    .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
-    .i_rx_rfp                                           (tx_hfp_pos             ),
-    .i_enable                                           (rxbuf_en[1]            ),
+    .i_data_sel                                         (data_sel               ),
+
+    .i_tv_data                                          (cpri_rx_data[1]        ),// lane0 cpri rx data
+    .i_tv_vld                                           (cpri_rx_vld [1]        ),
 
     .i_l0_cpri_clk                                      (cpri_clk    [1][0]     ),// lane0 cpri rx clock
     .i_l0_cpri_rst                                      (cpri_rst    [1][0]     ),// lane0 cpri rx reset
@@ -306,6 +363,63 @@ pusch_dr_top                                            pusch_dr_top_aiu1(
     .i_l7_cpri_rst                                      (cpri_rst    [1][7]     ),
     .i_l7_cpri_rx_data                                  (cpri_rx_data[1][7]     ),
     .i_l7_cpri_rx_vld                                   (cpri_rx_vld [1][7]     ),
+                                                                     
+    .o_pus_rx_rst                                       (pus1_rx_rst            ),
+    .o_pus_rx_data                                      (pus1_rx_data           ),
+    .o_pus_rx_vld                                       (pus1_rx_vld            ) 
+);
+
+//------------------------------------------------------------------------------------------
+// UL -- dut
+//------------------------------------------------------------------------------------------
+pusch_dr_top                                            pusch_dr_top_aiu1(
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (dr2_reset              ),
+    
+    .i_aiu_idx                                          (2'b01                  ),// AIU index 0-3
+    .i_rbg_size                                         (rbg_size               ),// default:2'b10 16rb
+    .i_dr_mode                                          (2'b00                  ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+    .i_cfg_mode                                         ({1'b1,rxbuf_en[1],1'b1}),
+
+    .i_l0_cpri_clk                                      (i_clk                  ),// lane0 cpri rx clock
+    .i_l0_cpri_rst                                      (pus1_rx_rst  [0]       ),// lane0 cpri rx reset
+    .i_l0_cpri_rx_data                                  (pus1_rx_data [0]       ),// lane0 cpri rx data
+    .i_l0_cpri_rx_vld                                   (pus1_rx_vld  [0]       ),
+    
+    .i_l1_cpri_clk                                      (i_clk                  ),
+    .i_l1_cpri_rst                                      (pus1_rx_rst  [1]       ),
+    .i_l1_cpri_rx_data                                  (pus1_rx_data [1]       ),
+    .i_l1_cpri_rx_vld                                   (pus1_rx_vld  [1]       ),
+
+    .i_l2_cpri_clk                                      (i_clk                  ),
+    .i_l2_cpri_rst                                      (pus1_rx_rst  [2]       ),
+    .i_l2_cpri_rx_data                                  (pus1_rx_data [2]       ),
+    .i_l2_cpri_rx_vld                                   (pus1_rx_vld  [2]       ),
+                                                                     
+    .i_l3_cpri_clk                                      (i_clk                  ),
+    .i_l3_cpri_rst                                      (pus1_rx_rst  [3]       ),
+    .i_l3_cpri_rx_data                                  (pus1_rx_data [3]       ),
+    .i_l3_cpri_rx_vld                                   (pus1_rx_vld  [3]       ),
+
+    .i_l4_cpri_clk                                      (i_clk                  ),
+    .i_l4_cpri_rst                                      (pus1_rx_rst  [4]       ),
+    .i_l4_cpri_rx_data                                  (pus1_rx_data [4]       ),
+    .i_l4_cpri_rx_vld                                   (pus1_rx_vld  [4]       ),
+                                                                     
+    .i_l5_cpri_clk                                      (i_clk                  ),
+    .i_l5_cpri_rst                                      (pus1_rx_rst  [5]       ),
+    .i_l5_cpri_rx_data                                  (pus1_rx_data [5]       ),
+    .i_l5_cpri_rx_vld                                   (pus1_rx_vld  [5]       ),
+                                                                     
+    .i_l6_cpri_clk                                      (i_clk                  ),
+    .i_l6_cpri_rst                                      (pus1_rx_rst  [6]       ),
+    .i_l6_cpri_rx_data                                  (pus1_rx_data [6]       ),
+    .i_l6_cpri_rx_vld                                   (pus1_rx_vld  [6]       ),
+                                                        
+    .i_l7_cpri_clk                                      (i_clk                  ),
+    .i_l7_cpri_rst                                      (pus1_rx_rst  [7]       ),
+    .i_l7_cpri_rx_data                                  (pus1_rx_data [7]       ),
+    .i_l7_cpri_rx_vld                                   (pus1_rx_vld  [7]       ),
 	 
     .i_cpri0_tx_clk                                     (cpri_tx_clk    [2]     ),
     .i_cpri0_tx_enable                                  (iq_tx_enable   [2]     ),

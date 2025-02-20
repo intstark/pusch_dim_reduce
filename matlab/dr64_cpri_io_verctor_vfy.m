@@ -34,10 +34,10 @@ numSlot  = 1;
 symbol_list= 1:14;
 InputDataCheck = 0;
 CHEK_SIM_MID_DATA = 0;
-SymbolXCompare = 1;
+SymbolXCompare = 0;
 
 
-vector_dir  = '../../../../AlgoVec/ulrxDimRedu-0102';
+vector_dir  = '../../../../AlgoVec/ulrxDimRedu-0113';
 fpga_dir    = '../vfy/pusch_dr_top_vec128_work';
 mif_dir     = './data/mif';
 
@@ -74,7 +74,7 @@ end
     
 
 
-fft_agc_read_singed = fft_agc_read - (fft_agc_read>=(2^7))*2^8;
+fft_agc_read_singed = -(fft_agc_read - (fft_agc_read>=(2^7))*2^8); %取反
 
 fft_agc_eve = fft_agc_read_singed(:, 1:33:end);
 fft_agc_odd = fft_agc_read_singed(:,18:33:end);
@@ -306,8 +306,14 @@ err_drin_read = dr_din_read-unfft_data_read;
 err_drin_read_max=max(abs(err_drin_read),[],[1,2]);
 fprintf('解FFT数据与DR输入向量比对误差:\t err_drin_read_max\t= %d\n',err_drin_read_max);
 
-first_mis_index = find(err_drin_read(1,:)~=0,1);
-fprintf('DR输入数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+if(err_drin_read_max==0)
+    fprintf('**DR输入数据匹配!**\n');
+    fprintf('---------------------------------------------\n');
+else
+    first_mis_index = find(err_drin_read(1,:)~=0,1);
+    fprintf('DR输入数据第1个数据不匹配的坐标:\t first_mis_index\t= %d\n',first_mis_index);
+end
+
 
 
 ant_data_in = unfft_data_read;
@@ -317,6 +323,8 @@ ant_data_in = unfft_data_read;
 
 ant_data_0 = ant_data_in(:,   1:1584); %前1584,奇天线
 ant_data_1 = ant_data_in(:,1585:3168); %后1584,偶天线
+% ant_data_0 = repmat(ant_data_in(1:4,   1:1584),8,1); %前1584,奇天线
+% ant_data_1 = repmat(ant_data_in(1:4,1585:3168),8,1); %后1584,偶天线
 beams_eve = w0_data_read*ant_data_0; %奇天线 [64,32]*[32*1584]
 beams_odd = w1_data_read*ant_data_1; %偶天线 [64,32]*[32*1584]
 
@@ -409,7 +417,6 @@ fft_agc_base_fct = fft_agc_base + (24-factor_40to16);
 uiwait(msgbox('FPGA仿真运行完毕'));
 
 
-
 if CHEK_SIM_MID_DATA
     for ii=1:8
         datafile3=sprintf('%s/des_uzip_data%d.txt' ,fpga_dir,ii-1);
@@ -423,7 +430,6 @@ if CHEK_SIM_MID_DATA
         sim_rx_agc(:,(ii-1)*4+1:ii*4) = squeeze(rx_agc(ii,:,:));
         sim_unzip_data(:,(ii-1)*4+1:ii*4) = squeeze(sim_uzip_data(ii,:,:));
     end
-
 
 
 datafile8=sprintf('%s/des_dr_datain.txt' ,fpga_dir);

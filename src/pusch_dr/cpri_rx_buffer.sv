@@ -113,7 +113,8 @@ reg            [  63: 0]                        cpri_rx_data          =0;
 reg                                             cpri_rx_vld           =0;
 reg            [   6: 0]                        slot_idx_out          =0;
 reg            [   3: 0]                        symb_idx_out          =0;
-reg            [   7: 0]                        prb1_idx_out          =0;
+(*DONT_TOUCH="True"*) reg   [   7: 0]           prb0_idx_out          =0;
+(*DONT_TOUCH="True"*) reg   [   7: 0]           prb1_idx_out          =0;
 reg                                             pusch_en              =0;
 reg                                             pusch_pkg             =0;
 reg                                             rx_sop                =0;
@@ -495,6 +496,8 @@ end
 
 always @(posedge i_clk) begin
     if(seq_num == 3)begin
+        prb0_idx_out <= rd_data[35:28];
+        prb1_idx_out <= rd_data[27:20];
         slot_idx_out <= rd_data[18:12];
         symb_idx_out <= rd_data[11: 8];
     end

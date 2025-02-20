@@ -1,4 +1,3 @@
-../../tb/ant_symbol_buffer.sv
 
 ../../src/tbu/*
 ../../src/cpri_prb_comb_pusch/*.v
@@ -21,6 +20,8 @@
 ../../src/tsv/rom_65536x64_L7/sim/rom_65536x64_L7.v
 ../../src/tsv/rom_65536x64_L7/rom_1port_2020/sim/*.v
 
+../../src/pusch_dr/pus_data_mux.sv
+../../src/pusch_dr/sys_rst_gen.sv
 ../../src/pusch_dr/alt_reset_synchronizer.v
 ../../src/pusch_dr/altera_std_synchronizer_nocut.v
 ../../src/pusch_dr/agc_unpack.sv

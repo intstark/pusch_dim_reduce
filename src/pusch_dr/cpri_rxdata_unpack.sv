@@ -462,12 +462,16 @@ reg            [   3: 0]                        pkg_type_out          =0;
 reg                                             cell_idx_out          =0;
 reg            [   6: 0]                        slot_idx_out          =0;
 reg            [   3: 0]                        symb_idx_out          =0;
+(*DONT_TOUCH="True"*) reg   [   7: 0]           prb0_idx_out          =0;
+(*DONT_TOUCH="True"*) reg   [   7: 0]           prb1_idx_out          =0;
 
 always @(posedge i_clk) begin
     pkg_type_out <= dout_info0[4][39:36];
     cell_idx_out <= dout_info0[4][19];
     slot_idx_out <= dout_info0[4][18:12];
     symb_idx_out <= dout_info0[4][11:8];
+    prb0_idx_out <= dout_info0[4][35:28];
+    prb1_idx_out <= dout_info0[4][27:20];
 end
 
 

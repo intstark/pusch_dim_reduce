@@ -26,9 +26,8 @@ module pusch_dr_top #(
     input          [   1: 0]                        i_aiu_idx               , // AIU index 0-3
     input          [   1: 0]                        i_rbg_size              , // default:2'b10 16rb
     input          [   1: 0]                        i_dr_mode               , // re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
+    input          [   2: 0]                        i_cfg_mode              , // Debug config switch
 
-    input                                           i_rx_rfp                ,
-    input                                           i_enable                ,
     // cpri rxdata
     input                                           i_l0_cpri_clk           , // cpri clkout
     input                                           i_l0_cpri_rst           , // cpri reset
@@ -126,6 +125,12 @@ wire           [   3: 0]                        dr_symb_idx             ;
 wire           [15:0][ 7: 0]                    dr_fft_agc              ;
 wire           [15:0][31: 0]                    dr_beam_pwr             ;
 
+wire           [LANE-1: 0]                      cpri_rst                ;
+wire                                            sys_rst                 ;
+wire                                            auto_rst_en             ;
+wire                                            rxbuf_en                ;
+wire                                            rxskew_chk_en           ;
+
 
 //------------------------------------------------------------------------------------------
 // arrange cpri data for 8 lanes
@@ -148,25 +153,51 @@ assign w_cpri_rx_data[5] = i_l5_cpri_rx_data;
 assign w_cpri_rx_data[6] = i_l6_cpri_rx_data;
 assign w_cpri_rx_data[7] = i_l7_cpri_rx_data;
 
+//------------------------------------------------------------------------------------------
+// Debug config switch map
+//------------------------------------------------------------------------------------------
+assign rxskew_chk_en = ~i_cfg_mode[0]; // rx skew check enable
+assign rxbuf_en      =  i_cfg_mode[1]; // rx buffer write enbale
+assign auto_rst_en   =  i_cfg_mode[2]; // peroid reset enable
 
+
+
+//------------------------------------------------------------------------------------------
+// reset generator
+//------------------------------------------------------------------------------------------
+sys_rst_gen                                             sys_rst_gen
+(
+    .i_cpri_clk                                         (w_cpri_clk             ),
+    .i_cpri_rst                                         (w_cpri_rst             ),
+    .i_cpri_rx_data                                     (w_cpri_rx_data         ),
+    .i_cpri_rx_vld                                      (w_cpri_rx_vld          ),
+
+    .i_clk                                              (i_clk                  ),
+    .i_reset                                            (i_reset                ),
+
+    .i_auto_rst_en                                      (auto_rst_en            ),
+    .i_rxbuf_en                                         (rxbuf_en               ),
+
+    .o_cpri_rst                                         (cpri_rst               ),// cpri clock domain
+    .o_sys_rst                                          (sys_rst                ) // system clock domain
+);
 
 
 //------------------------------------------------------------------------------------------
 //cpri rxdata & unpack
 //------------------------------------------------------------------------------------------
-
 cpri_rxdata_top                                         cpri_rxdata_top
 (
 
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (sys_rst                ),
     .i_dr_mode                                          (i_dr_mode              ),// re-sort @ 0:inital once; 1: slot0symb0: 2 per symb0 
 
-    .i_rx_rfp                                           (i_rx_rfp               ),
-    .i_enable                                           (i_enable               ),
+    .i_enable                                           (rxbuf_en               ),
+    .i_skew_chk_en                                      (rxskew_chk_en          ),
     
     .i_cpri_clk                                         (w_cpri_clk             ),
-    .i_cpri_rst                                         (w_cpri_rst             ),
+    .i_cpri_rst                                         (cpri_rst               ),
     .i_cpri_rx_data                                     (w_cpri_rx_data         ),
     .i_cpri_rx_vld                                      (w_cpri_rx_vld          ),
 
@@ -189,7 +220,7 @@ cpri_rxdata_top                                         cpri_rxdata_top
 // -----------------------------------------------------------------------------------------
 pusch_dr_core                                           pusch_dr_core(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (sys_rst                ),
 
     .i_aiu_idx                                          (i_aiu_idx              ),
     .i_rbg_size                                         (i_rbg_size             ),// default:2'b10 16rb
@@ -227,7 +258,7 @@ pusch_dr_core                                           pusch_dr_core(
 // -----------------------------------------------------------------------------------------
 cpri_txdata_top                                         cpri_txdata_top(
     .i_clk                                              (i_clk                  ),
-    .i_reset                                            (i_reset                ),
+    .i_reset                                            (sys_rst                ),
 
     .i_rx_sel                                           (1'b0                   ),
     .i_rx_vld                                           (dr_vld                 ),

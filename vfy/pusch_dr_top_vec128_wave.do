@@ -1,14 +1,95 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /pusch_dr_top_vec128/reset
+add wave -noupdate /pusch_dr_top_vec128/dr1_reset
+add wave -noupdate /pusch_dr_top_vec128/dr2_reset
 add wave -noupdate /pusch_dr_top_vec128/tx_hfp_pos
+add wave -noupdate /pusch_dr_top_vec128/rxbuf_en
+add wave -noupdate -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/sys_rst_gen/enable_neg
+add wave -noupdate -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/sys_rst_gen/o_cpri_rst
+add wave -noupdate -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/sys_rst_gen/o_sys_rst
+add wave -noupdate -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/sys_rst_gen/rx_slot_rst
 add wave -noupdate /pusch_dr_top_vec128/cpri_data_vld
+add wave -noupdate /pusch_dr_top_vec128/cpri1_data_vld
+add wave -noupdate -color Pink /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_vld_fst
+add wave -noupdate -color Pink -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_skew_num
+add wave -noupdate -color Pink /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_vld_lst
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_skew_err
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_buf_err
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_buf_rden
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_buf_vld
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_buf_clr
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[2]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[3]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[5]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[6]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group rx_sop {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[7]/cpri_rx_buffer/rx_sop}
 add wave -noupdate -radix unsigned /pusch_dr_top_vec128/dw_num
 add wave -noupdate -radix unsigned /pusch_dr_top_vec128/chip_num
 add wave -noupdate -radix unsigned /pusch_dr_top_vec128/addr
+add wave -noupdate -radix unsigned /pusch_dr_top_vec128/addr1
 add wave -noupdate /pusch_dr_top_vec128/cpri_iq_vld
-add wave -noupdate -expand -group aiu0 -color {Medium Slate Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
-add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
+add wave -noupdate /pusch_dr_top_vec128/cpri1_iq_vld
+add wave -noupdate /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/cpri_buf_rdy
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tvalid}
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/o_tx_last
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/o_tx_vld
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/u_cpri_rx_gen/o_tvalid}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/ant_package_valid}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/data_fft_uncprs_vld}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/data_unpack_vld}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/o_slot_idx}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/o_symb_idx}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/o_iq_last}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rxdata_unpack[0]/cpri_rxdata_unpack_4ant/o_iq_vld}
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/o_slot_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/o_symb_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/o_iq_last
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/o_iq_vld
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/o_ant_eop}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/o_ant_sop}
+add wave -noupdate -group rst_vld {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_data_buffer[0]/ant_data_buffer/o_tvalid}
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/code_word_rev/o_ant_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/code_word_rev/o_ant_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/code_word_rev/o_ant_vld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_tvalid
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_load
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_vld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_wen
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/o_rd_vld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/o_tvalid
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/o_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/o_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/o_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/o_tvld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/o_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/o_vld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_dr_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_dr_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_dr_vld
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_slot_idx
+add wave -noupdate -group rst_vld -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_symb_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/i_rbg_load
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/i_rx_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/i_rx_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/i_rx_vld
+add wave -noupdate -group rst_vld -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_prb_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_rbg_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_slot_idx
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_tx_sop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_tx_eop
+add wave -noupdate -group rst_vld /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_tx_vld
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/i_reset
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx_d1}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_in_loc}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_mismatch}
+add wave -noupdate -expand -group aiu0 -color {Medium Slate Blue} -radix unsigned -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[6]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[5]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[4]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[3]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[2]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[1]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[0]} -radix unsigned}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[6]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[5]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[4]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[3]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[2]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[1]} {-color {Medium Slate Blue} -height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx[0]} {-color {Medium Slate Blue} -height 15 -radix unsigned}} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
+add wave -noupdate -expand -group aiu0 -radix unsigned -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[3]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[2]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[1]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[0]} -radix unsigned}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[3]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[2]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[1]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx[0]} {-height 15 -radix unsigned}} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx}
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/i_cpri_clk
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/i_cpri_rst
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/i_cpri_rx_data
@@ -24,23 +105,42 @@ add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/c
 add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_addr}
 add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_data}
 add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/seq_num}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/ant0_idx}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/ant1_idx}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/cpri_rx_vld}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/prb0_idx}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/prb1_idx}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/pusch_en}
-add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[1]/cpri_rx_buffer/wr_addr}
+add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/rbadr}
+add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/rd_addr}
+add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/wbadr}
+add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_buffer_async/wr_addr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/symb_idx}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/pusch_en}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/symb_mismatch}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/wr_addr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/wr_wen}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/wr_wlast}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/u_fifo_buffer_64w_16d_0/dout_valid}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/u_fifo_buffer_64w_16d_0/rd_en}
+add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/u_fifo_buffer_64w_16d_0/wr_en}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/rd_vld}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/rd_addr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/wbadr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/wr_addr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/rbadr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/cpri_rx_buffer_async/rd_addr}
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/slot_idx}
+add wave -noupdate -expand -group aiu0 -color {Violet Red} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx_out}
+add wave -noupdate -expand -group aiu0 -color {Violet Red} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/slot_idx_out}
+add wave -noupdate -expand -group aiu0 -color {Violet Red} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx_out}
+add wave -noupdate -expand -group aiu0 -color {Violet Red} -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/symb_idx_out}
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/rx_buf_vld
 add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rd_sym_num}
-add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/symb_idx_out}
-add wave -noupdate -expand -group aiu0 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx_out}
 add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/o_tready}
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/i_fft_agc
 add wave -noupdate -expand -group aiu0 -radix decimal -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[31]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[30]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[29]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[28]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[27]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[26]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[25]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[24]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[23]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[22]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[21]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[20]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[19]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[18]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[17]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[16]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[15]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[14]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[13]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[12]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[11]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[10]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[9]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[8]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[7]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[6]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[5]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[4]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[3]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[2]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[1]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[0]} -radix decimal}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[31]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[30]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[29]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[28]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[27]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[26]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[25]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[24]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[23]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[22]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[21]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[20]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[19]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[18]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[17]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[16]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[15]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[14]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[13]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[12]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[11]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[10]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[9]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[8]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[7]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[6]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[5]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[4]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[3]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[2]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[1]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0[0]} {-height 15 -radix decimal}} /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_0
 add wave -noupdate -expand -group aiu0 -radix decimal /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/data_cmp_1
 add wave -noupdate -expand -group aiu0 -radix decimal /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/o_fft_agc_base
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/agc_unpack/o_fft_agc_shift
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_iq_vld
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_slot_idx
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_symb_idx
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_aiu_idx
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_iq_addr
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/i_iq_data
@@ -50,17 +150,66 @@ add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pu
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_even
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_odd
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/ant_sop
-add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/i_data
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_dr_vld
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_rbg_idx
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_slot_idx
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/o_symb_idx
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/i_ants_data_even
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/i_ants_data_odd
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/i_eop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/i_rvalid
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/i_sop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_data_i
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_data_q
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_eop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_sop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/mac_beams/o_tvalid
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/i_symb_1st
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/rbg_sum_load_out
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/rbg_sum_vld_out
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_sum
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_vld
+add wave -noupdate -expand -group aiu0 -color {Cornflower Blue} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_rxdata_top/gen_rx_buffer[4]/cpri_rx_buffer/symb_idx}
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_wen
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_load
+add wave -noupdate -expand -group aiu0 -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_data_addr
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_power_calc/o_symb_1st
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/num_blocks
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/o_rd_data
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/o_rd_vld
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_buffer/o_tvalid
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/i_enable
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/i_data
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/o_beam_index
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/o_data
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/o_idx_sop
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/o_rbg_load
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beam_sort/o_rbg_num
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/i_info_1
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sym_1st
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/sym_is_1st
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_wr_sop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_wr_eop
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_eop_d1
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_wen
+add wave -noupdate -expand -group aiu0 -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[3]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[2]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[1]} -radix unsigned} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[0]} -radix unsigned}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[3]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[2]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[1]} {-height 15 -radix unsigned} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr[0]} {-height 15 -radix unsigned}} /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/wr_addr
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/rd_ren
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/rd_addr
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/num_blocks
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/data_vld
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/rd_data
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/rd_ren
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/i_reset
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/wr_addr
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/wr_data
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/wr_wen
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/rd_empty
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/wr_full
 add wave -noupdate -expand -group aiu0 -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[15]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[14]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[13]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[12]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[11]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[10]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[9]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[8]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[7]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[6]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[5]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[4]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[3]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[2]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[1]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[0]} -radix decimal}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[15]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[14]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[13]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[12]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[11]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[10]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[9]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[8]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[7]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[6]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[5]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[4]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[3]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[2]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[1]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx[0]} {-height 15 -radix decimal}} /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_idx
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sort_sop
-add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/i_sym_1st
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/mem_streams_0/o_rd_data
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/rd_data_matrix
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/sort_data
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/ant_polarity
 add wave -noupdate -expand -group aiu0 -childformat {{{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[15]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[14]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[13]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[12]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[11]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[10]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[9]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[8]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[7]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[6]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[5]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[4]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[3]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[2]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[1]} -radix decimal} {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[0]} -radix decimal}} -subitemconfig {{/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[15]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[14]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[13]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[12]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[11]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[10]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[9]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[8]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[7]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[6]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[5]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[4]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[3]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[2]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[1]} {-height 15 -radix decimal} {/pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st[0]} {-height 15 -radix decimal}} /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/fft_agc_1st
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/beams_pick_top/beams_mem_pick_i/ant_polarity_2nd
@@ -80,6 +229,8 @@ add wave -noupdate -expand -group aiu0 -radix unsigned /pusch_dr_top_vec128/pusc
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/i_rd_ren
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/rd_addr_syn
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/i_rvalid
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/wr_addr
+add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/addr_max
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/rd_addr
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/mem_beam_pwr/addr_out
 add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/pusch_dr_core/compress_matrix/o_rbg_idx
@@ -91,23 +242,38 @@ add wave -noupdate -expand -group aiu0 /pusch_dr_top_vec128/pusch_dr_top_aiu0/cp
 add wave -noupdate -expand -group aiu0 -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/o_symb_idx
 add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/gen_ram_pwr[1]/mem_beam_pwr/rd_addr}
 add wave -noupdate -expand -group aiu0 {/pusch_dr_top_vec128/pusch_dr_top_aiu0/cpri_txdata_top/txdata_queue_0/gen_ram_pwr[1]/mem_beam_pwr/rd_addr_syn}
-add wave -noupdate -group aiu1 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_addr
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_aiu_idx
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_data
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_last
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_vld
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_eop
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_even
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_odd
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_sop
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/i_data
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/i_enable
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_beam_index
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_data
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_idx_sop
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_rbg_load
-add wave -noupdate -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_rbg_num
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/i_cpri_reset}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/i_reset}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/i_rvalid}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/i_rx_data}
+add wave -noupdate -expand -group aiu1 -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/rx_vld_fst
+add wave -noupdate -expand -group aiu1 -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/rx_vld_lst
+add wave -noupdate -expand -group aiu1 -radix unsigned /pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/rx_skew_num
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/i_enable}
+add wave -noupdate -expand -group aiu1 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx}
+add wave -noupdate -expand -group aiu1 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb0_idx}
+add wave -noupdate -expand -group aiu1 -radix unsigned {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/prb1_idx}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/slot_idx_out}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/rx_sop}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/pusch_en}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/cpri_rx_vld}
+add wave -noupdate -expand -group aiu1 {/pusch_dr_top_vec128/pusch_dr_top_aiu1/cpri_rxdata_top/gen_rx_buffer[0]/cpri_rx_buffer/wr_wen}
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_addr
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_aiu_idx
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_data
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_last
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/i_iq_vld
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_eop
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_even
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_odd
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/ant_sop
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/i_data
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/i_enable
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_beam_index
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_data
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_idx_sop
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_rbg_load
+add wave -noupdate -expand -group aiu1 /pusch_dr_top_vec128/pusch_dr_top_aiu1/pusch_dr_core/beam_sort/o_rbg_num
 add wave -noupdate -expand -group aiu0_cpri_out /pusch_dr_top_vec128/pusch_dr_top_aiu0/o_cpri0_tx_data
 add wave -noupdate -expand -group aiu0_cpri_out /pusch_dr_top_vec128/pusch_dr_top_aiu0/o_cpri0_tx_vld
 add wave -noupdate -expand -group aiu0_cpri_out /pusch_dr_top_vec128/pusch_dr_top_aiu0/o_cpri1_tx_data
@@ -168,10 +334,10 @@ add wave -noupdate /pusch_dr_top_vec128/cprio_rbg_num
 add wave -noupdate -radix unsigned /pusch_dr_top_vec128/cprio_slot_num
 add wave -noupdate -radix unsigned /pusch_dr_top_vec128/cprio_symb_num
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 3} {0 ps} 0} {{Cursor 2} {482203513 ps} 0}
-quietly wave cursor active 2
-configure wave -namecolwidth 393
-configure wave -valuecolwidth 172
+WaveRestoreCursors {{Cursor 3} {1157407040 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 449
+configure wave -valuecolwidth 146
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
 configure wave -snapdistance 10
@@ -184,4 +350,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {31743546 ps} {32115386 ps}
+WaveRestoreZoom {0 ps} {641 ns}
